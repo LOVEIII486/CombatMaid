@@ -1,0 +1,38 @@
+﻿## 核心忽略 (编译结果)
+[Bb]in/
+[Oo]bj/
+/src/**/bin/
+/src/**/obj/
+
+## JetBrains Rider / Visual Studio 杂项
+.idea/
+.vs/
+*.user
+*.suo
+*.userprefs
+*.usertasks
+*.sln.docstates
+
+## Unity 相关 (如果您在项目中包含Unity工程文件)
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Mm]emoryCaptures/
+
+## Mod开发特别注意
+# 忽略引用的游戏本体DLL (防止版权问题和仓库臃肿)
+# 建议将游戏DLL放在一个名为 Libs 或 References 的文件夹中，并忽略它
+/Libs/
+/References/
+*.dll
+*.pdb
+
+# 但是不忽略我们自己输出目录中的必要文件（如果有的话）
+!/LocalBuild/
+
+## 系统生成文件
+.DS_Store
+Thumbs.db

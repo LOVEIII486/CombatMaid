@@ -1,0 +1,5 @@
+key,value,version,sheet
+Settings_CombatMaid_Group,战斗女仆设置,1.0,Groups
+Setting_EnableMaidMode,开启女仆模式,1.0,GeneralSettings
+Setting_AttackMultiplier,攻击倍率,1.0,GeneralSettings
+Setting_MoveSpeed,移动速度,1.0,GeneralSettings
