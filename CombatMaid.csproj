@@ -632,6 +632,10 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include=".gitignore" />
+        <Compile Include="Core\HarmonyPatches.cs" />
+        <Compile Include="Core\MaidBehaviors\MaidController.cs" />
+        <Compile Include="Core\MaidManager.cs" />
+        <Compile Include="Core\MaidSpawner.cs" />
         <Compile Include="HarmonyLoad.cs" />
         <Compile Include="Localization\LocalizationManager.cs" />
         <Compile Include="ModBehaviour.cs" />
