@@ -1,4 +1,5 @@
 using System;
+using CombatMaid.Core;
 using HarmonyLib;
 using Duckov.Modding;
 using CombatMaid.Localization;
@@ -40,6 +41,7 @@ namespace CombatMaid
             base.OnAfterSetup();
     
             InitializeLocalization(); 
+            InitializeMaidSystem();
 
             if (ModSettingAPI.Init(info))
             {
@@ -62,6 +64,47 @@ namespace CombatMaid
             Debug.Log($"{LogTag} 模组已禁用");
         }
 
+        #region Maid System
+
+        private void InitializeMaidSystem()
+        {
+            // 1. 挂载生成器 (Spawner)
+            // 使用 GetComponent 检查防止重复添加
+            if (gameObject.GetComponent<MaidSpawner>() == null)
+            {
+                gameObject.AddComponent<MaidSpawner>();
+            }
+
+            // 2. 挂载大管家 (Manager)
+            if (gameObject.GetComponent<MaidManager>() == null)
+            {
+                gameObject.AddComponent<MaidManager>();
+            }
+
+            Debug.Log($"{LogTag} 女仆核心系统 (Spawner & Manager) 已挂载");
+        }
+
+        private void CleanupMaidSystem()
+        {
+            // 1. 销毁管理器
+            var manager = gameObject.GetComponent<MaidManager>();
+            if (manager != null)
+            {
+                Destroy(manager);
+            }
+
+            // 2. 销毁生成器
+            var spawner = gameObject.GetComponent<MaidSpawner>();
+            if (spawner != null)
+            {
+                Destroy(spawner);
+            }
+
+            Debug.Log($"{LogTag} 女仆核心系统已卸载");
+        }
+
+        #endregion
+        
         #region Localization Management
 
         private void InitializeLocalization()
@@ -149,11 +192,22 @@ namespace CombatMaid
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             Debug.Log($"{LogTag} 进入场景: {scene.name}");
+
+            if (MaidManager.Instance != null)
+            {
+                MaidManager.Instance.OnLevelStart(scene.name);
+            }
+            
         }
 
         private void OnSceneUnloaded(Scene scene)
         {
             Debug.Log($"{LogTag} 场景卸载: {scene.name}");
+
+            if (MaidManager.Instance != null)
+            {
+                MaidManager.Instance.OnLevelEnd();
+            }
         }
 
         #endregion
