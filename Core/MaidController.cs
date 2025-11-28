@@ -1,9 +1,10 @@
 ﻿using CombatMaid.Core.MaidBehaviors;
 using UnityEngine;
+using Duckov.Modding;
 
 namespace CombatMaid.Core
 {
-    // 尽管保留 RequireComponent，我们在代码中也会手动保险
+    // 依然保留 RequireComponent 作为一种规范，但代码逻辑不再完全依赖它
     [RequireComponent(typeof(MaidMovement))]
     public class MaidController : MonoBehaviour
     {
@@ -21,34 +22,28 @@ namespace CombatMaid.Core
             _profile = profile;
             _player = player;
 
-            // 1. 安全获取 AI 控制器
             var ai = GetComponent<AICharacterController>();
-            if (ai == null)
-            {
-                Debug.LogError("[MaidController] 严重错误：物体上找不到 AICharacterController，初始化中止。");
-                return;
-            }
-            
-            ai.leader = player;
+            if (ai != null) ai.leader = player;
 
-            // 2. 安全获取或添加 Movement 模块 (修复空引用的关键)
+            // ==================== 修复核心 ====================
+            // 显式获取或添加组件，不再完全依赖 RequireComponent 的自动行为
             _movement = GetComponent<MaidMovement>();
             if (_movement == null)
             {
-                // 如果 RequireComponent 没生效，我们手动加一个
+                Debug.LogWarning($"[MaidController] 警告：MaidMovement 未自动添加，正在手动挂载...");
                 _movement = gameObject.AddComponent<MaidMovement>();
-                Debug.LogWarning("[MaidController] 如果 RequireComponent 没生效，我们手动加一个");
             }
 
-            // 3. 初始化子模块
             if (_movement != null)
             {
                 _movement.Initialize(ai);
+                Debug.Log($"[MaidController] {profile.Config.CustomName} 初始化成功，Movement模块已就绪。");
             }
             else
             {
-                Debug.LogError("[MaidController] 无法挂载 MaidMovement 组件！");
+                Debug.LogError($"[MaidController] 严重错误：无法挂载 MaidMovement 组件！");
             }
+            // ================================================
         }
 
         private void Update()
@@ -68,6 +63,11 @@ namespace CombatMaid.Core
             if (_movement != null)
             {
                 _movement.MoveTo(position);
+            }
+            else
+            {
+                // 如果此时还是空，说明初始化彻底失败了
+                Debug.LogError("[MaidController] 无法移动：Movement 模块丢失！");
             }
         }
     }

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
+using Duckov.Modding;
 
 namespace CombatMaid.Core.MaidBehaviors
 {
@@ -11,11 +12,20 @@ namespace CombatMaid.Core.MaidBehaviors
         private AICharacterController _ai;
         private NavMeshAgent _agent;
         
+        // 状态标记
         public bool IsActive { get; private set; } = false;
 
+        // 计时器
         private float _failsafeTimer = 0f;
         private float _warmupTimer = 0f;
 
+        private void Awake()
+        {
+            // 确认组件确实被挂载到了物体上
+            Debug.Log($"[MaidMovement] 组件已挂载到物体: {gameObject.name}");
+        }
+
+        // 初始化依赖
         public void Initialize(AICharacterController ai)
         {
             _ai = ai;
@@ -23,10 +33,16 @@ namespace CombatMaid.Core.MaidBehaviors
             
             if (_agent != null)
             {
-                _agent.autoRepath = false; 
+                _agent.autoRepath = false; // 禁止原生AI自动重算路径覆盖我们的指令
+                Debug.Log($"[MaidMovement] NavMeshAgent 获取成功 (OnNavMesh: {_agent.isOnNavMesh})");
+            }
+            else
+            {
+                Debug.LogError($"[MaidMovement] 严重错误：找不到 NavMeshAgent！");
             }
         }
 
+        // 每帧更新移动状态
         public void OnUpdate()
         {
             if (!IsActive) return;
@@ -49,61 +65,88 @@ namespace CombatMaid.Core.MaidBehaviors
             }
         }
 
+        /// <summary>
+        /// 执行强制移动
+        /// </summary>
         public void MoveTo(Vector3 position)
         {
-            if (_ai == null || _agent == null) return;
-
-            IsActive = true;
-            _failsafeTimer = 15.0f; 
-            _warmupTimer = 0.5f;
-
-            // === 关键修改：执行顺序调整 ===
-            
-            // 1. 停止当前原生动作 (打断当前行为树)
-            _ai.StopMove();
-
-            // 2. 调用原生接口 (这一步通常会设置动画状态，让角色"准备"移动)
-            _ai.MoveToPos(position);
-
-            // 3. 强制覆盖 NavMeshAgent (这是真正驱动位移的引擎)
-            // 必须在 MoveToPos 之后调用，防止 MoveToPos 内部重置路径或停止 Agent
-            if (_agent.isOnNavMesh)
+            if (_ai == null || _agent == null)
             {
-                _agent.autoRepath = false; // 再次确保关闭自动重算
-                _agent.isStopped = false;  // 确保油门是踩下的
-                _agent.SetDestination(position);
+                Debug.LogError("[MaidMovement] 移动失败：依赖项为空！");
+                return;
             }
 
-            _ai.CharacterMainControl.PopText("收到指令！", 1.5f);
-            Debug.Log($"[MaidMovement] 强制移动启动 -> {position}");
+            IsActive = true;
+            _failsafeTimer = 15.0f; // 15秒后强制放弃
+            _warmupTimer = 0.5f;    // 0.5秒缓冲
+
+            // 停止原生动作
+            _ai.StopMove();
+
+            // 激活 Agent 并寻路
+            // 增加判断：只有在 Agent 处于 NavMesh 上时才能 SetDestination
+            if (_agent.isOnNavMesh)
+            {
+                _agent.isStopped = false;
+                bool pathFound = _agent.SetDestination(position);
+                if (!pathFound)
+                {
+                    Debug.LogWarning($"[MaidMovement] SetDestination 返回 false，目标点可能不可达: {position}");
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[MaidMovement] Agent 不在 NavMesh 上，尝试 Warp 修正...");
+                // 尝试修复：如果不在导航网格上，尝试瞬移到最近的网格点
+                if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, 5.0f, NavMesh.AllAreas))
+                {
+                    _agent.Warp(hit.position);
+                    _agent.SetDestination(position);
+                    Debug.Log($"[MaidMovement] Warp 修正成功，继续移动。");
+                }
+                else
+                {
+                    Debug.LogError($"[MaidMovement] Agent 完全脱离导航网格，无法移动！");
+                    IsActive = false;
+                    return;
+                }
+            }
+
+            // 同步动画系统
+            _ai.MoveToPos(position);
+
+            if (_ai.CharacterMainControl != null)
+            {
+                _ai.CharacterMainControl.PopText("收到指令！", 1.5f);
+            }
+            
+            Debug.Log($"[MaidMovement] 开始移动至 {position}");
         }
 
+        /// <summary>
+        /// 停止强制移动，释放控制权
+        /// </summary>
         public void StopMove()
         {
             if (!IsActive) return;
 
             IsActive = false;
             
+            // 重置路径，避免切换回原生AI时还在往旧地方跑
             if (_agent != null && _agent.isOnNavMesh)
             {
-                if (!_agent.isStopped) _agent.ResetPath();
+                _agent.ResetPath();
             }
-            
-            Debug.Log("[MaidMovement] 强制移动结束，释放控制权。");
         }
 
         private bool HasArrived()
         {
             if (_agent == null || !_agent.isOnNavMesh) return true;
-            
-            // 路径还在计算中，不算到达
             if (_agent.pathPending) return false;
 
-            // 剩余距离小于停止距离
-            if (_agent.remainingDistance <= _agent.stoppingDistance + 0.5f)
+            if (_agent.remainingDistance <= _agent.stoppingDistance + 0.2f)
             {
-                // 且没有正在进行的路径规划，或者速度已经很慢了
-                if (!_agent.hasPath || _agent.velocity.sqrMagnitude <= 0.1f)
+                if (!_agent.hasPath || _agent.velocity.sqrMagnitude == 0f)
                 {
                     return true;
                 }
