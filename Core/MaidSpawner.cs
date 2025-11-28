@@ -57,8 +57,6 @@ namespace CombatMaid.Core
 
         private IEnumerator InitializeRoutine()
         {
-            Debug.Log($"{LogTag} 开始初始化...");
-
             // 1. 等待主角加载
             while (CharacterMainControl.Main == null)
             {
@@ -86,10 +84,7 @@ namespace CombatMaid.Core
 
             var allPresets = GameplayDataSettings.CharacterRandomPresetData.presets;
             _presetMap.Clear();
-
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine($"{LogTag} 已加载预设列表 (可用 Key):");
-
+            
             foreach (var preset in allPresets)
             {
                 if (preset == null) continue;
@@ -99,14 +94,10 @@ namespace CombatMaid.Core
                     if (!_presetMap.ContainsKey(preset.nameKey))
                     {
                         _presetMap.Add(preset.nameKey, preset);
-                        sb.Append($"[{preset.nameKey}] "); // 记录日志方便查阅
                     }
                 }
             }
-            Debug.Log(sb.ToString()); // 打印所有可用 Key，方便你核对 Cname_Usec 是否正确
-
             _isInitialized = true; 
-            Debug.Log($"{LogTag} 初始化完毕！共加载 {_presetMap.Count} 个预设。");
         }
 
         /// <summary>
@@ -192,7 +183,7 @@ namespace CombatMaid.Core
             string uniqueSuffix = $"_CombatMaid";
             string finalKey = source.nameKey + uniqueSuffix;
             
-            Debug.Log($"randompreset source{source.name}");
+            // Debug.Log($"randompreset source{source.name}");
             preset.name = source.name + uniqueSuffix;
             preset.nameKey = finalKey;
             
@@ -305,15 +296,15 @@ namespace CombatMaid.Core
         [Header("核心")] public string CustomName = "战斗女仆";
 
         [Header("基础")] public float Health = 250f;
-        public float MoveSpeedFactor = 1.3f;
+        public float MoveSpeedFactor = 1.0f;
 
         [Header("战斗")] public float DamageMultiplier = 1.0f;
         public float ReactionTime = 0.2f;
         public bool ShootCanMove = true;
         public bool CanDash = true;
 
-        [Header("感知")] public float SightDistanceMultiplier = 1.5f;
-        public float HearingAbility = 1.0f;
+        [Header("感知")] public float SightDistanceMultiplier = 0.7f;
+        public float HearingAbility = 0.7f;
 
         [Header("外观与物品")] public bool ShowName = true;
         public bool ShowHealthBar = true;

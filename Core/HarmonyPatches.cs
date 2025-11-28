@@ -5,68 +5,60 @@ using CombatMaid.Core.MaidBehaviors;
 
 namespace CombatMaid.Core
 {
+    /// <summary>
+    /// Harmony 补丁 - 极简版
+    /// 
+    /// 核心策略：
+    /// 1. 不再使用和平模式
+    /// 2. 只拦截手动移动（G键）期间的寻路
+    /// 3. 让 AI 的战斗系统完全正常工作
+    /// 4. 依赖官方的 leader 和 patrolPosition 系统实现跟随
+    /// </summary>
     [HarmonyPatch]
     public static class HarmonyPatches
     {
-        // 辅助方法：使用字典查表，速度极快 O(1)
-        private static bool IsInPeaceMode(AICharacterController ai)
-        {
-            var controller = MaidController.GetMaid(ai); // 优化点
-            return controller != null && controller.IsPeaceMode;
-        }
-
+        // ==================== 核心判断方法 ====================
+        
+        /// <summary>
+        /// 只在手动移动时拦截
+        /// </summary>
         private static bool ShouldBlockNativeAI(AICharacterController ai)
         {
-            var controller = MaidController.GetMaid(ai); // 优化点
-            // 如果字典里查不到，说明这就不是个女仆，直接返回 false，开销极低
-            return controller != null && (controller.IsOverrideActive || controller.IsPeaceMode);
+            var controller = MaidController.GetMaid(ai);
+            if (controller == null) return false;
+            
+            // 只拦截手动移动
+            return controller.IsOverrideActive;
         }
 
-        // --- 寻路拦截 (保持逻辑不变，底层已优化) ---
+        // ==================== 寻路拦截（仅手动移动时）====================
+        
         [HarmonyPatch(typeof(TraceTarget), "OnExecute")]
         [HarmonyPrefix]
-        public static bool TraceTargetExecutePrefix(TraceTarget __instance) => !ShouldBlockNativeAI(__instance.agent);
+        public static bool TraceTargetExecutePrefix(TraceTarget __instance) 
+        {
+            return !ShouldBlockNativeAI(__instance.agent);
+        }
 
         [HarmonyPatch(typeof(TraceTarget), "OnUpdate")]
         [HarmonyPrefix]
-        public static bool TraceTargetUpdatePrefix(TraceTarget __instance) => !ShouldBlockNativeAI(__instance.agent);
+        public static bool TraceTargetUpdatePrefix(TraceTarget __instance) 
+        {
+            return !ShouldBlockNativeAI(__instance.agent);
+        }
         
         [HarmonyPatch(typeof(TraceTarget), "OnStop")]
         [HarmonyPrefix]
-        public static bool TraceTargetStopPrefix(TraceTarget __instance) => !ShouldBlockNativeAI(__instance.agent);
+        public static bool TraceTargetStopPrefix(TraceTarget __instance) 
+        {
+            return !ShouldBlockNativeAI(__instance.agent);
+        }
 
         [HarmonyPatch(typeof(StopMoving), "OnExecute")]
         [HarmonyPrefix]
-        public static bool StopMovingExecutePrefix(StopMoving __instance) => !ShouldBlockNativeAI(__instance.agent);
-
-        // --- 索敌抑制 ---
-
-        [HarmonyPatch(typeof(AICharacterController), "Update")]
-        [HarmonyPostfix]
-        public static void AIUpdatePostfix(AICharacterController __instance)
+        public static bool StopMovingExecutePrefix(StopMoving __instance) 
         {
-            // 这里现在非常高效，全图几百个敌人调用也没压力
-            if (IsInPeaceMode(__instance))
-            {
-                __instance.searchedEnemy = null;
-                __instance.aimTarget = null;
-                __instance.alert = false;
-                __instance.noticed = false;
-            }
-        }
-
-        [HarmonyPatch(typeof(AICharacterController), "SetNoticedToTarget")]
-        [HarmonyPrefix]
-        public static bool SetNoticedToTargetPrefix(AICharacterController __instance)
-        {
-            return !IsInPeaceMode(__instance);
-        }
-        
-        [HarmonyPatch(typeof(AICharacterController), "TakeOutWeapon")]
-        [HarmonyPrefix]
-        public static bool TakeOutWeaponPrefix(AICharacterController __instance)
-        {
-            return !IsInPeaceMode(__instance);
+            return !ShouldBlockNativeAI(__instance.agent);
         }
     }
 }

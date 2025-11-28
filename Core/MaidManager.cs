@@ -37,7 +37,7 @@ namespace CombatMaid.Core
         private void Update()
         {
             // F6: 生成测试
-            if (Input.GetKeyDown(KeyCode.F6)) SpawnSpecificMaid("Cname_Usec"); 
+            if (Input.GetKeyDown(KeyCode.F6)) SpawnSpecificMaid("Cname_Scav"); 
             
             // F7: 清除队伍
             if (Input.GetKeyDown(KeyCode.F7)) DespawnTeam();
