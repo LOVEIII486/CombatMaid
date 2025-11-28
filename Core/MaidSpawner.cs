@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using UnityEngine;
 using Duckov.Utilities;
 using Duckov.Modding;
@@ -56,50 +57,75 @@ namespace CombatMaid.Core
 
         private IEnumerator InitializeRoutine()
         {
-            // 等待游戏核心加载
+            Debug.Log($"{LogTag} 开始初始化...");
+
+            // 1. 等待主角加载
             while (CharacterMainControl.Main == null)
             {
                 yield return null;
             }
 
-            // 获取 Egg 预制体
+            // 2. 获取 Egg 预制体 (生成角色的容器)
             if (_eggPrefab == null)
             {
                 Egg[] eggs = Resources.FindObjectsOfTypeAll<Egg>();
                 if (eggs.Length > 0) _eggPrefab = eggs[0];
             }
 
-            // 获取游戏原生预设
-            if (GameplayDataSettings.CharacterRandomPresetData != null)
+            if (_eggPrefab == null)
             {
-                var allPresets = GameplayDataSettings.CharacterRandomPresetData.presets;
+                Debug.LogError($"{LogTag} 严重错误：未能在 Resources 中找到 Egg 预制体！无法生成 AI。");
+                yield break;
+            }
 
-                _presetMap.Clear();
+            // 3. 等待并获取游戏原生预设数据
+            while (GameplayDataSettings.CharacterRandomPresetData == null)
+            {
+                yield return null;
+            }
 
-                foreach (var preset in allPresets)
+            var allPresets = GameplayDataSettings.CharacterRandomPresetData.presets;
+            _presetMap.Clear();
+
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine($"{LogTag} 已加载预设列表 (可用 Key):");
+
+            foreach (var preset in allPresets)
+            {
+                if (preset == null) continue;
+
+                if (!string.IsNullOrEmpty(preset.nameKey))
                 {
-                    if (preset == null) continue;
-
-                    if (!string.IsNullOrEmpty(preset.nameKey))
+                    if (!_presetMap.ContainsKey(preset.nameKey))
                     {
-                        _presetMap.TryAdd(preset.nameKey, preset);
+                        _presetMap.Add(preset.nameKey, preset);
+                        sb.Append($"[{preset.nameKey}] "); // 记录日志方便查阅
                     }
                 }
             }
+            Debug.Log(sb.ToString()); // 打印所有可用 Key，方便你核对 Cname_Usec 是否正确
+
+            _isInitialized = true; 
+            Debug.Log($"{LogTag} 初始化完毕！共加载 {_presetMap.Count} 个预设。");
         }
 
         /// <summary>
-        /// 指定 nameKey 生成女仆
+        /// 异步生成女仆
         /// </summary>
-        public AICharacterController SpawnMaid(string presetNameKey, Vector3 position, CharacterMainControl player,
-            MaidConfig config = null)
+        /// <param name="onSuccess">当AI成功实体化后的回调</param>
+        public void SpawnMaid(string presetNameKey, Vector3 position, CharacterMainControl player,
+            MaidConfig config, Action<AICharacterController> onSuccess)
         {
-            if (!_isInitialized || _eggPrefab == null || player == null) return null;
+            if (!_isInitialized || _eggPrefab == null || player == null)
+            {
+                Debug.LogError($"{LogTag} 生成前置条件未满足。");
+                return;
+            }
 
             if (string.IsNullOrEmpty(presetNameKey) || !_presetMap.TryGetValue(presetNameKey, out var sourcePreset))
             {
-                Debug.LogError($"{LogTag} 找不到名为 '{presetNameKey}' 的预设！无法生成。");
-                return null;
+                Debug.LogError($"{LogTag} 找不到名为 '{presetNameKey}' 的预设！");
+                return;
             }
 
             try
@@ -110,19 +136,53 @@ namespace CombatMaid.Core
                 _tempPresets.Add(finalPreset);
 
                 Egg egg = Instantiate(_eggPrefab, position, Quaternion.identity);
-                Physics.IgnoreCollision(egg.GetComponent<Collider>(), player.GetComponent<Collider>(), true);
+                // 忽略碰撞防止卡死
+                var eggCol = egg.GetComponent<Collider>();
+                var playerCol = player.GetComponent<Collider>();
+                if(eggCol && playerCol) Physics.IgnoreCollision(eggCol, playerCol, true);
 
-                egg.Init(position, player.transform.forward, player, finalPreset, 0.01f);
+                // 设置稍长的孵化时间以确保安全
+                float hatchTime = 0.05f; 
+                egg.Init(position, player.transform.forward, player, finalPreset, hatchTime);
 
-                Debug.Log($"{LogTag} 指定生成: {config.CustomName} (基底: {presetNameKey})");
+                Debug.Log($"{LogTag} 蛋已生成，等待孵化... (配置: {config.CustomName})");
 
-                return FindJustSpawnedAI(position);
+                // 启动协程等待结果
+                StartCoroutine(WaitForSpawnRoutine(position, hatchTime, onSuccess));
             }
             catch (Exception ex)
             {
-                Debug.LogError($"{LogTag} 指定生成失败: {ex.Message}");
-                return null;
+                Debug.LogError($"{LogTag} 生成过程异常: {ex}");
             }
+        }
+
+        /// <summary>
+        /// 等待蛋破壳并寻找 AI 的协程
+        /// </summary>
+        private IEnumerator WaitForSpawnRoutine(Vector3 pos, float hatchTime, Action<AICharacterController> callback)
+        {
+            // 先等待孵化时间 + 一点缓冲
+            yield return new WaitForSeconds(hatchTime + 0.1f);
+
+            float timeout = 2.0f; // 最多找2秒
+            AICharacterController targetAI = null;
+
+            while (timeout > 0)
+            {
+                targetAI = FindJustSpawnedAI(pos);
+                if (targetAI != null)
+                {
+                    // 找到了！
+                    callback?.Invoke(targetAI);
+                    yield break;
+                }
+                
+                // 没找到，等下一帧继续找
+                timeout -= Time.deltaTime;
+                yield return null;
+            }
+
+            Debug.LogError($"{LogTag} 超时：蛋生成了，但未能捕获到生成的 AI 对象。");
         }
 
         private CharacterRandomPreset CreateCustomPreset(CharacterRandomPreset source, MaidConfig config)
@@ -133,7 +193,7 @@ namespace CombatMaid.Core
             string finalKey = source.nameKey + uniqueSuffix;
             
             Debug.Log($"randompreset source{source.name}");
-            preset.name = source.name;
+            preset.name = source.name + uniqueSuffix;
             preset.nameKey = finalKey;
             
             string displayName = !string.IsNullOrEmpty(config.CustomName) ? config.CustomName : "战斗女仆_00";

@@ -634,6 +634,7 @@
         <None Include=".gitignore" />
         <Compile Include="Core\HarmonyPatches.cs" />
         <Compile Include="Core\MaidBehaviors\MaidController.cs" />
+        <Compile Include="Core\MaidBehaviors\MaidMovement.cs" />
         <Compile Include="Core\MaidManager.cs" />
         <Compile Include="Core\MaidSpawner.cs" />
         <Compile Include="HarmonyLoad.cs" />

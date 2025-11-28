@@ -1,78 +1,55 @@
 ﻿using UnityEngine;
-using UnityEngine.AI;
 using Duckov.Modding;
 
 namespace CombatMaid.MaidBehaviors
 {
-    /// <summary>
-    /// 女仆行为控制器
-    /// 挂载在每个 AI 实体上，负责处理移动、战斗和特殊指令
-    /// </summary>
+    // 强制依赖 Movement 组件
+    [RequireComponent(typeof(MaidMovement))]
     public class MaidController : MonoBehaviour
     {
-        private AICharacterController _ai;
-        private CharacterMainControl _player;
-        private NavMeshAgent _agent;
         private Core.MaidProfile _profile;
-
-        // 状态标记：当为 true 时，Harmony 补丁将拦截游戏原生 AI 的干扰
-        public bool IsOverrideActive { get; private set; } = false;
-        private float _overrideTimer = 0f;
+        private CharacterMainControl _player;
+        
+        // === 模块引用 ===
+        private MaidMovement _movement;
+        
+        // === 对外接口 ===
+        // 供 HarmonyPatch 调用，判断是否需要屏蔽原生AI
+        public bool IsOverrideActive => _movement != null && _movement.IsActive;
 
         public void Initialize(Core.MaidProfile profile, CharacterMainControl player)
         {
-            _ai = GetComponent<AICharacterController>();
-            _agent = GetComponent<NavMeshAgent>();
-            _player = player;
             _profile = profile;
+            _player = player;
 
-            // 基础设置
-            if (_ai != null) _ai.leader = player;
-            if (_agent != null) _agent.autoRepath = false; // 禁止自动重算路径，提高控制稳定性
+            var ai = GetComponent<AICharacterController>();
+            if (ai != null) ai.leader = player;
+
+            // 初始化子模块
+            _movement = GetComponent<MaidMovement>();
+            _movement.Initialize(ai);
+            
+            // 未来可以在这里初始化 _combat, _interaction 等模块
         }
 
         private void Update()
         {
-            // 处理强制指令的计时器 (如强制移动)
-            if (IsOverrideActive)
+            // 每一帧驱动子模块运行
+            if (_movement != null)
             {
-                _overrideTimer -= Time.deltaTime;
-                if (_overrideTimer <= 0)
-                {
-                    StopOverride(); // 时间到，恢复自由跟随
-                }
+                _movement.OnUpdate();
             }
-            
-            // TODO: 在这里可以添加其他行为检测，例如检测附近是否有可拾取的战利品
         }
 
         /// <summary>
-        /// 执行强制移动指令
+        /// 接收来自 Manager 的移动指令，转发给 Movement 模块
         /// </summary>
         public void ForceMoveTo(Vector3 position)
         {
-            if (_ai == null || _agent == null) return;
-
-            // 1. 激活覆盖模式，屏蔽原生 AI
-            IsOverrideActive = true;
-            _overrideTimer = 5.0f; // 给予 5 秒时间执行移动
-
-            // 2. 停止当前动作
-            _ai.StopMove();
-            _agent.isStopped = false;
-
-            // 3. 执行移动
-            _ai.MoveToPos(position);
-            _agent.SetDestination(position); // 双重保险
-
-            // 4. 反馈
-            _ai.CharacterMainControl.PopText("收到！", 1f);
-        }
-
-        private void StopOverride()
-        {
-            IsOverrideActive = false;
-            // 可以在这里让女仆说句话，比如 "就位"
+            if (_movement != null)
+            {
+                _movement.MoveTo(position);
+            }
         }
     }
 }
