@@ -20,10 +20,8 @@ namespace CombatMaid.Core
         public static MaidController GetMaid(AICharacterController ai)
         {
             if (ai == null) return null;
-            return _maidRegistry.TryGetValue(ai, out var maid) ? maid : null;
+            return _maidRegistry.GetValueOrDefault(ai);
         }
-
-        // ==================== 2. 核心组件引用 (对外公开) ====================
         
         /// <summary>
         /// 1. 女仆的AI控制器 (大脑) - 控制寻路、索敌、感知
@@ -32,7 +30,6 @@ namespace CombatMaid.Core
 
         /// <summary>
         /// 2. 女仆的角色主控制器 (身体) - 控制血量、装备、动作、死亡
-        /// (通过 AI 引用获取，确保拿到的是同一个身体)
         /// </summary>
         public CharacterMainControl MaidCharacter => AI != null ? AI.CharacterMainControl : null;
 
@@ -60,7 +57,7 @@ namespace CombatMaid.Core
             
             if (AI == null)
             {
-                Debug.LogError($"[MaidController] 严重错误：找不到 AICharacterController！");
+                Debug.LogError($"{LogTag} 严重错误：找不到 AICharacterController！");
                 return;
             }
             
@@ -72,19 +69,18 @@ namespace CombatMaid.Core
 
             // 设置原生参数
             AI.leader = player;
-            AI.patrolRange = 100.0f; 
+            AI.patrolRange = 100.0f; // 似乎无效
 
             // 初始化子模块
             Movement = GetComponent<MaidMovement>();
             if (Movement == null) Movement = gameObject.AddComponent<MaidMovement>();
             Movement.Initialize(this); 
 
-            Debug.Log($"[MaidController] {profile.Config.CustomName} 初始化完毕。");
+            Debug.Log($"{LogTag} {profile.Config.CustomName} 初始化完毕。");
         }
 
         private void OnDestroy()
         {
-            // 清理注册表
             if (AI != null && _maidRegistry.ContainsKey(AI))
             {
                 _maidRegistry.Remove(AI);
@@ -94,7 +90,6 @@ namespace CombatMaid.Core
         public void SetPeaceMode(bool enable)
         {
             IsPeaceMode = enable;
-            // 因为持有 AI 引用，这里可以直接操作，不需要再 GetComponent
             if (enable && AI != null)
             {
                 AI.searchedEnemy = null;

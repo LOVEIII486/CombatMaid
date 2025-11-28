@@ -6,6 +6,7 @@ namespace CombatMaid.Core
 {
     public class MaidManager : MonoBehaviour
     {
+        private const string LogTag = "[CombatMaid.MaidManager]";
         public static MaidManager Instance { get; private set; }
 
         private List<MaidController> _activeMaids = new List<MaidController>();
@@ -28,7 +29,7 @@ namespace CombatMaid.Core
             {
                 Instance = this;
                 DontDestroyOnLoad(gameObject);
-                Debug.Log("[MaidManager] 初始化完成。");
+                Debug.Log($"{LogTag} 初始化完成。");
             }
             else { Destroy(this); }
         }
@@ -50,7 +51,7 @@ namespace CombatMaid.Core
 
         public void OnLevelStart(string sceneName)
         {
-            Debug.Log($"[MaidManager] 场景就绪: {sceneName}");
+            Debug.Log($"{LogTag} 场景就绪: {sceneName}");
         }
 
         public void OnLevelEnd()
@@ -69,13 +70,13 @@ namespace CombatMaid.Core
 
             if (targetPos == Vector3.zero)
             {
-                Debug.LogWarning("[MaidManager] 指令无效：请指向地面。");
+                Debug.LogWarning($"{LogTag} 指令无效：请指向地面。");
                 return;
             }
 
             if (_activeMaids.Count == 0) return;
 
-            Debug.Log($"[MaidManager] 全队移动指令(G) -> {targetPos}");
+            Debug.Log($"{LogTag} 全队移动指令(G) -> {targetPos}");
 
             for (int i = _activeMaids.Count - 1; i >= 0; i--)
             {
@@ -92,7 +93,7 @@ namespace CombatMaid.Core
         {
             if (LevelManager.Instance?.MainCharacter == null || MaidSpawner.Instance == null)
             {
-                Debug.LogError("[MaidManager] 核心组件缺失，无法生成。");
+                Debug.LogError($"{LogTag} 核心组件缺失，无法生成。");
                 return;
             }
 
@@ -122,7 +123,7 @@ namespace CombatMaid.Core
                 
                 if (ai.CharacterMainControl != null)
                 {
-                    ai.CharacterMainControl.PopText("指定召唤成功！", 2f);
+                    ai.CharacterMainControl.PopText("指定召唤成功！");
                 }
             });
         }
@@ -137,19 +138,19 @@ namespace CombatMaid.Core
                     // 1. 优先尝试销毁角色的“身体” (根物体)
                     if (maid.MaidCharacter != null)
                     {
-                        Debug.Log($"[MaidManager] 销毁角色: {maid.MaidCharacter.name}");
+                        Debug.Log($"{LogTag} 销毁角色: {maid.MaidCharacter.name}");
                         Destroy(maid.MaidCharacter.gameObject);
                     }
                     // 2. 如果找不到身体（比如初始化未完成），则保底销毁控制器自身
                     else if (maid.gameObject != null)
                     {
-                        Debug.LogWarning($"[MaidManager] 找不到角色根物体，仅销毁 AI 控制器: {maid.name}");
+                        Debug.LogWarning($"{LogTag} 找不到角色根物体，仅销毁 AI 控制器: {maid.name}");
                         Destroy(maid.gameObject);
                     }
                 }
             }
             _activeMaids.Clear();
-            Debug.Log("[MaidManager] 队伍已清理");
+            Debug.Log($"{LogTag} 队伍已清理");
         }
     }
     
