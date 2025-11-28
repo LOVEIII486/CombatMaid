@@ -132,7 +132,21 @@ namespace CombatMaid.Core
             for (int i = _activeMaids.Count - 1; i >= 0; i--)
             {
                 var maid = _activeMaids[i];
-                if (maid != null && maid.gameObject != null) Destroy(maid.gameObject);
+                if (maid != null)
+                {
+                    // 1. 优先尝试销毁角色的“身体” (根物体)
+                    if (maid.MaidCharacter != null)
+                    {
+                        Debug.Log($"[MaidManager] 销毁角色: {maid.MaidCharacter.name}");
+                        Destroy(maid.MaidCharacter.gameObject);
+                    }
+                    // 2. 如果找不到身体（比如初始化未完成），则保底销毁控制器自身
+                    else if (maid.gameObject != null)
+                    {
+                        Debug.LogWarning($"[MaidManager] 找不到角色根物体，仅销毁 AI 控制器: {maid.name}");
+                        Destroy(maid.gameObject);
+                    }
+                }
             }
             _activeMaids.Clear();
             Debug.Log("[MaidManager] 队伍已清理");

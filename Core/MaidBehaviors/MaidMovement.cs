@@ -1,68 +1,97 @@
 ﻿using UnityEngine;
+using UnityEngine.AI;
 using Duckov.Modding;
 
 namespace CombatMaid.Core.MaidBehaviors
 {
     public class MaidMovement : MonoBehaviour
     {
-        private AICharacterController _ai;
+        // 现在直接持有 Controller，通过它访问 AI
         private MaidController _controller;
+        private NavMeshAgent _agent; 
         
-        // 状态标记
         public bool IsActive { get; private set; } = false;
-
-        // 计时器
         private float _failsafeTimer = 0f;
         private float _forceLockUntilTime = 0f; 
 
-        private void Awake()
+        // 参数简化，数据从 controller 拿
+        public void Initialize(MaidController controller)
         {
-            Debug.Log($"[MaidMovement] 组件已挂载: {gameObject.name}");
+            _controller = controller;
+            TryGetAgent(); 
         }
 
-        public void Initialize(AICharacterController ai, MaidController controller)
+        private void TryGetAgent()
         {
-            _ai = ai;
-            _controller = controller;
+            if (_agent != null) return;
+            if (_controller == null || _controller.AI == null) return;
+
+            // 优化：优先从 cached AI 中找
+            _agent = _controller.AI.GetComponent<NavMeshAgent>();
+            
+            // 备选方案
+            if (_agent == null) _agent = GetComponent<NavMeshAgent>();
+            if (_agent == null) _agent = GetComponentInParent<NavMeshAgent>();
+            
+            // 从 CharacterMainControl 找 (利用已缓存的引用)
+            if (_agent == null && _controller.AI.CharacterMainControl != null)
+                _agent = _controller.AI.CharacterMainControl.GetComponent<NavMeshAgent>();
+
+            if (_agent != null) _agent.autoRepath = false;
         }
 
         public void OnUpdate()
         {
+            if (_agent == null) TryGetAgent();
+
             if (!IsActive) return;
 
             _failsafeTimer -= Time.deltaTime;
-
-            // 1. 强制锁定期间不进行到达判定 (给寻路计算留出时间)
             if (Time.time < _forceLockUntilTime) return;
 
-            // 2. 判断是否结束
-            if (HasArrived() || _failsafeTimer <= 0)
+            bool arrived = false;
+            // 通过 _controller.AI 访问
+            var ai = _controller.AI; 
+
+            if (ai != null)
+            {
+                if (ai.WaitingForPathResult()) arrived = false;
+                else if (ai.HasPath() && ai.ReachedEndOfPath()) arrived = true;
+                else if (!ai.HasPath()) arrived = true; 
+            }
+            
+            if (arrived || _failsafeTimer <= 0)
             {
                 if (_failsafeTimer <= 0) Debug.Log("[MaidMovement] 移动超时，自动停止。");
-                else Debug.Log("[MaidMovement] 已到达目标点。");
-                
+                else Debug.Log("[MaidMovement] AI报告已到达终点。");
                 StopMove();
             }
         }
 
         public void MoveTo(Vector3 position)
         {
-            if (_ai == null) return;
+            if (_controller == null || _controller.AI == null) return;
 
             IsActive = true;
-            _forceLockUntilTime = Time.time + 0.5f; // 给0.5秒缓冲让路径开始计算
+            _forceLockUntilTime = Time.time + 0.5f; 
             _failsafeTimer = 15.0f;
 
-            // 开启和平模式 (抑制索敌)
-            if (_controller != null) _controller.SetPeaceMode(true);
+            _controller.SetPeaceMode(true);
 
-            // 直接调用官方 API
-            _ai.StopMove();
-            _ai.MoveToPos(position);
+            _controller.AI.StopMove();
 
-            if (_ai.CharacterMainControl != null)
+            if (_agent != null && _agent.isOnNavMesh)
             {
-                _ai.CharacterMainControl.PopText("移动中...", 1.5f);
+                _agent.isStopped = false;
+                _agent.autoRepath = false;
+                _agent.SetDestination(position);
+            }
+
+            _controller.AI.MoveToPos(position);
+
+            if (_controller.AI.CharacterMainControl != null)
+            {
+                _controller.AI.CharacterMainControl.PopText("移动中...", 1.5f);
             }
             
             Debug.Log($"[MaidMovement] 执行移动指令 -> {position}");
@@ -73,28 +102,14 @@ namespace CombatMaid.Core.MaidBehaviors
             if (!IsActive) return;
 
             IsActive = false; 
-            
-            // 关闭和平模式 (恢复战斗)
-            if (_controller != null) _controller.SetPeaceMode(false);
+            _controller.SetPeaceMode(false);
 
-            if (_ai != null) _ai.StopMove();
-        }
+            if (_controller.AI != null) _controller.AI.StopMove();
 
-        private bool HasArrived()
-        {
-            if (_ai == null) return true;
-
-            // 核心逻辑：直接使用 AI_PathControl 的状态
-            // 1. 如果正在计算路径，肯定没到
-            if (_ai.WaitingForPathResult()) return false;
-
-            // 2. 如果官方属性显示已到达
-            if (_ai.ReachedEndOfPath()) return true;
-
-            // 3. 如果甚至没有处于“移动”状态 (且过了锁定时间)，说明可能因为某种原因停了
-            if (!_ai.IsMoving()) return true;
-
-            return false;
+            if (_agent != null && _agent.isOnNavMesh)
+            {
+                _agent.ResetPath();
+            }
         }
     }
 }
