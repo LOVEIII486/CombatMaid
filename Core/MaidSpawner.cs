@@ -293,20 +293,25 @@ namespace CombatMaid.Core
     [System.Serializable]
     public class MaidConfig
     {
-        [Header("核心")] public string CustomName = "战斗女仆";
+        [Header("核心")] 
+        public string CustomName = "战斗女仆";
 
-        [Header("基础")] public float Health = 250f;
-        public float MoveSpeedFactor = 1.0f;
+        [Header("基础")] 
+        public float Health = 500f;
+        public float MoveSpeedFactor = 1.1f;
 
-        [Header("战斗")] public float DamageMultiplier = 1.0f;
+        [Header("战斗")] 
+        public float DamageMultiplier = 1.0f;
         public float ReactionTime = 0.2f;
         public bool ShootCanMove = true;
         public bool CanDash = true;
 
-        [Header("感知")] public float SightDistanceMultiplier = 0.7f;
-        public float HearingAbility = 0.7f;
+        [Header("感知")] 
+        public float SightDistanceMultiplier = 0.9f;
+        public float HearingAbility = 0.9f;
 
-        [Header("外观与物品")] public bool ShowName = true;
+        [Header("外观与物品")] 
+        public bool ShowName = true;
         public bool ShowHealthBar = true;
         public bool IsBossIcon = false;
         public List<int> CustomItemIDs = new List<int>();
