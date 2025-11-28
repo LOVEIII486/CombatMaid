@@ -1,8 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
-using Duckov.Modding;
 
-namespace CombatMaid.MaidBehaviors
+namespace CombatMaid.Core.MaidBehaviors
 {
     /// <summary>
     /// 专门负责处理移动指令、寻路逻辑和强制位移状态
@@ -12,14 +11,11 @@ namespace CombatMaid.MaidBehaviors
         private AICharacterController _ai;
         private NavMeshAgent _agent;
         
-        // 状态标记
         public bool IsActive { get; private set; } = false;
 
-        // 计时器
         private float _failsafeTimer = 0f;
         private float _warmupTimer = 0f;
 
-        // 初始化依赖
         public void Initialize(AICharacterController ai)
         {
             _ai = ai;
@@ -27,11 +23,10 @@ namespace CombatMaid.MaidBehaviors
             
             if (_agent != null)
             {
-                _agent.autoRepath = false; // 禁止原生AI自动重算路径覆盖我们的指令
+                _agent.autoRepath = false; 
             }
         }
 
-        // 每帧更新移动状态
         public void OnUpdate()
         {
             if (!IsActive) return;
@@ -49,64 +44,66 @@ namespace CombatMaid.MaidBehaviors
             // 3. 判断是否结束
             if (HasArrived() || _failsafeTimer <= 0)
             {
+                if (_failsafeTimer <= 0) Debug.Log("[MaidMovement] 移动超时，强制停止。");
                 StopMove();
             }
         }
 
-        /// <summary>
-        /// 执行强制移动
-        /// </summary>
         public void MoveTo(Vector3 position)
         {
             if (_ai == null || _agent == null) return;
 
             IsActive = true;
-            _failsafeTimer = 15.0f; // 15秒后强制放弃
-            _warmupTimer = 0.5f;    // 0.5秒缓冲
+            _failsafeTimer = 15.0f; 
+            _warmupTimer = 0.5f;
 
-            // 停止原生动作
+            // === 关键修改：执行顺序调整 ===
+            
+            // 1. 停止当前原生动作 (打断当前行为树)
             _ai.StopMove();
 
-            // 激活 Agent 并寻路
+            // 2. 调用原生接口 (这一步通常会设置动画状态，让角色"准备"移动)
+            _ai.MoveToPos(position);
+
+            // 3. 强制覆盖 NavMeshAgent (这是真正驱动位移的引擎)
+            // 必须在 MoveToPos 之后调用，防止 MoveToPos 内部重置路径或停止 Agent
             if (_agent.isOnNavMesh)
             {
-                _agent.isStopped = false;
+                _agent.autoRepath = false; // 再次确保关闭自动重算
+                _agent.isStopped = false;  // 确保油门是踩下的
                 _agent.SetDestination(position);
             }
 
-            // 同步动画系统
-            _ai.MoveToPos(position);
-
             _ai.CharacterMainControl.PopText("收到指令！", 1.5f);
+            Debug.Log($"[MaidMovement] 强制移动启动 -> {position}");
         }
 
-        /// <summary>
-        /// 停止强制移动，释放控制权
-        /// </summary>
         public void StopMove()
         {
             if (!IsActive) return;
 
             IsActive = false;
             
-            // 重置路径，避免切换回原生AI时还在往旧地方跑
             if (_agent != null && _agent.isOnNavMesh)
             {
-                _agent.ResetPath();
+                if (!_agent.isStopped) _agent.ResetPath();
             }
             
-            // 可选：反馈
-            // _ai.CharacterMainControl.PopText("到位。", 1f);
+            Debug.Log("[MaidMovement] 强制移动结束，释放控制权。");
         }
 
         private bool HasArrived()
         {
             if (_agent == null || !_agent.isOnNavMesh) return true;
+            
+            // 路径还在计算中，不算到达
             if (_agent.pathPending) return false;
 
-            if (_agent.remainingDistance <= _agent.stoppingDistance + 0.2f)
+            // 剩余距离小于停止距离
+            if (_agent.remainingDistance <= _agent.stoppingDistance + 0.5f)
             {
-                if (!_agent.hasPath || _agent.velocity.sqrMagnitude == 0f)
+                // 且没有正在进行的路径规划，或者速度已经很慢了
+                if (!_agent.hasPath || _agent.velocity.sqrMagnitude <= 0.1f)
                 {
                     return true;
                 }

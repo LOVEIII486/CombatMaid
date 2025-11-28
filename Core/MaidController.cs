@@ -1,9 +1,9 @@
-﻿using UnityEngine;
-using Duckov.Modding;
+﻿using CombatMaid.Core.MaidBehaviors;
+using UnityEngine;
 
-namespace CombatMaid.MaidBehaviors
+namespace CombatMaid.Core
 {
-    // 强制依赖 Movement 组件
+    // 尽管保留 RequireComponent，我们在代码中也会手动保险
     [RequireComponent(typeof(MaidMovement))]
     public class MaidController : MonoBehaviour
     {
@@ -14,7 +14,6 @@ namespace CombatMaid.MaidBehaviors
         private MaidMovement _movement;
         
         // === 对外接口 ===
-        // 供 HarmonyPatch 调用，判断是否需要屏蔽原生AI
         public bool IsOverrideActive => _movement != null && _movement.IsActive;
 
         public void Initialize(Core.MaidProfile profile, CharacterMainControl player)
@@ -22,14 +21,34 @@ namespace CombatMaid.MaidBehaviors
             _profile = profile;
             _player = player;
 
+            // 1. 安全获取 AI 控制器
             var ai = GetComponent<AICharacterController>();
-            if (ai != null) ai.leader = player;
-
-            // 初始化子模块
-            _movement = GetComponent<MaidMovement>();
-            _movement.Initialize(ai);
+            if (ai == null)
+            {
+                Debug.LogError("[MaidController] 严重错误：物体上找不到 AICharacterController，初始化中止。");
+                return;
+            }
             
-            // 未来可以在这里初始化 _combat, _interaction 等模块
+            ai.leader = player;
+
+            // 2. 安全获取或添加 Movement 模块 (修复空引用的关键)
+            _movement = GetComponent<MaidMovement>();
+            if (_movement == null)
+            {
+                // 如果 RequireComponent 没生效，我们手动加一个
+                _movement = gameObject.AddComponent<MaidMovement>();
+                Debug.LogWarning("[MaidController] 如果 RequireComponent 没生效，我们手动加一个");
+            }
+
+            // 3. 初始化子模块
+            if (_movement != null)
+            {
+                _movement.Initialize(ai);
+            }
+            else
+            {
+                Debug.LogError("[MaidController] 无法挂载 MaidMovement 组件！");
+            }
         }
 
         private void Update()

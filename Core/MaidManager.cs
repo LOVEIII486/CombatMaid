@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using Duckov.Modding;
-using CombatMaid.MaidBehaviors;
 
 namespace CombatMaid.Core
 {
