@@ -19,7 +19,8 @@ namespace CombatMaid.Core
                 CustomName = "皇家女仆·贝拉",
                 Health = 500f,
                 IsBossIcon = true,
-                CustomItemIDs = new List<int> { 254, 15, 594 } 
+                CustomItemIDs = new List<int> { 254, 15, 594 },
+                CustomModelID = "46001",
             }
         };
 
@@ -105,7 +106,8 @@ namespace CombatMaid.Core
                 CustomName = _defaultProfile.Config.CustomName,
                 Health = _defaultProfile.Config.Health,
                 IsBossIcon = _defaultProfile.Config.IsBossIcon,
-                CustomItemIDs = new List<int>(_defaultProfile.Config.CustomItemIDs)
+                CustomItemIDs = new List<int>(_defaultProfile.Config.CustomItemIDs),
+                CustomModelID = _defaultProfile.Config.CustomModelID,
             };
 
             // 使用回调添加控制器
@@ -115,6 +117,17 @@ namespace CombatMaid.Core
                 var profile = new MaidProfile { Name = "Elite", Config = spawnConfig };
                 
                 controller.Initialize(profile, LevelManager.Instance.MainCharacter);
+                
+                if (!string.IsNullOrEmpty(spawnConfig.CustomModelID))
+                {
+                    // 这里的 "this" 指的是 MaidManager (因为它是 MonoBehaviour)
+                    this.StartCoroutine(
+                        CombatMaid.Core.CustomModel.CustomModelBridge.ApplyModelByIDAsync(
+                            ai.CharacterMainControl, 
+                            spawnConfig.CustomModelID
+                        )
+                    );
+                }
                 
                 if (!_activeMaids.Contains(controller))
                 {

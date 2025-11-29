@@ -52,6 +52,8 @@ namespace CombatMaid
             {
                 Debug.LogError($"{LogTag} ModSetting 依赖缺失或初始化失败！");
             }
+            
+            CombatMaid.Core.CustomModel.CustomModelBridge.LogAvailableModels();
         }
 
         private void OnDisable()
@@ -59,6 +61,7 @@ namespace CombatMaid
             CleanupLocalization();
             CleanupSceneHooks();
             CleanupHarmonyPatches();
+            CleanupMaidSystem();
 
             Instance = null;
             Debug.Log($"{LogTag} 模组已禁用");

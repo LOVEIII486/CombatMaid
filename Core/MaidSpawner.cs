@@ -315,6 +315,8 @@ namespace CombatMaid.Core
         public bool ShowHealthBar = true;
         public bool IsBossIcon = false;
         public List<int> CustomItemIDs = new List<int>();
+        
+        public string CustomModelID = "";
     }
 
     public static class ReflectionHelper
