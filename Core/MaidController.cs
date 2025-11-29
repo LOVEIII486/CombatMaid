@@ -39,10 +39,8 @@ namespace CombatMaid.Core
 
         // ==================== 状态控制 ====================
         
-        // 简化：不再使用和平模式！
         public bool IsPeaceMode { get; private set; } = false;
         
-        // Harmony 只在手动移动时拦截
         public bool IsOverrideActive => Movement != null && Movement.IsActive;
 
         public void Initialize(MaidProfile profile, CharacterMainControl player)
@@ -63,7 +61,6 @@ namespace CombatMaid.Core
                 _maidRegistry.Add(AI, this);
             }
 
-            // 设置 leader - 这是关键！
             AI.leader = player;
             AI.patrolRange = 100.0f;
             AI.patrolPosition = player.transform.position;
@@ -84,7 +81,7 @@ namespace CombatMaid.Core
         }
 
         /// <summary>
-        /// 简化的和平模式 - 只清除目标，保留警戒状态
+        /// 和平模式 - 只清除目标，保留警戒状态
         /// </summary>
         public void SetPeaceMode(bool enable)
         {
@@ -92,10 +89,8 @@ namespace CombatMaid.Core
             
             if (enable && AI != null)
             {
-                // 只清除战斗目标，不清除警戒状态
                 AI.searchedEnemy = null;
                 AI.aimTarget = null;
-                // 保留 alert 和 noticed，让 AI 保持警觉
                 
                 Debug.Log($"{LogTag} 和平模式：清除战斗目标，保持警戒状态");
             }
@@ -155,7 +150,6 @@ namespace CombatMaid.Core
                     // 检查 AI 是否在移动向主人
                     if (!IsAIMoving())
                     {
-                        // 使用官方方式：更新 patrolPosition + MoveToPos
                         SendMoveCommandToOwner();
                     }
                 }
@@ -183,20 +177,15 @@ namespace CombatMaid.Core
             if (AI.HasPath() && !AI.ReachedEndOfPath()) return true;
             return false;
         }
-
-        /// <summary>
-        /// 优雅的方式：使用官方的 patrolPosition 系统
-        /// </summary>
+        
         private void SendMoveCommandToOwner()
         {
             if (AI == null || MainOwner == null) return;
             
             Vector3 targetPos = MainOwner.transform.position;
             
-            // 方法1：更新巡逻位置（行为树会自动处理）
             AI.patrolPosition = targetPos;
             
-            // 方法2：如果 AI 在战斗，主动发送移动指令打断
             if (AI.searchedEnemy != null)
             {
                 AI.StopMove();
@@ -207,7 +196,7 @@ namespace CombatMaid.Core
         }
 
         /// <summary>
-        /// 进入强制跟随模式 - 使用温和的方式
+        /// 强制跟随模式
         /// </summary>
         private void EnterForceFollowMode()
         {
@@ -220,10 +209,9 @@ namespace CombatMaid.Core
                 
                 if (hasEnemy)
                 {
-                    // 方案A：清除敌人，保留警戒状态
+                    // 清除敌人，保留警戒状态
                     AI.searchedEnemy = null;
                     AI.aimTarget = null;
-                    // 保留 alert 和 noticed
                     
                     Debug.Log($"{LogTag} {MaidCharacter?.name} 战斗中但距离过远，清除敌人目标");
                 }
@@ -247,9 +235,6 @@ namespace CombatMaid.Core
         {
             _isForceFollowing = false;
             _forceFollowTimer = 0f;
-            
-            // 不需要做任何特殊处理
-            // AI 会自然恢复索敌
             
             if (MaidCharacter != null)
             {

@@ -63,7 +63,7 @@ namespace CombatMaid.Core
                 yield return null;
             }
 
-            // 2. 获取 Egg 预制体 (生成角色的容器)
+            // 2. 获取 Egg 预制体
             if (_eggPrefab == null)
             {
                 Egg[] eggs = Resources.FindObjectsOfTypeAll<Egg>();
@@ -127,12 +127,12 @@ namespace CombatMaid.Core
                 _tempPresets.Add(finalPreset);
 
                 Egg egg = Instantiate(_eggPrefab, position, Quaternion.identity);
+                
                 // 忽略碰撞防止卡死
-                var eggCol = egg.GetComponent<Collider>();
-                var playerCol = player.GetComponent<Collider>();
-                if(eggCol && playerCol) Physics.IgnoreCollision(eggCol, playerCol, true);
-
-                // 设置稍长的孵化时间以确保安全
+                // var eggCol = egg.GetComponent<Collider>();
+                // var playerCol = player.GetComponent<Collider>();
+                // if(eggCol && playerCol) Physics.IgnoreCollision(eggCol, playerCol, true);
+                
                 float hatchTime = 0.05f; 
                 egg.Init(position, player.transform.forward, player, finalPreset, hatchTime);
 
@@ -148,14 +148,13 @@ namespace CombatMaid.Core
         }
 
         /// <summary>
-        /// 等待蛋破壳并寻找 AI 的协程
+        /// 等待蛋并寻找 AI
         /// </summary>
         private IEnumerator WaitForSpawnRoutine(Vector3 pos, float hatchTime, Action<AICharacterController> callback)
         {
-            // 先等待孵化时间 + 一点缓冲
             yield return new WaitForSeconds(hatchTime + 0.1f);
 
-            float timeout = 2.0f; // 最多找2秒
+            float timeout = 2.0f;
             AICharacterController targetAI = null;
 
             while (timeout > 0)

@@ -5,8 +5,6 @@ namespace CombatMaid.Core.MaidBehaviors
 {
     /// <summary>
     /// 女仆手动移动模块
-    /// 用于玩家手动指挥女仆移动（G键）
-    /// 使用 A* Pathfinding 的原生 API
     /// </summary>
     public class MaidMovement : MonoBehaviour
     {
@@ -37,7 +35,7 @@ namespace CombatMaid.Core.MaidBehaviors
 
             _failsafeTimer -= Time.deltaTime;
 
-            // 1. 强制锁定期间不进行到达判定（给 A* 时间计算路径）
+            // 1. 强制锁定期间不进行到达判定
             if (Time.time < _forceLockUntilTime) return;
 
             // 2. 判断是否结束
@@ -53,23 +51,21 @@ namespace CombatMaid.Core.MaidBehaviors
         }
 
         /// <summary>
-        /// 手动移动到指定位置（玩家指令）
+        /// 手动移动到指定位置
         /// </summary>
         public void MoveTo(Vector3 position)
         {
-            // 如果控制器或 AI 还没准备好，直接返回
             if (_controller == null || _controller.AI == null) return;
 
             IsActive = true;
-            _forceLockUntilTime = Time.time + 0.5f; // 给0.5秒缓冲让A*计算路径
+            _forceLockUntilTime = Time.time + 0.5f;
             _failsafeTimer = 15.0f; // 15秒超时保护
 
-            // 开启和平模式（防止战斗打断手动移动）
+            // 开启和平模式
             _controller.SetPeaceMode(true);
-
-            // 使用 A* Pathfinding 的原生 API
-            _controller.AI.StopMove();      // 停止当前移动
-            _controller.AI.MoveToPos(position); // 发起新的寻路请求
+            
+            _controller.AI.StopMove();
+            _controller.AI.MoveToPos(position);
 
             if (_controller.AI.CharacterMainControl != null)
             {
@@ -88,11 +84,10 @@ namespace CombatMaid.Core.MaidBehaviors
 
             IsActive = false; 
             
-            // 关闭和平模式（恢复战斗/跟随）
+            // 关闭和平模式
             if (_controller != null) 
                 _controller.SetPeaceMode(false);
-
-            // 停止 A* 寻路
+            
             if (_controller != null && _controller.AI != null)
             {
                 _controller.AI.StopMove();
@@ -100,15 +95,13 @@ namespace CombatMaid.Core.MaidBehaviors
         }
 
         /// <summary>
-        /// 检查是否到达目标（使用 A* Pathfinding 的原生状态）
+        /// 检查是否到达目标
         /// </summary>
         private bool HasArrived()
         {
             if (_controller == null || _controller.AI == null) return true;
 
             var ai = _controller.AI;
-
-            // 核心逻辑：完全信任 AICharacterController 的状态
             
             // 1. 如果正在计算路径，肯定没到
             if (ai.WaitingForPathResult()) 

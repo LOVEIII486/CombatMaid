@@ -67,7 +67,7 @@ namespace CombatMaid.Settings
             // ==================== 创建分组 ====================
             
             ModSettingAPI.AddGroup(
-                "CombatMaid_MainGroup", // 分组本身的唯一 ID
+                "CombatMaid_MainGroup",
                 LocalizationManager.GetText("Settings_CombatMaid_Group"),
                 new List<string> { Key_EnableMaidMode, Key_AttackMultiplier, Key_MoveSpeed },
                 0.7f,

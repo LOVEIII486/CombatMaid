@@ -53,6 +53,7 @@ namespace CombatMaid
                 Debug.LogError($"{LogTag} ModSetting 依赖缺失或初始化失败！");
             }
             
+            // 输出所有可用模型id
             CombatMaid.Core.CustomModel.CustomModelBridge.LogAvailableModels();
         }
 
@@ -72,13 +73,12 @@ namespace CombatMaid
         private void InitializeMaidSystem()
         {
             // 1. 挂载生成器 (Spawner)
-            // 使用 GetComponent 检查防止重复添加
             if (gameObject.GetComponent<MaidSpawner>() == null)
             {
                 gameObject.AddComponent<MaidSpawner>();
             }
 
-            // 2. 挂载大管家 (Manager)
+            // 2. 挂载管家 (Manager)
             if (gameObject.GetComponent<MaidManager>() == null)
             {
                 gameObject.AddComponent<MaidManager>();

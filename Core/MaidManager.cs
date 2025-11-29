@@ -20,7 +20,7 @@ namespace CombatMaid.Core
                 Health = 500f,
                 IsBossIcon = true,
                 CustomItemIDs = new List<int> { 254, 15, 594 },
-                CustomModelID = "46001",
+                CustomModelID = "10004", // 10005是狗狗的模型
             }
         };
 
@@ -43,7 +43,7 @@ namespace CombatMaid.Core
             // F7: 清除队伍
             if (Input.GetKeyDown(KeyCode.F7)) DespawnTeam();
 
-            // G: 战术移动指令 (原 T 键已修改)
+            // G: 战术移动指令
             if (Input.GetKeyDown(KeyCode.G))
             {
                 CommandMoveTeamToMouse();
@@ -59,10 +59,6 @@ namespace CombatMaid.Core
         {
             DespawnTeam();
         }
-
-        // ==========================================
-        //  逻辑区域
-        // ==========================================
 
         private void CommandMoveTeamToMouse()
         {
@@ -109,8 +105,7 @@ namespace CombatMaid.Core
                 CustomItemIDs = new List<int>(_defaultProfile.Config.CustomItemIDs),
                 CustomModelID = _defaultProfile.Config.CustomModelID,
             };
-
-            // 使用回调添加控制器
+            
             MaidSpawner.Instance.SpawnMaid(targetKey, mousePos, LevelManager.Instance.MainCharacter, spawnConfig, (ai) => 
             {
                 var controller = ai.gameObject.AddComponent<MaidController>();
@@ -120,7 +115,6 @@ namespace CombatMaid.Core
                 
                 if (!string.IsNullOrEmpty(spawnConfig.CustomModelID))
                 {
-                    // 这里的 "this" 指的是 MaidManager (因为它是 MonoBehaviour)
                     this.StartCoroutine(
                         CombatMaid.Core.CustomModel.CustomModelBridge.ApplyModelByIDAsync(
                             ai.CharacterMainControl, 
@@ -148,13 +142,11 @@ namespace CombatMaid.Core
                 var maid = _activeMaids[i];
                 if (maid != null)
                 {
-                    // 1. 优先尝试销毁角色的“身体” (根物体)
                     if (maid.MaidCharacter != null)
                     {
                         Debug.Log($"{LogTag} 销毁角色: {maid.MaidCharacter.name}");
                         Destroy(maid.MaidCharacter.gameObject);
                     }
-                    // 2. 如果找不到身体（比如初始化未完成），则保底销毁控制器自身
                     else if (maid.gameObject != null)
                     {
                         Debug.LogWarning($"{LogTag} 找不到角色根物体，仅销毁 AI 控制器: {maid.name}");

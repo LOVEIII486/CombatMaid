@@ -633,7 +633,6 @@
     <ItemGroup>
         <None Include=".gitignore" />
         <Compile Include="Core\CustomModel\CustomModelBridge.cs" />
-        <Compile Include="Core\CustomModel\CustomModelSelector.cs" />
         <Compile Include="Core\HarmonyPatches.cs" />
         <Compile Include="Core\MaidBehaviors\MaidMovement.cs" />
         <Compile Include="Core\MaidController.cs" />
