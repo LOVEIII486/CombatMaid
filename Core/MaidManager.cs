@@ -3,7 +3,8 @@ using System.IO;
 using System.Reflection;
 using UnityEngine;
 using Duckov.Modding;
-using CombatMaid.Core.MaidConfigs; // 引用配置命名空间
+using CombatMaid.Core.MaidConfigs;
+using CombatMaid.Core.MaidFSM.States; // 引用配置命名空间
 using Newtonsoft.Json;
 
 namespace CombatMaid.Core
@@ -58,10 +59,10 @@ namespace CombatMaid.Core
         private void Update()
         {
             // F6: 生成测试
-            if (Input.GetKeyDown(KeyCode.F6)) SpawnSpecificMaid("Cname_Usec"); 
+            if (Input.GetKeyDown(KeyCode.F5)) SpawnSpecificMaid("Cname_Usec"); 
             
             // F7: 清除队伍
-            if (Input.GetKeyDown(KeyCode.F7)) DespawnTeam();
+            if (Input.GetKeyDown(KeyCode.F6)) DespawnTeam();
             
             // F8: 重载配置 (方便调试，不用重启游戏)
             if (Input.GetKeyDown(KeyCode.F8)) LoadDefaultPreset();
@@ -70,6 +71,15 @@ namespace CombatMaid.Core
             if (Input.GetKeyDown(KeyCode.G))
             {
                 CommandMoveTeamToMouse();
+            }
+            
+            if (Input.GetKeyDown(KeyCode.F1))
+            {
+                // 获取所有女仆并命令驻守
+                foreach(var maid in _activeMaids) 
+                {
+                    maid.StateMachine.ChangeState<State_HoldPosition>();
+                }
             }
         }
 
