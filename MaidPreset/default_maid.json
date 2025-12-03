@@ -1,0 +1,113 @@
+﻿{
+  "ProfileName": "Love486_Custom",
+  "PresetConfig": {
+    "CustomName": "封弊者love486",
+    "IsBossIcon": true,
+    "ShowName": true,
+    "ShowHealthBar": true,
+
+    "Health": 486.0,
+    "MoveSpeedFactor": 1.1,
+    "HasSoul": true,
+    "Exp": 100,
+
+    "CustomItemIDs": [1093, 1130, 680],
+    "WantItem": -1,
+
+    "SightDistance": 40.0,
+    "SightAngle": 100.0,
+    "HearingAbility": 20.0,
+    "ForgetTime": 10.0,
+
+    "ReactionTime": 0.2,
+    "ShootDelay": 0.2,
+    "ShootCanMove": true,
+    "ShootTimeRange": { "x": 3.0, "y": 3.0 },
+    "ShootTimeSpaceRange": { "x": 0.2, "y": 0.4 },
+
+    "CombatMoveRange": 12.0,
+    "CombatMoveTimeRange": { "x": 3.0, "y": 5.0 },
+    "CombatTurnSpeed": 5.0,
+    "CanDash": true,
+    "DashCoolTimeRange": { "x": 1.5, "y": 2.5 },
+
+    "DamageMultiplier": 1.2,
+    "BulletSpeedMultiplier": 1.2,
+    "GunDistanceMultiplier": 1.1,
+    "GunScatterMultiplier": 0.3,
+    "ScatterMultiIfTargetRunning": 0.8,
+    "ScatterMultiIfOffScreen": 1.0,
+    "GunCritRateGain": 0.1,
+    "AiCombatFactor": 2.0,
+
+    "ResistPhysics": 0.8,
+    "ResistFire": 0.9,
+    "ResistPoison": 1.1,
+    "ResistElectricity": 0.9,
+    "ResistSpace": 0.9,
+    "ResistGhost": 1.1,
+
+    "FaceCode": {
+      "savedSetting": false,
+      "headSetting": {
+        "mainColor": { "r": 1, "g": 1, "b": 1, "a": 1 },
+        "headScaleOffset": 0,
+        "foreheadHeight": 0.12,
+        "foreheadRound": 1
+      },
+      "hairID": 3,
+      "hairInfo": {
+        "radius": 0,
+        "color": { "r": 1, "g": 0.933, "b": 0.345, "a": 1 },
+        "scale": 1
+      },
+      "eyeID": 6,
+      "eyeInfo": {
+        "radius": 0.23,
+        "color": { "r": 0, "g": 0, "b": 0, "a": 1 },
+        "height": 0.151,
+        "scale": 1.286,
+        "distanceAngle": 38.682
+      },
+      "eyebrowID": 2,
+      "eyebrowInfo": {
+        "radius": 0.23,
+        "color": { "r": 1, "g": 0.439, "b": 0.263, "a": 1 },
+        "height": -0.11,
+        "heightOffset": 0.151,
+        "scale": 3.034,
+        "twist": -40.891,
+        "distanceAngle": 57.421
+      },
+      "mouthID": 3,
+      "mouthInfo": {
+        "radius": 0.23,
+        "color": { "r": 1, "g": 0.671, "b": 0.569, "a": 1 },
+        "height": 0.037,
+        "scale": 0.727
+      },
+      "tailID": 3,
+      "tailInfo": {
+        "color": { "r": 1, "g": 0.735, "b": 0.231, "a": 1 },
+        "scale": 1.402
+      },
+      "footID": 0,
+      "footInfo": {
+        "color": { "r": 1, "g": 0.403, "b": 0.203, "a": 1 },
+        "scale": 1.01
+      },
+      "wingID": 0,
+      "wingInfo": {
+        "color": { "r": 1, "g": 0.945, "b": 0.463, "a": 1 },
+        "scale": 2
+      }
+    }
+  },
+  "ExtraData": {
+    "Description": "移植自 love486 自定义预设",
+    "BasePresetKey": "EnemyPreset_JLab_Raider",
+    "CustomModelID": "",
+    "EnableAutoHeal": true,
+    "TacticalMode": "Assault"
+  }
+}

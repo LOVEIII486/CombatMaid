@@ -49,7 +49,7 @@ namespace CombatMaid.Core
 
         // 注意：这里移除了 MaidProfile 参数，因为你提供的文件中 Initialize 签名是 (MaidProfile, CharacterMainControl)
         // 但在上一轮上传的文件中你的 MaidProfile 是 Core.MaidProfile，请确保命名空间正确
-        public void Initialize(MaidProfile profile, CharacterMainControl player)
+        public void Initialize(MaidProfileData profileData, CharacterMainControl player)
         {
             MainOwner = player;
 
@@ -76,12 +76,13 @@ namespace CombatMaid.Core
             if (Movement == null) Movement = gameObject.AddComponent<MaidMovement>();
             Movement.Initialize(this); 
 
-            // 初始化自动补血模块
-            HealBehavior = GetComponent<MaidHeal>();
-            if (HealBehavior == null) HealBehavior = gameObject.AddComponent<MaidHeal>();
-            HealBehavior.Initialize(AI);
-
-            Debug.Log($"{LogTag} {profile.Config.CustomName} 初始化完毕 (含自动补血)");
+            if (profileData.ExtraData != null && profileData.ExtraData.EnableAutoHeal)
+            {
+                // 初始化补血模块
+                HealBehavior = GetComponent<MaidHeal>();
+                if (HealBehavior == null) HealBehavior = gameObject.AddComponent<MaidHeal>();
+                HealBehavior.Initialize(AI);
+            }
             
             //MaidBrainInjector.Inject(AI);
         }

@@ -3,16 +3,12 @@ using UnityEngine;
 
 namespace CombatMaid.Core.MaidConfigs
 {
-    /// <summary>
-    /// 全面覆盖 CharacterRandomPreset 的配置类
-    /// 支持 JSON 序列化
-    /// </summary>
     [System.Serializable]
     public class MaidConfig
     {
         [Header("--- 核心标识 ---")] 
         public string CustomName = "战斗女仆";
-        public bool IsBossIcon = false; // 对应 characterIconType
+        public bool IsBossIcon = false; 
         public bool ShowName = true;
         public bool ShowHealthBar = true;
         
@@ -21,25 +17,30 @@ namespace CombatMaid.Core.MaidConfigs
         public float MoveSpeedFactor = 1.1f;
         public bool HasSoul = true;
         public int Exp = 100;
-        public bool PushCharacter = false; // 是否挤压其他角色
+        public bool PushCharacter = false;
         
-        [Header("--- 物品与外观 ---")]
-        public List<int> CustomItemIDs = new List<int>();
-        public string CustomModelID = ""; // 独立逻辑
+        [Header("--- 物品与掉落 ---")]
+        public List<int> CustomItemIDs = new List<int>(); 
         public int WantItem = -1;
         public bool DropBoxOnDead = true;
+        public float HasCashChance = 0f;
+        public Vector2Int CashRange = new Vector2Int(0, 0);
+
+        [Header("--- 外观 (捏脸) ---")]
+        // [新增] 对应 JSON 中的 "faceCode"
+        public MaidFaceCode FaceCode;
 
         [Header("--- 感知能力 ---")]
-        public float SightDistance = 30f; // 原版 17
-        public float SightAngle = 120f;   // 原版 100
+        public float SightDistance = 30f;
+        public float SightAngle = 120f;
         public float HearingAbility = 1.0f;
         public float NightVisionAbility = 0.5f;
-        public float ForgetTime = 8f;     // 丢失目标后的遗忘时间
+        public float ForgetTime = 8f;
 
         [Header("--- 反应与射击 ---")]
-        public float ReactionTime = 0.15f; // 原版 0.2
+        public float ReactionTime = 0.15f;
         public float NightReactionTimeFactor = 1.5f;
-        public float ShootDelay = 0.1f;   // 原版 0.2
+        public float ShootDelay = 0.1f;
         public Vector2 ShootTimeRange = new Vector2(0.5f, 2.0f);
         public Vector2 ShootTimeSpaceRange = new Vector2(1.0f, 2.0f);
         public bool ShootCanMove = true;
@@ -59,7 +60,7 @@ namespace CombatMaid.Core.MaidConfigs
         public float DamageMultiplier = 1.0f;
         public float BulletSpeedMultiplier = 1.0f;
         public float GunDistanceMultiplier = 1.0f;
-        public float GunScatterMultiplier = 0.8f; // 越小越准
+        public float GunScatterMultiplier = 0.8f;
         public float ScatterMultiIfTargetRunning = 2f;
         public float ScatterMultiIfOffScreen = 2f;
         public float GunCritRateGain = 0f;
@@ -71,12 +72,11 @@ namespace CombatMaid.Core.MaidConfigs
         [Range(0, 1)] public float MinTraceTargetChance = 1f;
         [Range(0, 1)] public float MaxTraceTargetChance = 1f;
 
-        [Header("--- 技能与特殊 ---")]
+        [Header("--- 技能参数 ---")]
         public bool HasSkill = false;
         public float HasSkillChance = 0f;
         public float SkillSuccessChance = 1f;
         public Vector2 SkillCoolTimeRange = Vector2.one;
-        // public string SkillPrefabID; // 暂留，复杂对象需特殊处理
 
         [Header("--- 抗性 (ElementFactor) ---")]
         public float ResistPhysics = 1f;
@@ -85,9 +85,65 @@ namespace CombatMaid.Core.MaidConfigs
         public float ResistElectricity = 1f;
         public float ResistSpace = 1f;
         public float ResistGhost = 1f;
+    }
+
+    // ==================== 捏脸数据结构 (对应 JSON) ====================
+
+    [System.Serializable]
+    public class MaidFaceCode
+    {
+        public bool savedSetting = false;
+        public MaidHeadSetting headSetting;
         
-        [Header("--- 掉落 (Cash) ---")]
-        public float HasCashChance = 0f;
-        public Vector2Int CashRange = new Vector2Int(0, 0);
+        public int hairID;
+        public MaidFeatureInfo hairInfo;
+        
+        public int eyeID;
+        public MaidFeatureInfo eyeInfo;
+        
+        public int eyebrowID;
+        public MaidFeatureInfo eyebrowInfo;
+        
+        public int mouthID;
+        public MaidFeatureInfo mouthInfo;
+        
+        public int tailID;
+        public MaidFeatureInfo tailInfo;
+        
+        public int footID;
+        public MaidFeatureInfo footInfo;
+        
+        public int wingID;
+        public MaidFeatureInfo wingInfo;
+    }
+
+    [System.Serializable]
+    public class MaidHeadSetting
+    {
+        public MaidColor mainColor;
+        public float headScaleOffset;
+        public float foreheadHeight;
+        public float foreheadRound;
+    }
+
+    [System.Serializable]
+    public class MaidFeatureInfo
+    {
+        public float radius;
+        public MaidColor color;
+        public float height;
+        public float heightOffset;
+        public float scale;
+        public float twist;
+        public float distanceAngle;
+        public float leftRightAngle;
+    }
+
+    [System.Serializable]
+    public class MaidColor
+    {
+        public float r, g, b, a;
+        
+        public Color ToUnityColor() => new Color(r, g, b, a);
     }
 }
