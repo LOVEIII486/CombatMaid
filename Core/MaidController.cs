@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using Duckov.Modding;
-using CombatMaid.Core.MaidBehaviors;
 using CombatMaid.Core.MaidFSM;
 using CombatMaid.Core.MaidFSM.States;
+using CombatMaid.Core.MaidSkillSystem;
+using CombatMaid.Core.MaidSkillSystem.Skills;
 
 namespace CombatMaid.Core
 {
@@ -36,11 +37,9 @@ namespace CombatMaid.Core
         /// 有限状态机：管理 AI 的行为模式 (自主/指令/跟随)
         /// </summary>
         public MaidStateMachine StateMachine { get; private set; }
-
-        // ==================== 功能模块 ====================
         
-        // 补血模块 (被动逻辑，独立于状态机)
-        public MaidHeal HealBehavior { get; private set; }
+        public MaidSkillComponent SkillSystem { get; private set; }
+        
 
         // ==================== 配置参数 ====================
         
@@ -68,7 +67,7 @@ namespace CombatMaid.Core
             // 1. 获取核心组件
             AI = GetComponent<AICharacterController>();
             if (AI == null) AI = GetComponentInChildren<AICharacterController>();
-            
+    
             if (AI == null)
             {
                 Debug.LogError($"{LogTag} 严重错误：找不到 AICharacterController！");
@@ -86,19 +85,36 @@ namespace CombatMaid.Core
             AI.patrolRange = 100.0f; // 给予较大的巡逻范围，具体由状态机控制 patrolPosition
             AI.patrolPosition = player.transform.position;
 
-            // 4. 初始化被动功能模块 (MaidHeal)
-            // 只要配置允许，补血模块始终运行，不随状态切换而停止
+            // 4. 初始化技能系统 (核心变更：替代原 MaidHeal 组件)
+            // 之前是直接 AddComponent<MaidHeal>，现在统一由 SkillComponent 管理
+            SkillSystem = gameObject.GetComponent<MaidSkillComponent>();
+            if (SkillSystem == null) SkillSystem = gameObject.AddComponent<MaidSkillComponent>();
+            SkillSystem.Initialize(this);
+
+            // [装配技能] 自动回血 (基础生存技能)
+            // 对应 JSON 中的 ExtraData.EnableAutoHeal
             if (profileData.ExtraData != null && profileData.ExtraData.EnableAutoHeal)
             {
-                HealBehavior = GetComponent<MaidHeal>();
-                if (HealBehavior == null) HealBehavior = gameObject.AddComponent<MaidHeal>();
-                HealBehavior.Initialize(AI);
+                SkillSystem.AddSkill(new Skill_SelfHeal());
             }
-            
+
+            // [装配技能] 战斗/辅助技能
+            // 对应 JSON 中的 PresetConfig.HasSkill
+            // 这里可以根据配置灵活添加，例如扔雷、加Buff等
+            if (profileData.PresetConfig != null && profileData.PresetConfig.HasSkill)
+            {
+                // 示例：添加投掷手雷技能 (ID 133 为普通破片手雷，326 为 RPG)
+                // 你可以根据 profileData 中的某个自定义字段来决定给她配什么雷
+                SkillSystem.AddSkill(new Skill_GrenadeThrower(133)); 
+        
+                // 示例：如果未来有 Buff 技能，可以在这里添加
+                // SkillSystem.AddSkill(new Skill_BuffPlayer("MaidBuff_Speed", 88001));
+            }
+    
             // 5. 初始化状态机
             InitializeStateMachine();
-            
-            Debug.Log($"{LogTag} 初始化完成。宿主: {player.name}, 初始状态: Autonomous");
+    
+            Debug.Log($"{LogTag} 初始化完成。宿主: {player.name}, 技能数: {SkillSystem.SkillCount}");
         }
 
         private void InitializeStateMachine()
@@ -123,9 +139,6 @@ namespace CombatMaid.Core
 
             // 1. 驱动状态机心跳
             StateMachine?.Update();
-
-            // 2. 驱动被动模块心跳
-            if (HealBehavior != null) HealBehavior.OnUpdate();
         }
 
         private void OnDestroy()

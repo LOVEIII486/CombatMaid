@@ -12,6 +12,9 @@ namespace CombatMaid.Core.MaidSkillSystem
         private List<IMaidSkill> _skills = new List<IMaidSkill>();
         private bool _isInitialized = false;
 
+        // [修复] 添加 SkillCount 属性供外部访问
+        public int SkillCount => _skills.Count;
+
         public void Initialize(MaidController controller)
         {
             _controller = controller;

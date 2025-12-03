@@ -1,7 +1,6 @@
 ﻿using HarmonyLib;
 using NodeCanvas.Tasks.Actions; 
 using UnityEngine;
-using CombatMaid.Core.MaidBehaviors;
 
 namespace CombatMaid.Core
 {
