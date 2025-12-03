@@ -40,13 +40,22 @@ namespace CombatMaid.Core
                 TacticalMode = "Assault"
             }
         };
-
+        
+        
+        public CharacterMainControl FocusTarget { get; private set; } // 当前集火目标
+        private float _focusExpireTimer = 0f; // 集火指令过期倒计时
+        private const float FocusDuration = 5.0f; // 玩家停火后，集火指令维持 5 秒
+        private const float RaycastDistance = 200f; // 标记距离
+        private int _enemyLayerMask;
+        
         private void Awake()
         {
             if (Instance == null)
             {
                 Instance = this;
                 DontDestroyOnLoad(gameObject);
+                
+                _enemyLayerMask = LayerMask.GetMask("Default", "Character", "Hitbox", "Enemy");
                 
                 // 初始化时尝试加载 JSON
                 LoadDefaultPreset();
@@ -58,54 +67,9 @@ namespace CombatMaid.Core
 
         private void Update()
         {
-            // ==================== 调试指令 ====================
-            // F5: 生成测试 (原F6改为F5，避开冲突)
-            if (Input.GetKeyDown(KeyCode.F5)) SpawnSpecificMaid("Cname_Usec"); 
-    
-            // F6: 清除队伍 (原F7改为F6)
-            if (Input.GetKeyDown(KeyCode.F6)) DespawnTeam();
-    
-            // F8: 重载配置
-            if (Input.GetKeyDown(KeyCode.F8)) LoadDefaultPreset();
-
-            // ==================== 战术指令 ====================
-    
-            // G: [进攻] 战术移动 (指哪打哪)
-            if (Input.GetKeyDown(KeyCode.G))
-            {
-                CommandMoveTeamToMouse();
-            }
-    
-            // F1: [防守] 原地驻守 (死守当前位置)
-            if (Input.GetKeyDown(KeyCode.F1))
-            {
-                foreach(var maid in _activeMaids) 
-                {
-                    if (maid == null) continue;
-                    maid.StateMachine.ChangeState<State_HoldPosition>();
-                }
-            }
-
-            // F2: [跟随] 和平召回 (开关式：召回 <-> 自由)
-            if (Input.GetKeyDown(KeyCode.F2))
-            {
-                foreach(var maid in _activeMaids) 
-                {
-                    if (maid == null) continue;
-
-                    // 逻辑：如果当前已经是“和平跟随”，则恢复“自主战斗”；否则强制“和平跟随”
-                    if (maid.StateMachine.CurrentState is State_PassiveFollow)
-                    {
-                        maid.StateMachine.ChangeState<State_Autonomous>();
-                        maid.MaidCharacter?.PopText("自由交战");
-                    }
-                    else
-                    {
-                        maid.StateMachine.ChangeState<State_PassiveFollow>();
-                        // PopText 已经在 State Enter 里写了，这里不用写
-                    }
-                }
-            }
+            HandleDebugInput();
+            
+            UpdateFocusTarget();
         }
 
         public void OnLevelStart(string sceneName)
@@ -116,6 +80,74 @@ namespace CombatMaid.Core
         public void OnLevelEnd()
         {
             DespawnTeam();
+        }
+        
+        private void HandleDebugInput()
+        {
+            if (Input.GetKeyDown(KeyCode.F5)) SpawnSpecificMaid("Cname_Usec"); 
+            if (Input.GetKeyDown(KeyCode.F6)) DespawnTeam();
+            if (Input.GetKeyDown(KeyCode.F8)) LoadDefaultPreset();
+            if (Input.GetKeyDown(KeyCode.G)) CommandMoveTeamToMouse();
+            if (Input.GetKeyDown(KeyCode.F1)) { /* 驻守逻辑 */ }
+            if (Input.GetKeyDown(KeyCode.F2)) { /* 召回逻辑 */ }
+        }
+        
+        private void UpdateFocusTarget()
+        {
+            // 1. 倒计时逻辑
+            if (_focusExpireTimer > 0)
+            {
+                _focusExpireTimer -= Time.deltaTime;
+                if (_focusExpireTimer <= 0)
+                {
+                    FocusTarget = null; // 指令过期
+                    // Debug.Log($"{LogTag} 集火指令已结束");
+                }
+            }
+
+            // 2. 只有当玩家按下攻击键 (左键) 时才尝试更新目标
+            // 这样避免玩家只是看一眼就把女仆仇恨拉过去了
+            if (Input.GetMouseButton(0))
+            {
+                DetectPlayerTarget();
+            }
+
+            // 3. 目标有效性检查 (如果目标死了，立即清除)
+            if (FocusTarget != null && (FocusTarget.Health == null || FocusTarget.Health.IsDead))
+            {
+                FocusTarget = null;
+            }
+        }
+        
+        private void DetectPlayerTarget()
+        {
+            if (Camera.main == null) return;
+
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit, RaycastDistance, _enemyLayerMask))
+            {
+                // 尝试获取 CharacterMainControl
+                // 可能是打中身体部位，所以从 hit.collider 向上找
+                var target = hit.collider.GetComponentInParent<CharacterMainControl>();
+                
+                if (target != null && !target.Health.IsDead)
+                {
+                    // 排除自己和队友 (假设 Player Team 是 0 或 1，具体看游戏设定)
+                    // 只要不是自己人，就标记
+                    if (target.Team != Teams.player) 
+                    {
+                        // 更新目标
+                        if (FocusTarget != target)
+                        {
+                            FocusTarget = target;
+                            // Debug.Log($"{LogTag} 标记集火目标: {target.name}");
+                        }
+                        
+                        // 续费过期时间
+                        _focusExpireTimer = FocusDuration;
+                    }
+                }
+            }
         }
 
         // ==================== JSON 加载逻辑 ====================
