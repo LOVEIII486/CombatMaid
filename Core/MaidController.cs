@@ -2,13 +2,20 @@
 using UnityEngine;
 using Duckov.Modding;
 using CombatMaid.Core.MaidBehaviors;
+using CombatMaid.Core.MaidFSM;
+using CombatMaid.Core.MaidFSM.States;
 
 namespace CombatMaid.Core
 {
-    [RequireComponent(typeof(MaidMovement))]
+    /// <summary>
+    /// 女仆核心控制器 (FSM重构版)
+    /// 职责：组件组装、状态机驱动、对外接口
+    /// </summary>
     public class MaidController : MonoBehaviour
     {
         private const string LogTag = "[CombatMaid.MaidController]";
+        
+        // ==================== 静态注册表 ====================
         
         private static readonly Dictionary<AICharacterController, MaidController> _maidRegistry 
             = new Dictionary<AICharacterController, MaidController>();
@@ -24,35 +31,40 @@ namespace CombatMaid.Core
         public AICharacterController AI { get; private set; }
         public CharacterMainControl MaidCharacter => AI != null ? AI.CharacterMainControl : null;
         public CharacterMainControl MainOwner { get; private set; }
-        public MaidMovement Movement { get; private set; }
         
-        // [新增] 补血模块引用
+        /// <summary>
+        /// 有限状态机：管理 AI 的行为模式 (自主/指令/跟随)
+        /// </summary>
+        public MaidStateMachine StateMachine { get; private set; }
+
+        // ==================== 功能模块 ====================
+        
+        // 补血模块 (被动逻辑，独立于状态机)
         public MaidHeal HealBehavior { get; private set; }
 
-        // ==================== 防卡死设置 ====================
+        // ==================== 配置参数 ====================
         
-        [Header("Anti-Stuck Settings")]
-        public float ForceFollowDistance = 15.0f;
-        public float TeleportDistance = 30.0f; 
-        public float TeleportTimeout = 8.0f;
-        public float SafeDistanceToResumeCombat = 10.0f;
-        
-        private float _forceFollowTimer = 0f;
-        private bool _isForceFollowing = false;
+        [Header("Distance Config")]
+        public float ForceFollowDistance = 15.0f;     // 超过此距离 -> 请求进入强制跟随状态
+        public float TeleportDistance = 30.0f;        // 超过此距离 -> 强制传送
+        public float TeleportTimeout = 8.0f;          // 强制跟随卡住超过此时间 -> 传送
+        public float SafeDistanceToResumeCombat = 10.0f; // 回到此距离内 -> 恢复自主战斗状态
 
-        // ==================== 状态控制 ====================
-        
-        public bool IsPeaceMode { get; private set; } = false;
-        
-        public bool IsOverrideActive => Movement != null && Movement.IsActive;
-        public float LastManualMoveTime { get; set; } = -999f;
+        // ==================== 状态属性 ====================
 
-        // 注意：这里移除了 MaidProfile 参数，因为你提供的文件中 Initialize 签名是 (MaidProfile, CharacterMainControl)
-        // 但在上一轮上传的文件中你的 MaidProfile 是 Core.MaidProfile，请确保命名空间正确
+        /// <summary>
+        /// 是否处于非原版接管状态 (用于 HarmonyPatch 拦截原版 AI)
+        /// 如果当前状态不是 State_Autonomous，则认为正在 Override
+        /// </summary>
+        public bool IsOverrideActive => StateMachine != null && !(StateMachine.CurrentState is State_Autonomous);
+
+        // ==================== 初始化与生命周期 ====================
+
         public void Initialize(MaidProfileData profileData, CharacterMainControl player)
         {
             MainOwner = player;
 
+            // 1. 获取核心组件
             AI = GetComponent<AICharacterController>();
             if (AI == null) AI = GetComponentInChildren<AICharacterController>();
             
@@ -62,29 +74,55 @@ namespace CombatMaid.Core
                 return;
             }
 
+            // 2. 注册到全局字典
             if (!_maidRegistry.ContainsKey(AI))
             {
                 _maidRegistry.Add(AI, this);
             }
 
+            // 3. 设置基础 AI 归属
             AI.leader = player;
-            AI.patrolRange = 100.0f;
+            AI.patrolRange = 100.0f; // 给予较大的巡逻范围，具体由状态机控制 patrolPosition
             AI.patrolPosition = player.transform.position;
 
-            // 初始化移动模块
-            Movement = GetComponent<MaidMovement>();
-            if (Movement == null) Movement = gameObject.AddComponent<MaidMovement>();
-            Movement.Initialize(this); 
-
+            // 4. 初始化被动功能模块 (MaidHeal)
+            // 只要配置允许，补血模块始终运行，不随状态切换而停止
             if (profileData.ExtraData != null && profileData.ExtraData.EnableAutoHeal)
             {
-                // 初始化补血模块
                 HealBehavior = GetComponent<MaidHeal>();
                 if (HealBehavior == null) HealBehavior = gameObject.AddComponent<MaidHeal>();
                 HealBehavior.Initialize(AI);
             }
             
-            //MaidBrainInjector.Inject(AI);
+            // 5. 初始化状态机
+            InitializeStateMachine();
+            
+            Debug.Log($"{LogTag} 初始化完成。宿主: {player.name}, 初始状态: Autonomous");
+        }
+
+        private void InitializeStateMachine()
+        {
+            StateMachine = new MaidStateMachine(this);
+
+            // 注册所有可用状态
+            StateMachine.AddState(new State_Autonomous());
+            StateMachine.AddState(new State_TacticalMove());
+            StateMachine.AddState(new State_ForceFollow());
+
+            // 启动默认状态 (自主模式)
+            StateMachine.ChangeState<State_Autonomous>();
+        }
+
+        private void Update()
+        {
+            if (AI == null || MaidCharacter == null || MaidCharacter.Health.IsDead) 
+                return;
+
+            // 1. 驱动状态机心跳
+            StateMachine?.Update();
+
+            // 2. 驱动被动模块心跳
+            if (HealBehavior != null) HealBehavior.OnUpdate();
         }
 
         private void OnDestroy()
@@ -95,219 +133,37 @@ namespace CombatMaid.Core
             }
         }
 
+        // ==================== 对外接口 (API) ====================
+
         /// <summary>
-        /// 和平模式 - 只清除目标，保留警戒状态
+        /// 强制移动指令 (G键调用)
+        /// 切换到 State_TacticalMove 并执行移动
         /// </summary>
-        public void SetPeaceMode(bool enable)
-        {
-            IsPeaceMode = enable;
-            
-            if (enable && AI != null)
-            {
-                AI.searchedEnemy = null;
-                AI.aimTarget = null;
-                
-                Debug.Log($"{LogTag} 和平模式：清除战斗目标，保持警戒状态");
-            }
-        }
-
-        private void Update()
-        {
-            // 驱动移动模块
-            if (Movement != null) Movement.OnUpdate();
-            
-            // [新增] 驱动补血模块
-            if (HealBehavior != null) HealBehavior.OnUpdate();
-
-            UpdateSmartFollow();
-            
-            // 持续更新巡逻位置到主人位置
-            if (AI != null && MainOwner != null)
-            {
-                // [修改] 如果最近执行过手动移动（比如 10秒内），或者是强制跟随模式，才允许更新巡逻点。
-                // 否则，保持她在原地（AI.patrolPosition 保持不变）
-                
-                bool justMoved = Time.time - LastManualMoveTime < 20.0f; // 20秒内算“驻守”
-                bool tooFar = Vector3.Distance(AI.transform.position, MainOwner.transform.position) > ForceFollowDistance;
-
-                // 逻辑：如果没在驻守，或者距离太远触发了强制跟随，就更新巡逻点为玩家
-                if (!justMoved || tooFar)
-                {
-                    AI.patrolPosition = MainOwner.transform.position;
-                }
-                // 否则：AI.patrolPosition 会停留在她移动到的位置，她会在那里巡逻/警戒
-            }
-        }
-
         public void ForceMoveTo(Vector3 position)
         {
-            if (Movement != null) Movement.MoveTo(position);
+            // 使用带参数的切换方法，直接将目标点传递给状态
+            StateMachine.ChangeState<State_TacticalMove>(state => 
+            {
+                state.TargetPosition = position;
+            });
         }
 
-        // ==================== 智能跟随系统 ====================
-
-        private void UpdateSmartFollow()
+        /// <summary>
+        /// 供 State_Autonomous 轮询使用
+        /// 判断是否距离主人太远，需要请求救援(强制跟随)
+        /// </summary>
+        public bool IsTooFarFromOwner()
         {
-            if (MainOwner == null || AI == null || MaidCharacter == null || MaidCharacter.Health.IsDead) 
-                return;
-
-            if (Movement != null && Movement.IsActive)
-                return;
-
-            float dist = Vector3.Distance(MaidCharacter.transform.position, MainOwner.transform.position);
-
-            if (dist > TeleportDistance)
-            {
-                TeleportToOwner();
-                return;
-            }
-
-            if (dist > ForceFollowDistance)
-            {
-                if (!_isForceFollowing)
-                {
-                    EnterForceFollowMode();
-                }
-                
-                _forceFollowTimer += Time.deltaTime;
-                
-                if (_forceFollowTimer > TeleportTimeout)
-                {
-                    TeleportToOwner();
-                    _forceFollowTimer = 0f;
-                }
-                else
-                {
-                    // 检查 AI 是否在移动向主人
-                    if (!IsAIMoving())
-                    {
-                        SendMoveCommandToOwner();
-                    }
-                }
-            }
-            else if (dist <= SafeDistanceToResumeCombat)
-            {
-                _forceFollowTimer = 0f;
-                
-                if (_isForceFollowing)
-                {
-                    ExitForceFollowMode();
-                }
-            }
-            else
-            {
-                _forceFollowTimer = 0f;
-            }
-        }
-
-        private bool IsAIMoving()
-        {
-            if (AI == null) return false;
-            if (AI.WaitingForPathResult()) return true;
-            if (AI.IsMoving()) return true;
-            if (AI.HasPath() && !AI.ReachedEndOfPath()) return true;
-            return false;
-        }
-        
-        private void SendMoveCommandToOwner()
-        {
-            if (AI == null || MainOwner == null) return;
+            if (MainOwner == null) return false;
             
-            Vector3 targetPos = MainOwner.transform.position;
+            float dist = Vector3.Distance(transform.position, MainOwner.transform.position);
             
-            AI.patrolPosition = targetPos;
+            // 紧急情况：如果距离极远(可能掉出地图或被卡飞)，直接在这里处理传送，避免状态机逻辑还没跑完人没了
+            // 但为了逻辑统一，建议尽量交给 State_ForceFollow 处理。
+            // 这里只做阈值判断。
+            if (dist > TeleportDistance) return true;
             
-            if (AI.searchedEnemy != null)
-            {
-                AI.StopMove();
-                AI.MoveToPos(targetPos);
-            }
-            
-            Debug.Log($"{LogTag} {MaidCharacter?.name} 更新跟随目标 (距离: {Vector3.Distance(MaidCharacter.transform.position, targetPos):F1}m)");
-        }
-
-        private void EnterForceFollowMode()
-        {
-            _isForceFollowing = true;
-            _forceFollowTimer = 0f;
-            
-            if (AI != null)
-            {
-                bool hasEnemy = AI.searchedEnemy != null;
-                
-                if (hasEnemy)
-                {
-                    // 清除敌人，保留警戒状态
-                    AI.searchedEnemy = null;
-                    AI.aimTarget = null;
-                    
-                    Debug.Log($"{LogTag} {MaidCharacter?.name} 战斗中但距离过远，清除敌人目标");
-                }
-            }
-            
-            SendMoveCommandToOwner();
-            
-            if (MaidCharacter != null)
-            {
-                MaidCharacter.PopText("距离过远，返回中...");
-            }
-            
-            Debug.Log($"{LogTag} {MaidCharacter?.name} 进入强制跟随模式");
-        }
-
-        private void ExitForceFollowMode()
-        {
-            _isForceFollowing = false;
-            _forceFollowTimer = 0f;
-            
-            if (MaidCharacter != null)
-            {
-                MaidCharacter.PopText("归队完成！");
-            }
-            
-            Debug.Log($"{LogTag} {MaidCharacter?.name} 退出强制跟随模式");
-        }
-
-        private void TeleportToOwner()
-        {
-            if (MaidCharacter == null || MainOwner == null) return;
-
-            float currentDist = Vector3.Distance(MaidCharacter.transform.position, MainOwner.transform.position);
-            Debug.Log($"{LogTag} {MaidCharacter.name} 距离过远({currentDist:F1}m)，强制传送");
-
-            if (AI != null)
-            {
-                AI.StopMove();
-                AI.searchedEnemy = null;
-                AI.aimTarget = null;
-                AI.alert = false;
-                AI.noticed = false;
-            }
-
-            MaidCharacter.transform.position = MainOwner.transform.position;
-
-            if (AI != null && AI.transform.parent != MaidCharacter.transform)
-            {
-                AI.transform.position = MainOwner.transform.position;
-            }
-
-            _forceFollowTimer = 0f;
-
-            Invoke(nameof(ResumeAIAfterTeleport), 0.2f);
-
-            if (MaidCharacter != null)
-            {
-                MaidCharacter.PopText("强制传送！");
-            }
-        }
-
-        private void ResumeAIAfterTeleport()
-        {
-            if (AI != null && MainOwner != null)
-            {
-                AI.leader = MainOwner;
-                AI.patrolPosition = MainOwner.transform.position;
-            }
+            return dist > ForceFollowDistance;
         }
     }
 }
