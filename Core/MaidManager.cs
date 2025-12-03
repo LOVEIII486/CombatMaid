@@ -317,5 +317,12 @@ namespace CombatMaid.Core
         [Header("Mod行为")]
         public bool EnableAutoHeal = true;
         public string TacticalMode = "Standard";
+        
+        [Header("技能配置")]
+        public bool EnableGrenade = false;      // 是否启用扔雷
+        public int GrenadeItemID = 133;         // 手雷ID (默认133破片)
+        
+        public string BuffSkillName = "";       // Buff技能名 (空则不启用)
+        public int BuffSkillID = 0;             // Buff ID
     }
 }

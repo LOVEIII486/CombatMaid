@@ -96,6 +96,10 @@
     "BasePresetKey": "Cname_Usec",
     "CustomModelID": "10004",
     "EnableAutoHeal": true,
-    "TacticalMode": "Assault"
+    "TacticalMode": "Assault",
+    "EnableGrenade": true,
+    "GrenadeItemID": 67,
+    "BuffSkillName": "",
+    "BuffSkillID": 0
   }
 }

@@ -90,25 +90,31 @@ namespace CombatMaid.Core
             SkillSystem = gameObject.GetComponent<MaidSkillComponent>();
             if (SkillSystem == null) SkillSystem = gameObject.AddComponent<MaidSkillComponent>();
             SkillSystem.Initialize(this);
-
-            // [装配技能] 自动回血 (基础生存技能)
-            // 对应 JSON 中的 ExtraData.EnableAutoHeal
-            if (profileData.ExtraData != null && profileData.ExtraData.EnableAutoHeal)
+            
+            if (profileData.ExtraData != null)
             {
-                SkillSystem.AddSkill(new Skill_SelfHeal());
-            }
+                var extra = profileData.ExtraData;
 
-            // [装配技能] 战斗/辅助技能
-            // 对应 JSON 中的 PresetConfig.HasSkill
-            // 这里可以根据配置灵活添加，例如扔雷、加Buff等
-            if (profileData.PresetConfig != null && profileData.PresetConfig.HasSkill)
-            {
-                // 示例：添加投掷手雷技能 (ID 133 为普通破片手雷，326 为 RPG)
-                // 你可以根据 profileData 中的某个自定义字段来决定给她配什么雷
-                SkillSystem.AddSkill(new Skill_GrenadeThrower(133)); 
-        
-                // 示例：如果未来有 Buff 技能，可以在这里添加
-                // SkillSystem.AddSkill(new Skill_BuffPlayer("MaidBuff_Speed", 88001));
+                // 1. [生存] 自动回血
+                if (extra.EnableAutoHeal)
+                {
+                    SkillSystem.AddSkill(new Skill_SelfHeal());
+                }
+
+                // 2. [攻击] 投掷手雷
+                if (extra.EnableGrenade)
+                {
+                    // 如果 JSON 里配了 ID 就用，没配用默认 133
+                    int grenId = extra.GrenadeItemID > 0 ? extra.GrenadeItemID : 133;
+                    SkillSystem.AddSkill(new Skill_GrenadeThrower(grenId));
+                }
+
+                // 3. [支援] 施加 Buff
+                // 只要填了 Buff 名字，就认为启用了这个技能
+                if (!string.IsNullOrEmpty(extra.BuffSkillName) && extra.BuffSkillID > 0)
+                {
+                    SkillSystem.AddSkill(new Skill_BuffPlayer(extra.BuffSkillName, extra.BuffSkillID));
+                }
             }
     
             // 5. 初始化状态机
