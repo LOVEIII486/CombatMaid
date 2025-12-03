@@ -110,6 +110,7 @@ namespace CombatMaid.Core
             StateMachine.AddState(new State_TacticalMove());
             StateMachine.AddState(new State_ForceFollow());
             StateMachine.AddState(new State_HoldPosition());
+            StateMachine.AddState(new State_PassiveFollow());
 
             // 启动默认状态 (自主模式)
             StateMachine.ChangeState<State_Autonomous>();

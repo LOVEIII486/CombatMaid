@@ -58,27 +58,52 @@ namespace CombatMaid.Core
 
         private void Update()
         {
-            // F6: 生成测试
+            // ==================== 调试指令 ====================
+            // F5: 生成测试 (原F6改为F5，避开冲突)
             if (Input.GetKeyDown(KeyCode.F5)) SpawnSpecificMaid("Cname_Usec"); 
-            
-            // F7: 清除队伍
+    
+            // F6: 清除队伍 (原F7改为F6)
             if (Input.GetKeyDown(KeyCode.F6)) DespawnTeam();
-            
-            // F8: 重载配置 (方便调试，不用重启游戏)
+    
+            // F8: 重载配置
             if (Input.GetKeyDown(KeyCode.F8)) LoadDefaultPreset();
 
-            // G: 战术移动指令
+            // ==================== 战术指令 ====================
+    
+            // G: [进攻] 战术移动 (指哪打哪)
             if (Input.GetKeyDown(KeyCode.G))
             {
                 CommandMoveTeamToMouse();
             }
-            
+    
+            // F1: [防守] 原地驻守 (死守当前位置)
             if (Input.GetKeyDown(KeyCode.F1))
             {
-                // 获取所有女仆并命令驻守
                 foreach(var maid in _activeMaids) 
                 {
+                    if (maid == null) continue;
                     maid.StateMachine.ChangeState<State_HoldPosition>();
+                }
+            }
+
+            // F2: [跟随] 和平召回 (开关式：召回 <-> 自由)
+            if (Input.GetKeyDown(KeyCode.F2))
+            {
+                foreach(var maid in _activeMaids) 
+                {
+                    if (maid == null) continue;
+
+                    // 逻辑：如果当前已经是“和平跟随”，则恢复“自主战斗”；否则强制“和平跟随”
+                    if (maid.StateMachine.CurrentState is State_PassiveFollow)
+                    {
+                        maid.StateMachine.ChangeState<State_Autonomous>();
+                        maid.MaidCharacter?.PopText("自由交战");
+                    }
+                    else
+                    {
+                        maid.StateMachine.ChangeState<State_PassiveFollow>();
+                        // PopText 已经在 State Enter 里写了，这里不用写
+                    }
                 }
             }
         }
