@@ -25,6 +25,9 @@ namespace CombatMaid.Core
         public CharacterMainControl MaidCharacter => AI != null ? AI.CharacterMainControl : null;
         public CharacterMainControl MainOwner { get; private set; }
         public MaidMovement Movement { get; private set; }
+        
+        // [新增] 补血模块引用
+        public MaidHeal HealBehavior { get; private set; }
 
         // ==================== 防卡死设置 ====================
         
@@ -43,6 +46,8 @@ namespace CombatMaid.Core
         
         public bool IsOverrideActive => Movement != null && Movement.IsActive;
 
+        // 注意：这里移除了 MaidProfile 参数，因为你提供的文件中 Initialize 签名是 (MaidProfile, CharacterMainControl)
+        // 但在上一轮上传的文件中你的 MaidProfile 是 Core.MaidProfile，请确保命名空间正确
         public void Initialize(MaidProfile profile, CharacterMainControl player)
         {
             MainOwner = player;
@@ -65,11 +70,17 @@ namespace CombatMaid.Core
             AI.patrolRange = 100.0f;
             AI.patrolPosition = player.transform.position;
 
+            // 初始化移动模块
             Movement = GetComponent<MaidMovement>();
             if (Movement == null) Movement = gameObject.AddComponent<MaidMovement>();
             Movement.Initialize(this); 
 
-            Debug.Log($"{LogTag} {profile.Config.CustomName} 初始化完毕 (使用官方优先级系统)");
+            // 初始化自动补血模块
+            HealBehavior = GetComponent<MaidHeal>();
+            if (HealBehavior == null) HealBehavior = gameObject.AddComponent<MaidHeal>();
+            HealBehavior.Initialize(AI);
+
+            Debug.Log($"{LogTag} {profile.Config.CustomName} 初始化完毕 (含自动补血)");
         }
 
         private void OnDestroy()
@@ -98,7 +109,12 @@ namespace CombatMaid.Core
 
         private void Update()
         {
+            // 驱动移动模块
             if (Movement != null) Movement.OnUpdate();
+            
+            // [新增] 驱动补血模块
+            if (HealBehavior != null) HealBehavior.OnUpdate();
+
             UpdateSmartFollow();
             
             // 持续更新巡逻位置到主人位置
@@ -195,9 +211,6 @@ namespace CombatMaid.Core
             Debug.Log($"{LogTag} {MaidCharacter?.name} 更新跟随目标 (距离: {Vector3.Distance(MaidCharacter.transform.position, targetPos):F1}m)");
         }
 
-        /// <summary>
-        /// 强制跟随模式
-        /// </summary>
         private void EnterForceFollowMode()
         {
             _isForceFollowing = true;
@@ -217,7 +230,6 @@ namespace CombatMaid.Core
                 }
             }
             
-            // 发送移动指令
             SendMoveCommandToOwner();
             
             if (MaidCharacter != null)
@@ -228,9 +240,6 @@ namespace CombatMaid.Core
             Debug.Log($"{LogTag} {MaidCharacter?.name} 进入强制跟随模式");
         }
 
-        /// <summary>
-        /// 退出强制跟随模式
-        /// </summary>
         private void ExitForceFollowMode()
         {
             _isForceFollowing = false;
@@ -254,7 +263,6 @@ namespace CombatMaid.Core
             if (AI != null)
             {
                 AI.StopMove();
-                // 传送时清除战斗状态
                 AI.searchedEnemy = null;
                 AI.aimTarget = null;
                 AI.alert = false;

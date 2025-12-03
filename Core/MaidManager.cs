@@ -19,7 +19,8 @@ namespace CombatMaid.Core
                 CustomName = "皇家女仆·贝拉",
                 Health = 500f,
                 IsBossIcon = true,
-                CustomItemIDs = new List<int> { 254, 15, 594 },
+                // 254 格力克，40 行军背包max，15 大医疗箱，594 S-生锈弹
+                CustomItemIDs = new List<int> { 254, 40, 15, 594 ,442},
                 CustomModelID = "10004", // 10005是狗狗的模型
             }
         };
