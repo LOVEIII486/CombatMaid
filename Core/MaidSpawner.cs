@@ -157,7 +157,8 @@ namespace CombatMaid.Core
 
             // 3. 缓存未命中，开始新建
             CharacterRandomPreset preset = Instantiate(source);
-
+            LogPresetDebugInfo("Cname_Usec");
+            
             preset.name = source.name + uniqueSuffix; // Unity 资产名 (e.g. Cname_Usec_CM_RoyalMaid_Bella)
             preset.nameKey = finalKey; // 本地化 Key
             preset.team = Teams.player;
@@ -292,6 +293,137 @@ namespace CombatMaid.Core
 
             return bestFit;
         }
+        
+        /// <summary>
+        /// 输出原始预设的所有属性值，用于参考默认配置
+        /// </summary>
+        /// <param name="presetKey">预设Key，例如 "Cname_Usec"</param>
+        public void LogPresetDebugInfo(string presetKey)
+        {
+            if (!_isInitialized)
+            {
+                Debug.LogWarning($"{LogTag} Spawner 未初始化，无法读取预设");
+                return;
+            }
+
+            if (!_presetMap.TryGetValue(presetKey, out var p))
+            {
+                Debug.LogError($"{LogTag} 找不到预设: {presetKey}");
+                return;
+            }
+
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            sb.AppendLine($"========== [原始预设参考数据: {presetKey}] ==========");
+            
+            // --- 1. 基础属性 ---
+            sb.AppendLine("--- [基础属性] ---");
+            sb.AppendLine($"Health: {p.health}");
+            sb.AppendLine($"MoveSpeedFactor: {p.moveSpeedFactor}");
+            sb.AppendLine($"HasSoul: {p.hasSoul}");
+            sb.AppendLine($"Exp: {p.exp}");
+            sb.AppendLine($"PushCharacter: {p.pushCharacter}");
+            sb.AppendLine($"ShowName: {p.showName}");
+            sb.AppendLine($"ShowHealthBar: {p.showHealthBar}");
+
+            // --- 2. 感知能力 ---
+            sb.AppendLine("\n--- [感知能力] ---");
+            sb.AppendLine($"SightDistance: {p.sightDistance}");
+            sb.AppendLine($"SightAngle: {p.sightAngle}");
+            sb.AppendLine($"HearingAbility: {p.hearingAbility}");
+            sb.AppendLine($"NightVisionAbility: {p.nightVisionAbility}");
+            sb.AppendLine($"ForgetTime: {p.forgetTime}");
+            sb.AppendLine($"SetActiveByPlayerDistance: {p.setActiveByPlayerDistance}");
+            sb.AppendLine($"ForceTracePlayerDistance: {p.forceTracePlayerDistance}");
+            sb.AppendLine($"TraceTargetChance: {p.minTraceTargetChance} ~ {p.maxTraceTargetChance}");
+
+            // --- 3. 反应与射击 ---
+            sb.AppendLine("\n--- [反应与射击] ---");
+            sb.AppendLine($"ReactionTime: {p.reactionTime}");
+            sb.AppendLine($"NightReactionTimeFactor: {p.nightReactionTimeFactor}");
+            sb.AppendLine($"ShootDelay: {p.shootDelay}");
+            sb.AppendLine($"ShootTimeRange: {p.shootTimeRange}");
+            sb.AppendLine($"ShootTimeSpaceRange: {p.shootTimeSpaceRange}");
+            sb.AppendLine($"ShootCanMove: {p.shootCanMove}");
+            sb.AppendLine($"DefaultWeaponOut: {p.defaultWeaponOut}");
+
+            // --- 4. 移动与战术 ---
+            sb.AppendLine("\n--- [移动与战术] ---");
+            sb.AppendLine($"PatrolRange: {p.patrolRange}");
+            sb.AppendLine($"CombatMoveRange: {p.combatMoveRange}");
+            sb.AppendLine($"CombatMoveTimeRange: {p.combatMoveTimeRange}");
+            sb.AppendLine($"PatrolTurnSpeed: {p.patrolTurnSpeed}");
+            sb.AppendLine($"CombatTurnSpeed: {p.combatTurnSpeed}");
+            sb.AppendLine($"CanDash: {p.canDash}");
+            sb.AppendLine($"DashCoolTimeRange: {p.dashCoolTimeRange}");
+            sb.AppendLine($"CanTalk: {p.canTalk}");
+
+            // --- 5. 战斗数值 ---
+            sb.AppendLine("\n--- [战斗数值] ---");
+            sb.AppendLine($"DamageMultiplier: {p.damageMultiplier}");
+            sb.AppendLine($"BulletSpeedMultiplier: {p.bulletSpeedMultiplier}");
+            sb.AppendLine($"GunDistanceMultiplier: {p.gunDistanceMultiplier}");
+            sb.AppendLine($"GunScatterMultiplier: {p.gunScatterMultiplier}");
+            sb.AppendLine($"ScatterMultiIfTargetRunning: {p.scatterMultiIfTargetRunning}");
+            sb.AppendLine($"ScatterMultiIfOffScreen: {p.scatterMultiIfOffScreen}");
+            sb.AppendLine($"GunCritRateGain: {p.gunCritRateGain}");
+            sb.AppendLine($"AiCombatFactor: {p.aiCombatFactor}");
+
+            // --- 6. 技能参数 ---
+            sb.AppendLine("\n--- [技能参数] ---");
+            sb.AppendLine($"HasSkill: {p.hasSkill}");
+            sb.AppendLine($"HasSkillChance: {p.hasSkillChance}");
+            sb.AppendLine($"SkillSuccessChance: {p.skillSuccessChance}");
+            sb.AppendLine($"SkillCoolTimeRange: {p.skillCoolTimeRange}");
+
+            // --- 7. 抗性 ---
+            sb.AppendLine("\n--- [抗性] ---");
+            sb.AppendLine($"ResistPhysics: {p.elementFactor_Physics}");
+            sb.AppendLine($"ResistFire: {p.elementFactor_Fire}");
+            sb.AppendLine($"ResistPoison: {p.elementFactor_Poison}");
+            sb.AppendLine($"ResistElectricity: {p.elementFactor_Electricity}");
+            sb.AppendLine($"ResistSpace: {p.elementFactor_Space}");
+            sb.AppendLine($"ResistGhost: {p.elementFactor_Ghost}");
+
+            // --- 8. 掉落与物品 ---
+            sb.AppendLine("\n--- [掉落与物品] ---");
+            sb.AppendLine($"HasCashChance: {p.hasCashChance}");
+            sb.AppendLine($"CashRange: {p.cashRange}");
+            sb.AppendLine($"WantItem: {p.wantItem}");
+            sb.AppendLine($"DropBoxOnDead: {p.dropBoxOnDead}");
+
+            // 读取物品列表 (需要反射)
+            var items = ReflectionHelper.GetPrivateField<IList>(p, "itemsToGenerate");
+            if (items != null && items.Count > 0)
+            {
+                sb.Append("CustomItemIDs: [");
+                foreach (var item in items)
+                {
+                    // 这里的 item 是 RandomItemGenerateDescription 类型
+                    // 我们尝试读取它的 itemPool -> entries
+                    // 这是一个简化的反射读取，只为了看ID
+                    try {
+                        var pool = item.GetType().GetField("itemPool").GetValue(item); // RandomContainer
+                        var entries = pool.GetType().GetField("entries", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(pool) as IList;
+                        if (entries != null) {
+                            foreach (var entry in entries) {
+                                var id = entry.GetType().GetField("itemTypeID").GetValue(entry);
+                                sb.Append($"{id}, ");
+                            }
+                        }
+                    } catch {}
+                }
+                sb.AppendLine("]");
+            }
+            else
+            {
+                sb.AppendLine("CustomItemIDs: []");
+            }
+
+            sb.AppendLine("=============================================");
+
+            Debug.Log(sb.ToString());
+        }
+
     }
 
     public static class ReflectionHelper

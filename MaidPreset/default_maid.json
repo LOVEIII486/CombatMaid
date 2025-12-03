@@ -6,12 +6,14 @@
     "ShowName": true,
     "ShowHealthBar": true,
 
+    "//--- 生存能力 (大幅优于 Usec: 60) ---": "",
     "Health": 500.0,
-    "MoveSpeedFactor": 1.1,
+    "MoveSpeedFactor": 1.2,
     "HasSoul": true,
-    "Exp": 100,
+    "Exp": 500,
     "PushCharacter": false,
 
+    "//--- 物品配置 ---": "",
     "CustomItemIDs": [
       254,
       40,
@@ -20,41 +22,44 @@
       442
     ],
     "WantItem": -1,
-    "DropBoxOnDead": true,
+    "DropBoxOnDead": false,
     "HasCashChance": 0.0,
     "CashRange": {
       "x": 0,
       "y": 0
     },
 
-    "SightDistance": 30.0,
-    "SightAngle": 120.0,
-    "HearingAbility": 1.0,
-    "NightVisionAbility": 0.5,
-    "ForgetTime": 8.0,
+    "//--- 感知能力 (优于 Usec: 16m/100°) ---": "",
+    "SightDistance": 16.0,
+    "SightAngle": 100.0,
+    "HearingAbility": 1.2,
+    "NightVisionAbility": 1.0,
+    "ForgetTime": 10.0,
 
+    "//--- 反应与射击 (核心战斗力) ---": "",
     "ReactionTime": 0.15,
-    "NightReactionTimeFactor": 1.5,
+    "NightReactionTimeFactor": 1.0,
     "ShootDelay": 0.1,
     "ShootTimeRange": {
       "x": 0.5,
-      "y": 2.0
+      "y": 3.0
     },
     "ShootTimeSpaceRange": {
-      "x": 1.0,
-      "y": 2.0
+      "x": 0.5,
+      "y": 1.5
     },
     "ShootCanMove": true,
     "DefaultWeaponOut": true,
 
-    "PatrolRange": 10.0,
-    "CombatMoveRange": 15.0,
+    "//--- 移动与战术 ---": "",
+    "PatrolRange": 12.0,
+    "CombatMoveRange": 10.0,
     "CombatMoveTimeRange": {
       "x": 1.0,
-      "y": 3.0
+      "y": 2.5
     },
-    "PatrolTurnSpeed": 200.0,
-    "CombatTurnSpeed": 1200.0,
+    "PatrolTurnSpeed": 400.0,
+    "CombatTurnSpeed": 1500.0,
     "CanDash": true,
     "DashCoolTimeRange": {
       "x": 2.0,
@@ -62,20 +67,25 @@
     },
     "CanTalk": true,
 
-    "DamageMultiplier": 1.0,
-    "BulletSpeedMultiplier": 1.0,
-    "GunDistanceMultiplier": 1.0,
-    "GunScatterMultiplier": 0.8,
-    "ScatterMultiIfTargetRunning": 2.0,
-    "ScatterMultiIfOffScreen": 2.0,
-    "GunCritRateGain": 0.0,
-    "AiCombatFactor": 1.0,
+    "//--- 战斗数值修正 ---": "",
+    "DamageMultiplier": 1.1,
+    "BulletSpeedMultiplier": 1.2,
+    "GunDistanceMultiplier": 1.2,
+    "// Usec是0.5, 这里设为0.4以提高精度": "",
+    "GunScatterMultiplier": 0.4,
+    "ScatterMultiIfTargetRunning": 1.5,
+    "ScatterMultiIfOffScreen": 1.5,
+    "GunCritRateGain": 0.1,
+    "// Usec是1.5, 设为1.8提高进攻欲望": "",
+    "AiCombatFactor": 1.8,
 
+    "//--- 索敌逻辑 ---": "",
     "SetActiveByPlayerDistance": true,
     "ForceTracePlayerDistance": 0.0,
     "MinTraceTargetChance": 1.0,
     "MaxTraceTargetChance": 1.0,
 
+    "//--- 原生技能 (全部关闭, 交给Mod托管) ---": "",
     "HasSkill": false,
     "HasSkillChance": 0.0,
     "SkillSuccessChance": 1.0,
@@ -84,6 +94,7 @@
       "y": 1.0
     },
 
+    "//--- 抗性 (参考 Usec 全1.0) ---": "",
     "ResistPhysics": 1.0,
     "ResistFire": 1.0,
     "ResistPoison": 1.0,
@@ -92,11 +103,13 @@
     "ResistGhost": 1.0
   },
   "ExtraData": {
-    "Description": "皇家女仆·贝拉 - 基础配置 (无捏脸版)",
+    "Description": "皇家女仆·贝拉 - 战斗特化型配置",
     "BasePresetKey": "Cname_Usec",
     "CustomModelID": "10004",
     "EnableAutoHeal": true,
     "TacticalMode": "Assault",
+
+    "//--- 技能配置 (Mod) ---": "",
     "EnableGrenade": true,
     "GrenadeItemID": 67,
     "BuffSkillName": "",
