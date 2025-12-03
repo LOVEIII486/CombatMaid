@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using Duckov.Modding;
+using CombatMaid.Core.MaidConfigs; // 引用配置命名空间
 
 namespace CombatMaid.Core
 {
@@ -19,9 +20,9 @@ namespace CombatMaid.Core
                 CustomName = "皇家女仆·贝拉",
                 Health = 500f,
                 IsBossIcon = true,
-                // 254 格力克，40 行军背包max，15 大医疗箱，594 S-生锈弹
-                CustomItemIDs = new List<int> { 254, 40, 15, 594 ,442},
-                CustomModelID = "10004", // 10005是狗狗的模型
+                // 254 格力克，40 行军背包max，15 大医疗箱，594 S-生锈弹, 442 弹挂
+                CustomItemIDs = new List<int> { 254, 40, 15, 594, 442 },
+                CustomModelID = "10004", 
             }
         };
 
@@ -61,14 +62,29 @@ namespace CombatMaid.Core
             DespawnTeam();
         }
 
+        // [新增] 获取鼠标射线点击位置
+        private Vector3 GetMousePosition()
+        {
+            if (Camera.main == null) return Vector3.zero;
+
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            // 射线检测层级：Default(0), Ground(可能会有), Terrain
+            // 确保你的层级名称是正确的，Duckov 通常用地形层或默认层
+            if (Physics.Raycast(ray, out RaycastHit hit, 1000f, LayerMask.GetMask("Default", "Ground", "Terrain")))
+            {
+                return hit.point;
+            }
+            return Vector3.zero;
+        }
+
         private void CommandMoveTeamToMouse()
         {
-            if (MaidSpawner.Instance == null) return;
-            Vector3 targetPos = MaidSpawner.Instance.GetMousePosition();
+            // [修改] 直接调用本地方法，不再依赖 MaidSpawner
+            Vector3 targetPos = GetMousePosition();
 
             if (targetPos == Vector3.zero)
             {
-                Debug.LogWarning($"{LogTag} 指令无效：请指向地面。");
+                // Debug.LogWarning($"{LogTag} 指令无效：请指向地面。");
                 return;
             }
 
@@ -81,6 +97,7 @@ namespace CombatMaid.Core
                 var maid = _activeMaids[i];
                 if (maid != null)
                 {
+                    // 给每个女仆一点随机偏移，避免叠在一起
                     Vector3 offset = new Vector3(Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f));
                     maid.ForceMoveTo(targetPos + offset);
                 }
@@ -95,7 +112,8 @@ namespace CombatMaid.Core
                 return;
             }
 
-            Vector3 mousePos = MaidSpawner.Instance.GetMousePosition();
+            // [修改] 直接调用本地方法
+            Vector3 mousePos = GetMousePosition();
             if (mousePos == Vector3.zero) return;
 
             var spawnConfig = new MaidConfig()
@@ -114,6 +132,7 @@ namespace CombatMaid.Core
                 
                 controller.Initialize(profile, LevelManager.Instance.MainCharacter);
                 
+                // 应用自定义模型
                 if (!string.IsNullOrEmpty(spawnConfig.CustomModelID))
                 {
                     this.StartCoroutine(
@@ -145,12 +164,11 @@ namespace CombatMaid.Core
                 {
                     if (maid.MaidCharacter != null)
                     {
-                        Debug.Log($"{LogTag} 销毁角色: {maid.MaidCharacter.name}");
+                        // Debug.Log($"{LogTag} 销毁角色: {maid.MaidCharacter.name}");
                         Destroy(maid.MaidCharacter.gameObject);
                     }
                     else if (maid.gameObject != null)
                     {
-                        Debug.LogWarning($"{LogTag} 找不到角色根物体，仅销毁 AI 控制器: {maid.name}");
                         Destroy(maid.gameObject);
                     }
                 }

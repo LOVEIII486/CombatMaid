@@ -45,6 +45,7 @@ namespace CombatMaid.Core
         public bool IsPeaceMode { get; private set; } = false;
         
         public bool IsOverrideActive => Movement != null && Movement.IsActive;
+        public float LastManualMoveTime { get; set; } = -999f;
 
         // 注意：这里移除了 MaidProfile 参数，因为你提供的文件中 Initialize 签名是 (MaidProfile, CharacterMainControl)
         // 但在上一轮上传的文件中你的 MaidProfile 是 Core.MaidProfile，请确保命名空间正确
@@ -81,6 +82,8 @@ namespace CombatMaid.Core
             HealBehavior.Initialize(AI);
 
             Debug.Log($"{LogTag} {profile.Config.CustomName} 初始化完毕 (含自动补血)");
+            
+            //MaidBrainInjector.Inject(AI);
         }
 
         private void OnDestroy()
@@ -120,7 +123,18 @@ namespace CombatMaid.Core
             // 持续更新巡逻位置到主人位置
             if (AI != null && MainOwner != null)
             {
-                AI.patrolPosition = MainOwner.transform.position;
+                // [修改] 如果最近执行过手动移动（比如 10秒内），或者是强制跟随模式，才允许更新巡逻点。
+                // 否则，保持她在原地（AI.patrolPosition 保持不变）
+                
+                bool justMoved = Time.time - LastManualMoveTime < 20.0f; // 20秒内算“驻守”
+                bool tooFar = Vector3.Distance(AI.transform.position, MainOwner.transform.position) > ForceFollowDistance;
+
+                // 逻辑：如果没在驻守，或者距离太远触发了强制跟随，就更新巡逻点为玩家
+                if (!justMoved || tooFar)
+                {
+                    AI.patrolPosition = MainOwner.transform.position;
+                }
+                // 否则：AI.patrolPosition 会停留在她移动到的位置，她会在那里巡逻/警戒
             }
         }
 

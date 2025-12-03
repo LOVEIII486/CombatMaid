@@ -1,27 +1,22 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using UnityEngine;
 using Duckov.Utilities;
 using Duckov.Modding;
 using SodaCraft.Localizations;
+using ItemStatsSystem;
+using CombatMaid.Core.MaidConfigs; // 引用配置文件的命名空间
 
 namespace CombatMaid.Core
 {
-    /// <summary>
-    /// 女仆生成管理器
-    /// </summary>
     public class MaidSpawner : MonoBehaviour
     {
         private const string LogTag = "[CombatMaid.MaidSpawner]";
-
         public static MaidSpawner Instance { get; private set; }
         
         private const float SpawnCheckRadius = 5.0f;
-
         private Egg _eggPrefab;
         private bool _isInitialized = false;
 
@@ -30,14 +25,8 @@ namespace CombatMaid.Core
 
         private void Awake()
         {
-            if (Instance == null)
-            {
-                Instance = this;
-            }
-            else
-            {
-                Destroy(this);
-            }
+            if (Instance == null) Instance = this;
+            else Destroy(this);
         }
 
         private void Start()
@@ -51,19 +40,13 @@ namespace CombatMaid.Core
             {
                 if (preset != null) Destroy(preset);
             }
-
             _tempPresets.Clear();
         }
 
         private IEnumerator InitializeRoutine()
         {
-            // 1. 等待主角加载
-            while (CharacterMainControl.Main == null)
-            {
-                yield return null;
-            }
+            while (CharacterMainControl.Main == null) yield return null;
 
-            // 2. 获取 Egg 预制体
             if (_eggPrefab == null)
             {
                 Egg[] eggs = Resources.FindObjectsOfTypeAll<Egg>();
@@ -72,50 +55,32 @@ namespace CombatMaid.Core
 
             if (_eggPrefab == null)
             {
-                Debug.LogError($"{LogTag} 严重错误：未能在 Resources 中找到 Egg 预制体！无法生成 AI。");
+                Debug.LogError($"{LogTag} 严重错误：未找到 Egg 预制体。");
                 yield break;
             }
 
-            // 3. 等待并获取游戏原生预设数据
-            while (GameplayDataSettings.CharacterRandomPresetData == null)
-            {
-                yield return null;
-            }
+            while (GameplayDataSettings.CharacterRandomPresetData == null) yield return null;
 
             var allPresets = GameplayDataSettings.CharacterRandomPresetData.presets;
             _presetMap.Clear();
-            
             foreach (var preset in allPresets)
             {
-                if (preset == null) continue;
-
-                if (!string.IsNullOrEmpty(preset.nameKey))
+                if (preset != null && !string.IsNullOrEmpty(preset.nameKey) && !_presetMap.ContainsKey(preset.nameKey))
                 {
-                    if (!_presetMap.ContainsKey(preset.nameKey))
-                    {
-                        _presetMap.Add(preset.nameKey, preset);
-                    }
+                    _presetMap.Add(preset.nameKey, preset);
                 }
             }
-            _isInitialized = true; 
+            _isInitialized = true;
         }
 
-        /// <summary>
-        /// 异步生成女仆
-        /// </summary>
-        /// <param name="onSuccess">当AI成功实体化后的回调</param>
         public void SpawnMaid(string presetNameKey, Vector3 position, CharacterMainControl player,
             MaidConfig config, Action<AICharacterController> onSuccess)
         {
-            if (!_isInitialized || _eggPrefab == null || player == null)
-            {
-                Debug.LogError($"{LogTag} 生成前置条件未满足。");
-                return;
-            }
+            if (!_isInitialized || _eggPrefab == null || player == null) return;
 
             if (string.IsNullOrEmpty(presetNameKey) || !_presetMap.TryGetValue(presetNameKey, out var sourcePreset))
             {
-                Debug.LogError($"{LogTag} 找不到名为 '{presetNameKey}' 的预设！");
+                Debug.LogError($"{LogTag} 预设 '{presetNameKey}' 不存在。");
                 return;
             }
 
@@ -123,37 +88,25 @@ namespace CombatMaid.Core
             {
                 if (config == null) config = new MaidConfig();
 
-                CharacterRandomPreset finalPreset = CreateCustomPreset(sourcePreset, config);
+                // 使用重构后的全量预设生成逻辑
+                CharacterRandomPreset finalPreset = CreateFullCustomPreset(sourcePreset, config);
                 _tempPresets.Add(finalPreset);
 
                 Egg egg = Instantiate(_eggPrefab, position, Quaternion.identity);
-                
-                // 忽略碰撞防止卡死
-                // var eggCol = egg.GetComponent<Collider>();
-                // var playerCol = player.GetComponent<Collider>();
-                // if(eggCol && playerCol) Physics.IgnoreCollision(eggCol, playerCol, true);
-                
                 float hatchTime = 0.05f; 
                 egg.Init(position, player.transform.forward, player, finalPreset, hatchTime);
 
-                Debug.Log($"{LogTag} 蛋已生成，等待孵化... (配置: {config.CustomName})");
-
-                // 启动协程等待结果
                 StartCoroutine(WaitForSpawnRoutine(position, hatchTime, onSuccess));
             }
             catch (Exception ex)
             {
-                Debug.LogError($"{LogTag} 生成过程异常: {ex}");
+                Debug.LogError($"{LogTag} 生成异常: {ex}");
             }
         }
 
-        /// <summary>
-        /// 等待蛋并寻找 AI
-        /// </summary>
         private IEnumerator WaitForSpawnRoutine(Vector3 pos, float hatchTime, Action<AICharacterController> callback)
         {
             yield return new WaitForSeconds(hatchTime + 0.1f);
-
             float timeout = 2.0f;
             AICharacterController targetAI = null;
 
@@ -162,96 +115,138 @@ namespace CombatMaid.Core
                 targetAI = FindJustSpawnedAI(pos);
                 if (targetAI != null)
                 {
-                    // 找到了！
                     callback?.Invoke(targetAI);
                     yield break;
                 }
-                
-                // 没找到，等下一帧继续找
                 timeout -= Time.deltaTime;
                 yield return null;
             }
-
-            Debug.LogError($"{LogTag} 超时：蛋生成了，但未能捕获到生成的 AI 对象。");
+            Debug.LogError($"{LogTag} 生成超时。");
         }
 
-        private CharacterRandomPreset CreateCustomPreset(CharacterRandomPreset source, MaidConfig config)
+        /// <summary>
+        /// 全面解析 MaidConfig 并应用到 CharacterRandomPreset
+        /// </summary>
+        private CharacterRandomPreset CreateFullCustomPreset(CharacterRandomPreset source, MaidConfig config)
         {
             CharacterRandomPreset preset = Instantiate(source);
 
-            string uniqueSuffix = $"_CombatMaid";
+            string uniqueSuffix = $"_CM_{Guid.NewGuid().ToString().Substring(0, 4)}";
             string finalKey = source.nameKey + uniqueSuffix;
             
-            // Debug.Log($"randompreset source{source.name}");
             preset.name = source.name + uniqueSuffix;
             preset.nameKey = finalKey;
-            
-            string displayName = !string.IsNullOrEmpty(config.CustomName) ? config.CustomName : "战斗女仆_00";
+            preset.team = Teams.player; // 强制设为玩家阵营
+
+            // 注册本地化名称
+            string displayName = !string.IsNullOrEmpty(config.CustomName) ? config.CustomName : "战斗女仆";
             if (LocalizationManager.overrideTexts != null)
             {
                 LocalizationManager.overrideTexts[finalKey] = displayName;
             }
 
-            // === 基础数值 ===
+            // === 1. 基础属性 ===
             preset.health = config.Health;
             preset.moveSpeedFactor = config.MoveSpeedFactor;
-            preset.team = Teams.player;
-
-            // === 战斗参数 ===
-            preset.damageMultiplier = config.DamageMultiplier;
-            preset.reactionTime = config.ReactionTime;
-            preset.sightDistance *= config.SightDistanceMultiplier;
-            preset.hearingAbility = config.HearingAbility;
-            preset.shootCanMove = config.ShootCanMove;
-            preset.canDash = config.CanDash;
-
-            // === UI 设置 ===
-            preset.showHealthBar = config.ShowHealthBar;
+            preset.hasSoul = config.HasSoul;
+            preset.exp = config.Exp;
+            preset.pushCharacter = config.PushCharacter;
             preset.showName = config.ShowName;
+            preset.showHealthBar = config.ShowHealthBar;
 
-            // === 高级属性 ===
-            ApplyReflectionConfig(preset, config);
-
-            return preset;
-        }
-
-        private void ApplyReflectionConfig(CharacterRandomPreset preset, MaidConfig config)
-        {
-            // 修改Boss 图标
+            // 处理 CharacterIconType (Private Field)
             if (config.IsBossIcon)
             {
-                ReflectionHelper.SetFieldValue(preset, "characterIconType", CharacterIconTypes.boss);
+                ReflectionHelper.SetPrivateField(preset, "characterIconType", CharacterIconTypes.boss);
             }
 
-            // 自定义装备
+            // === 2. 感知与 AI 逻辑 ===
+            preset.sightDistance = config.SightDistance;
+            preset.sightAngle = config.SightAngle;
+            preset.hearingAbility = config.HearingAbility;
+            preset.nightVisionAbility = config.NightVisionAbility;
+            preset.forgetTime = config.ForgetTime;
+            preset.setActiveByPlayerDistance = config.SetActiveByPlayerDistance;
+            preset.forceTracePlayerDistance = config.ForceTracePlayerDistance;
+            preset.minTraceTargetChance = config.MinTraceTargetChance;
+            preset.maxTraceTargetChance = config.MaxTraceTargetChance;
+
+            // === 3. 射击与反应 ===
+            preset.reactionTime = config.ReactionTime;
+            preset.nightReactionTimeFactor = config.NightReactionTimeFactor;
+            preset.shootDelay = config.ShootDelay;
+            preset.shootTimeRange = config.ShootTimeRange;
+            preset.shootTimeSpaceRange = config.ShootTimeSpaceRange;
+            preset.shootCanMove = config.ShootCanMove;
+            preset.defaultWeaponOut = config.DefaultWeaponOut;
+
+            // === 4. 移动与战术 ===
+            preset.patrolRange = config.PatrolRange;
+            preset.combatMoveRange = config.CombatMoveRange;
+            preset.combatMoveTimeRange = config.CombatMoveTimeRange;
+            preset.patrolTurnSpeed = config.PatrolTurnSpeed;
+            preset.combatTurnSpeed = config.CombatTurnSpeed;
+            preset.canDash = config.CanDash;
+            preset.dashCoolTimeRange = config.DashCoolTimeRange;
+            preset.canTalk = config.CanTalk;
+
+            // === 5. 战斗数值 ===
+            preset.damageMultiplier = config.DamageMultiplier;
+            preset.bulletSpeedMultiplier = config.BulletSpeedMultiplier;
+            preset.gunDistanceMultiplier = config.GunDistanceMultiplier;
+            preset.gunScatterMultiplier = config.GunScatterMultiplier;
+            preset.scatterMultiIfTargetRunning = config.ScatterMultiIfTargetRunning;
+            preset.scatterMultiIfOffScreen = config.ScatterMultiIfOffScreen;
+            preset.gunCritRateGain = config.GunCritRateGain;
+            preset.aiCombatFactor = config.AiCombatFactor;
+
+            // === 6. 技能配置 ===
+            preset.hasSkill = config.HasSkill;
+            preset.hasSkillChance = config.HasSkillChance;
+            preset.skillSuccessChance = config.SkillSuccessChance;
+            preset.skillCoolTimeRange = config.SkillCoolTimeRange;
+            
+            // === 7. 抗性 (Element Factors) ===
+            preset.elementFactor_Physics = config.ResistPhysics;
+            preset.elementFactor_Fire = config.ResistFire;
+            preset.elementFactor_Poison = config.ResistPoison;
+            preset.elementFactor_Electricity = config.ResistElectricity;
+            preset.elementFactor_Space = config.ResistSpace;
+            preset.elementFactor_Ghost = config.ResistGhost;
+
+            // === 8. 掉落与物品 (Cash & Items) ===
+            preset.hasCashChance = config.HasCashChance;
+            preset.cashRange = config.CashRange;
+            preset.wantItem = config.WantItem;
+            preset.dropBoxOnDead = config.DropBoxOnDead;
+
+            // 处理物品列表 (ItemsToGenerate - Private Field)
             if (config.CustomItemIDs != null && config.CustomItemIDs.Count > 0)
             {
                 SetupInventory(preset, config.CustomItemIDs);
             }
+
+            return preset;
         }
 
         private void SetupInventory(CharacterRandomPreset preset, List<int> itemIDs)
         {
-            FieldInfo field = typeof(CharacterRandomPreset).GetField("itemsToGenerate",
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            if (field != null)
+            // 通过反射获取 itemsToGenerate 列表
+            var list = ReflectionHelper.GetPrivateField<IList>(preset, "itemsToGenerate");
+            if (list != null)
             {
-                var list = field.GetValue(preset) as IList;
-                if (list != null)
+                list.Clear();
+                foreach (int id in itemIDs)
                 {
-                    list.Clear();
-                    foreach (int id in itemIDs)
+                    var desc = new RandomItemGenerateDescription
                     {
-                        var desc = new RandomItemGenerateDescription
-                        {
-                            chance = 1f,
-                            randomCount = new Vector2Int(1, 1),
-                            randomFromPool = true,
-                            itemPool = new RandomContainer<RandomItemGenerateDescription.Entry>()
-                        };
-                        desc.itemPool.AddEntry(new RandomItemGenerateDescription.Entry { itemTypeID = id }, 100f);
-                        list.Add(desc);
-                    }
+                        chance = 1f,
+                        randomCount = new Vector2Int(1, 1),
+                        randomFromPool = true,
+                        itemPool = new RandomContainer<RandomItemGenerateDescription.Entry>()
+                    };
+                    desc.itemPool.AddEntry(new RandomItemGenerateDescription.Entry { itemTypeID = id }, 100f);
+                    list.Add(desc);
                 }
             }
         }
@@ -261,7 +256,6 @@ namespace CombatMaid.Core
             var allAIs = FindObjectsOfType<AICharacterController>();
             AICharacterController bestFit = null;
             float minDistance = SpawnCheckRadius;
-
             foreach (var ai in allAIs)
             {
                 if (ai.CharacterMainControl.Health.IsDead) continue;
@@ -272,59 +266,37 @@ namespace CombatMaid.Core
                     bestFit = ai;
                 }
             }
-
             return bestFit;
-        }
-
-
-        public Vector3 GetMousePosition()
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit, 1000f, LayerMask.GetMask("Default", "Ground", "Terrain")))
-                return hit.point;
-            return Vector3.zero;
         }
     }
 
     /// <summary>
-    /// 包含所有属性的配置类
+    /// 反射工具类
     /// </summary>
-    [System.Serializable]
-    public class MaidConfig
-    {
-        [Header("核心")] 
-        public string CustomName = "战斗女仆";
-
-        [Header("基础")] 
-        public float Health = 500f;
-        public float MoveSpeedFactor = 1.1f;
-
-        [Header("战斗")] 
-        public float DamageMultiplier = 1.0f;
-        public float ReactionTime = 0.2f;
-        public bool ShootCanMove = true;
-        public bool CanDash = true;
-
-        [Header("感知")] 
-        public float SightDistanceMultiplier = 0.9f;
-        public float HearingAbility = 0.9f;
-
-        [Header("外观与物品")] 
-        public bool ShowName = true;
-        public bool ShowHealthBar = true;
-        public bool IsBossIcon = false;
-        public List<int> CustomItemIDs = new List<int>();
-        
-        public string CustomModelID = "";
-    }
-
     public static class ReflectionHelper
     {
-        public static void SetFieldValue(object obj, string fieldName, object value)
+        public static void SetPrivateField(object obj, string fieldName, object value)
         {
-            FieldInfo field = obj.GetType().GetField(fieldName,
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            if (field != null) field.SetValue(obj, value);
+            if (obj == null) return;
+            var type = obj.GetType();
+            // 同时查找私有和公有字段，并包括基类
+            var field = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            if (field != null)
+            {
+                field.SetValue(obj, value);
+            }
+            else
+            {
+                Debug.LogWarning($"[Reflection] Field '{fieldName}' not found in type '{type.Name}'");
+            }
+        }
+
+        public static T GetPrivateField<T>(object obj, string fieldName) where T : class
+        {
+            if (obj == null) return null;
+            var type = obj.GetType();
+            var field = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            return field?.GetValue(obj) as T;
         }
     }
 }
