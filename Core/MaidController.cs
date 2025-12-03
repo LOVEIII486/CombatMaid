@@ -91,6 +91,8 @@ namespace CombatMaid.Core
             if (SkillSystem == null) SkillSystem = gameObject.AddComponent<MaidSkillComponent>();
             SkillSystem.Initialize(this);
             
+            SkillSystem.AddSkill(new Skill_SquadCoordination());
+            
             if (profileData.ExtraData != null)
             {
                 var extra = profileData.ExtraData;
