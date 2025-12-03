@@ -55,6 +55,7 @@ namespace CombatMaid
             
             // 输出所有可用模型id
             CombatMaid.Core.CustomModel.CustomModelBridge.LogAvailableModels();
+            CombatMaid.Core.BuffsSystem.MaidBuffRegistry.Instance.Initialize();
         }
 
         private void OnDisable()

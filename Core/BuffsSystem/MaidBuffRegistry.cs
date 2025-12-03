@@ -1,0 +1,45 @@
+﻿using System.Collections.Generic;
+using UnityEngine;
+
+namespace CombatMaid.Core.BuffsSystem
+{
+    public class MaidBuffRegistry
+    {
+        private const string LogTag = "[CombatMaid.BuffRegistry]";
+        
+        private static MaidBuffRegistry _instance;
+        public static MaidBuffRegistry Instance => _instance ??= new MaidBuffRegistry();
+
+        private Dictionary<string, IMaidBuffEffect> _effects = new Dictionary<string, IMaidBuffEffect>();
+
+        /// <summary>
+        /// 在 Mod 启动时调用，注册所有自定义 Buff 效果
+        /// </summary>
+        public void Initialize()
+        {
+            // 在这里注册你的具体技能效果
+            // RegisterEffect(new MaidBerserkEffect()); 
+            // RegisterEffect(new MaidInvincibleEffect());
+            
+            Debug.Log($"{LogTag} 初始化完成，已注册 {_effects.Count} 个效果");
+        }
+
+        public void RegisterEffect(IMaidBuffEffect effect)
+        {
+            if (effect == null || string.IsNullOrEmpty(effect.BuffName)) return;
+            
+            if (!_effects.ContainsKey(effect.BuffName))
+            {
+                _effects.Add(effect.BuffName, effect);
+            }
+        }
+
+        public IMaidBuffEffect GetEffect(string buffName)
+        {
+            _effects.TryGetValue(buffName, out var effect);
+            return effect;
+        }
+
+        public bool IsRegistered(string buffName) => _effects.ContainsKey(buffName);
+    }
+}
