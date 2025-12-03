@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace CombatMaid.Core.MaidConfigs
 {
+    /// <summary>
+    /// 纯净的预设配置类 (无捏脸版)
+    /// </summary>
     [System.Serializable]
     public class MaidConfig
     {
@@ -25,10 +28,6 @@ namespace CombatMaid.Core.MaidConfigs
         public bool DropBoxOnDead = true;
         public float HasCashChance = 0f;
         public Vector2Int CashRange = new Vector2Int(0, 0);
-
-        [Header("--- 外观 (捏脸) ---")]
-        // [新增] 对应 JSON 中的 "faceCode"
-        public MaidFaceCode FaceCode;
 
         [Header("--- 感知能力 ---")]
         public float SightDistance = 30f;
@@ -85,65 +84,5 @@ namespace CombatMaid.Core.MaidConfigs
         public float ResistElectricity = 1f;
         public float ResistSpace = 1f;
         public float ResistGhost = 1f;
-    }
-
-    // ==================== 捏脸数据结构 (对应 JSON) ====================
-
-    [System.Serializable]
-    public class MaidFaceCode
-    {
-        public bool savedSetting = false;
-        public MaidHeadSetting headSetting;
-        
-        public int hairID;
-        public MaidFeatureInfo hairInfo;
-        
-        public int eyeID;
-        public MaidFeatureInfo eyeInfo;
-        
-        public int eyebrowID;
-        public MaidFeatureInfo eyebrowInfo;
-        
-        public int mouthID;
-        public MaidFeatureInfo mouthInfo;
-        
-        public int tailID;
-        public MaidFeatureInfo tailInfo;
-        
-        public int footID;
-        public MaidFeatureInfo footInfo;
-        
-        public int wingID;
-        public MaidFeatureInfo wingInfo;
-    }
-
-    [System.Serializable]
-    public class MaidHeadSetting
-    {
-        public MaidColor mainColor;
-        public float headScaleOffset;
-        public float foreheadHeight;
-        public float foreheadRound;
-    }
-
-    [System.Serializable]
-    public class MaidFeatureInfo
-    {
-        public float radius;
-        public MaidColor color;
-        public float height;
-        public float heightOffset;
-        public float scale;
-        public float twist;
-        public float distanceAngle;
-        public float leftRightAngle;
-    }
-
-    [System.Serializable]
-    public class MaidColor
-    {
-        public float r, g, b, a;
-        
-        public Color ToUnityColor() => new Color(r, g, b, a);
     }
 }

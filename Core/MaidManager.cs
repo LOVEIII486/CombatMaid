@@ -4,6 +4,7 @@ using System.Reflection;
 using UnityEngine;
 using Duckov.Modding;
 using CombatMaid.Core.MaidConfigs; // 引用配置命名空间
+using Newtonsoft.Json;
 
 namespace CombatMaid.Core
 {
@@ -99,30 +100,42 @@ namespace CombatMaid.Core
                 try
                 {
                     string jsonContent = File.ReadAllText(presetPath);
-                    // 使用 Unity 内置 JsonUtility (简单高效)，如果需要支持字典等高级特性可换 Newtonsoft
-                    _currentProfileData = JsonUtility.FromJson<MaidProfileData>(jsonContent);
+                    
+                    // [修改] 改用 JsonConvert (Newtonsoft)
+                    // 它能更好地处理嵌套对象、列表和容错
+                    _currentProfileData = JsonConvert.DeserializeObject<MaidProfileData>(jsonContent);
                     
                     if (_currentProfileData != null)
                     {
-                        Debug.Log($"{LogTag} 配置加载成功！名称: {_currentProfileData.PresetConfig.CustomName}");
+                        // [修复] 安全检查，防止崩溃
+                        if (_currentProfileData.PresetConfig != null)
+                        {
+                            Debug.Log($"{LogTag} 配置加载成功！名称: {_currentProfileData.PresetConfig.CustomName}");
+                        }
+                        else
+                        {
+                            Debug.LogError($"{LogTag} JSON 读取成功，但 PresetConfig 节点为空！请检查 JSON 结构是否包含 'PresetConfig'。");
+                            // 如果关键数据为空，强制使用默认值，防止后续逻辑报错
+                            _currentProfileData = _fallbackProfile;
+                        }
                         return;
                     }
                 }
                 catch (System.Exception ex)
                 {
-                    Debug.LogError($"{LogTag} 配置解析失败: {ex.Message}");
+                    Debug.LogError($"{LogTag} 配置解析严重失败: {ex.Message}");
                 }
             }
             else
             {
                 Debug.LogWarning($"{LogTag} 配置文件未找到，将创建默认文件模板。");
-                // 如果文件不存在，可以考虑把默认配置写出到磁盘，方便用户修改
                 EnsureDirectoryExists(Path.GetDirectoryName(presetPath));
                 WriteDefaultJson(presetPath);
             }
 
-            // 加载失败或文件不存在时，使用回退配置
+            // 兜底逻辑
             _currentProfileData = _fallbackProfile;
+            Debug.LogWarning($"{LogTag} 已启用内置回退配置。");
         }
 
         private void EnsureDirectoryExists(string path)
@@ -137,7 +150,8 @@ namespace CombatMaid.Core
         {
             try
             {
-                string json = JsonUtility.ToJson(_fallbackProfile, true); // pretty print
+                // [修改] 使用 JsonConvert 写入，格式更标准
+                string json = JsonConvert.SerializeObject(_fallbackProfile, Formatting.Indented);
                 File.WriteAllText(path, json);
                 Debug.Log($"{LogTag} 已生成默认配置文件模板。");
             }
@@ -200,7 +214,8 @@ namespace CombatMaid.Core
 
             Debug.Log($"{LogTag} 正在基于预设 [{targetKey}] 生成女仆...");
 
-            MaidSpawner.Instance.SpawnMaid(targetKey, mousePos, LevelManager.Instance.MainCharacter, spawnConfig, (ai) => 
+            MaidSpawner.Instance.SpawnMaid(targetKey, mousePos, LevelManager.Instance.MainCharacter, 
+                spawnConfig, _currentProfileData.ProfileName, (ai) =>
             {
                 var controller = ai.gameObject.AddComponent<MaidController>();
                 controller.Initialize(_currentProfileData, LevelManager.Instance.MainCharacter);
