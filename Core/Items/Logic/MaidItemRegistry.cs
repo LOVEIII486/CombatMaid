@@ -69,7 +69,7 @@ namespace CombatMaid.Core.Items.Logic
             }
 
             ApplyCustomLogic(prefab, data.itemId);
-            InjectToShop(data.itemId, MerchantIds.Myst);
+            InjectToShop(data.itemId, MerchantIds.Mud);
         }
 
         private static void ApplyCustomLogic(Item prefab, int id)

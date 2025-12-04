@@ -256,8 +256,19 @@ namespace CombatMaid.Core
         /// <param name="presetKeyOverride">可选：覆盖用的基底预设Key</param>
         public void SpawnMaidAt(Vector3 targetPos, string presetKeyOverride = null)
         {
-            if (LevelManager.Instance?.MainCharacter == null || MaidSpawner.Instance == null) return;
-
+            // 1. [修改] 显式检查并报错，防止静默失败
+            if (MaidSpawner.Instance == null)
+            {
+                CMDebug.LogError("[MaidManager] 生成失败：MaidSpawner 未初始化！请检查 ModBehaviour 是否挂载了该组件。");
+                return;
+            }
+            
+            if (LevelManager.Instance?.MainCharacter == null)
+            {
+                CMDebug.LogWarning("[MaidManager] 生成暂停：找不到玩家实例 (LevelManager.MainCharacter is null)。");
+                return;
+            }
+            
             // 1. 确保配置已加载
             if (_currentProfileData == null) LoadDefaultPreset();
 

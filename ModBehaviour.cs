@@ -88,12 +88,19 @@ namespace CombatMaid
 
         private void InitializeMaidSystem()
         {
-            // 这里只需要初始化 Manager，物品加载已经移到上面了
+            // 确保核心管理器单例存在
             if (MaidManager.Instance == null)
             {
                 var go = new GameObject("MaidManager");
+                
+                // 1. 挂载管理器
                 go.AddComponent<MaidManager>();
+                
+                // 2. [新增关键修复] 挂载生成器！没有它就无法生成实体
+                go.AddComponent<MaidSpawner>(); 
+                
                 DontDestroyOnLoad(go);
+                CMDebug.Log("女仆系统 (Manager + Spawner) 初始化完成。");
             }
         }
 
