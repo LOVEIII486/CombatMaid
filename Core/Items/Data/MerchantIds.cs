@@ -1,8 +1,7 @@
 ﻿namespace CombatMaid.Core.Items.Data
 {
     /// <summary>
-    /// 游戏内商人的标准 ID 常量表
-    /// (基于 2025-12-04 扫描结果)
+    /// 商人ID 常量表
     /// </summary>
     public static class MerchantIds
     {

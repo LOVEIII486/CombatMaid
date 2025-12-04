@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using System.IO;
 using System.Runtime.CompilerServices;
-using CombatMaid.Settings;
 
 namespace CombatMaid
 {
@@ -10,20 +9,23 @@ namespace CombatMaid
     /// </summary>
     public static class CMDebug
     {
-        private const string BasePrefix = "[CM]";
+        private const bool ShowDebugLogs = true; 
+
+        private const string BasePrefix = "[CombatMaid]";
 
         /// <summary>
-        /// [调试日志]
+        /// [调试日志] 
         /// </summary>
         public static void Log(object message, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "")
         {
-            //if (!CombatMaidConfig.DebugMode) return;
+            if (!ShowDebugLogs) return;
+
             string className = Path.GetFileNameWithoutExtension(sourceFilePath);
             Debug.Log($"{BasePrefix}[Debug][{className}.{memberName}] {message ?? "null"}");
         }
 
         /// <summary>
-        /// [核心日志]
+        /// [核心日志] 
         /// </summary>
         public static void LogInfo(object message, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "")
         {

@@ -8,18 +8,19 @@ using System.IO;
 using Duckov.ItemBuilders; 
 using System.Collections.Generic;
 using Duckov.ItemUsage; 
-using CombatMaid.Localization; // [新增] 引用我们自己的本地化管理器
+using CombatMaid.Localization;
 
 namespace CombatMaid.Core.Items.Logic
 {
     public static class MaidItemRegistry
     {
         private const string MOD_ID = "CombatMaidMod";
-        private const int FALLBACK_ICON_ID = 254; 
+
+        // ==================== 初始化流程 ====================
 
         public static void Initialize(string modPath)
         {
-            CMDebug.Log("[MaidItemRegistry] 开始初始化物品系统..." + modPath);
+            CMDebug.Log($"开始初始化物品系统... {modPath}");
 
             var items = MaidItemDefs.GetDefinitions();
             int successCount = 0;
@@ -33,199 +34,189 @@ namespace CombatMaid.Core.Items.Logic
                 }
                 catch (System.Exception ex)
                 {
-                    CMDebug.LogError($"[注册失败] 物品 {info.itemId}: {ex.Message}");
+                    CMDebug.LogError($"物品 {info.itemId}: {ex.Message}");
                 }
             }
 
-            CMDebug.Log($"[MaidItemRegistry] 初始化完成。成功注册 {successCount}/{items.Count} 个物品。");
-        }
-
-        /// <summary>
-        /// [新增] 公共接口：刷新所有物品的本地化文本
-        /// 建议在 ModBehaviour.OnLanguageChanged 中调用
-        /// </summary>
-        public static void RefreshLocalizations()
-        {
-            CMDebug.Log("[MaidItemRegistry] 正在刷新物品本地化文本...");
-            var items = MaidItemDefs.GetDefinitions();
-            foreach (var info in items)
-            {
-                RegisterItemLocalization(info);
-            }
-        }
-
-        private static void RegisterSingleItemSafe(string modPath, MaidItemInfo info)
-        {
-            // 0. [新增] 优先注册本地化文本，确保物品创建时已有文本可用（虽然通常是渲染时才取）
-            RegisterItemLocalization(info);
-
-            // 1. 构建物品
-            var builder = ItemBuilder.New()
-                .TypeID(info.itemId)
-                .EnableStacking(info.maxStackCount, 1);
-
-            // 2. 图标处理
-            bool iconLoaded = false;
-            
-            CMDebug.LogWarning($"[Icon-L] 物品 {info.itemId}: 尝试加载自定义图标: {info.spritePath}");
-
-            if (!string.IsNullOrEmpty(info.spritePath))
-            {
-                // [关键修复] 路径欺骗的升级版
-                // 强制将 modPath 转换为 DLL 路径格式，以确保 Path.GetDirectoryName() 返回正确的文件夹。
-                string modFolderName = Path.GetFileName(modPath); // 获取 "CombatMaid"
-                string pathForFML = Path.Combine(modPath, modFolderName + ".dll");
-                
-                // 调用 FastModdingLib 的加载函数，使用欺骗路径
-                var sprite = ItemUtils.LoadEmbeddedSprite(pathForFML, info.spritePath, info.itemId);
-                
-                if (sprite != null)
-                {
-                    builder.Icon(sprite);
-                    iconLoaded = true;
-                    CMDebug.LogWarning($"[Icon-L] 物品 {info.itemId}: 成功加载自定义图标！");
-                }
-                else
-                {
-                    string expectedPath = Path.Combine(modPath, "assets/textures/", info.spritePath);
-                    CMDebug.LogWarning($"[Icon-F] 物品 {info.itemId}: 文件加载失败。请检查文件是否存在于: {expectedPath}");
-                }
-            }
-
-            // B. 借用 VisualReferenceId 的图标 (如果文件加载失败)
-            if (!iconLoaded && info.VisualReferenceId > 0)
-            {
-                var refItem = ItemAssetsCollection.GetPrefab(info.VisualReferenceId);
-                if (refItem != null)
-                {
-                    builder.Icon(refItem.Icon);
-                    iconLoaded = true;
-                    CMDebug.LogWarning($"[Icon-F] 物品 {info.itemId}: 启动回退机制，借用 ID {info.VisualReferenceId} 图标。");
-                }
-            }
-
-            if (!iconLoaded)
-            {
-                CMDebug.LogWarning($"[资源缺失] 物品 {info.itemId} 无图标，使用默认保底。");
-                var fallbackItem = ItemAssetsCollection.GetPrefab(FALLBACK_ICON_ID);
-                if (fallbackItem != null) builder.Icon(fallbackItem.Icon);
-            }
-
-            // 3. 注册
-            Item component = builder.Instantiate();
-            Object.DontDestroyOnLoad(component);
-            ItemUtils.SetItemProperties(component, info); 
-            ItemUtils.RegisterItem(component, MOD_ID);
-
-            // 4. 后处理
-            var prefab = ItemAssetsCollection.GetPrefab(info.itemId);
-            if (prefab == null) return;
-
-            // 4a. 视觉克隆
-            if (info.VisualReferenceId > 0)
-            {
-                MaidVisualHelper.CloneVisuals(prefab, info.VisualReferenceId);
-            }
-
-            // 4b. 挂载万能行为
-            if (info.usages != null)
-            {
-                var simpleBehavior = prefab.gameObject.AddComponent<SimpleUseBehavior>();
-                if (prefab.UsageUtilities.behaviors == null) 
-                    prefab.UsageUtilities.behaviors = new List<UsageBehavior>();
-                
-                prefab.UsageUtilities.behaviors.Add(simpleBehavior);
-            }
-
-            // 4c. 挂载自定义脚本
-            if (info.CustomComponentType != null)
-            {
-                if (typeof(MonoBehaviour).IsAssignableFrom(info.CustomComponentType))
-                {
-                    prefab.gameObject.AddComponent(info.CustomComponentType);
-                }
-                else
-                {
-                    CMDebug.LogError($"物品 {info.itemId} 的 CustomComponentType 必须继承自 MonoBehaviour");
-                }
-            }
-
-            // 4d. 写入自定义参数
-            if (info.CustomConstants != null)
-            {
-                foreach (var kvp in info.CustomConstants)
-                {
-                    if (kvp.Value is bool bVal)
-                    {
-                        prefab.Constants.Add(new CustomData(kvp.Key, bVal));
-                    }
-                    else if (kvp.Value is float fVal)
-                    {
-                        prefab.Constants.Add(new CustomData(kvp.Key, fVal));
-                    }
-                    else if (kvp.Value is int iVal)
-                    {
-                        prefab.Constants.Add(new CustomData(kvp.Key, (float)iVal));
-                    }
-                    else if (kvp.Value is string sVal)
-                    {
-                        prefab.Constants.Add(new CustomData(kvp.Key, sVal));
-                    }
-                    else
-                    {
-                        CMDebug.LogWarning($"[警告] 物品 {info.itemId} 的常量 {kvp.Key} 类型不支持: {kvp.Value?.GetType()}");
-                    }
-                }
-            }
-
-            // 4e. 注入商店
-            if (!string.IsNullOrEmpty(info.ShopMerchantId))
-            {
-                InjectToShop(info.itemId, info.ShopMerchantId);
-            }
-        }
-
-        /// <summary>
-        /// [新增] 核心方法：将物品定义的Key和文本注入到游戏系统
-        /// </summary>
-        private static void RegisterItemLocalization(MaidItemInfo info)
-        {
-            // 注意：这里使用全名 SodaCraft.Localizations... 以避免与 CombatMaid.Localization 冲突
-            var gameOverrideDict = SodaCraft.Localizations.LocalizationManager.overrideTexts;
-
-            // 1. 注册物品名称
-            if (!string.IsNullOrEmpty(info.localizationKey))
-            {
-                // 从我们自己的 CSV 读取文本
-                string nameText = LocalizationManager.GetText(info.localizationKey, $"[{info.localizationKey}]");
-                // 注入到游戏的覆盖字典中
-                gameOverrideDict[info.localizationKey] = nameText;
-            }
-
-            // 2. 注册物品描述
-            if (!string.IsNullOrEmpty(info.localizationDesc))
-            {
-                string descText = LocalizationManager.GetText(info.localizationDesc, $"[{info.localizationDesc}]");
-                gameOverrideDict[info.localizationDesc] = descText;
-            }
-        }
-
-        private static void InjectToShop(int itemId, string merchantId)
-        {
-            ShopUtils.AddGoods(new ShopGoodsData
-            {
-                merchantProfileID = merchantId, 
-                typeID = itemId,
-                maxStock = 5,
-                priceFactor = 1.0f,
-                forceUnlock = true,
-                possibility = 1.0f
-            });
+            CMDebug.Log($"初始化完成。成功注册 {successCount}/{items.Count} 个物品。");
         }
 
         public static void Cleanup()
         {
             try { ItemUtils.UnregisterAllItem(MOD_ID); } catch {}
+        }
+
+        public static void RefreshLocalizations()
+        {
+            CMDebug.Log("正在刷新物品本地化文本...");
+            foreach (var info in MaidItemDefs.GetDefinitions())
+            {
+                RegisterLocalization(info);
+            }
+        }
+
+        // ==================== 核心注册逻辑 ====================
+
+        private static void RegisterSingleItemSafe(string modPath, MaidItemInfo info)
+        {
+            // 1. 本地化
+            RegisterLocalization(info);
+
+            // 2. 构建基础物品
+            var itemComponent = BuildItemWithIcon(modPath, info);
+
+            // 3. 设置基础属性并注册到 FML
+            Object.DontDestroyOnLoad(itemComponent);
+            ItemUtils.SetItemProperties(itemComponent, info);
+            ItemUtils.RegisterItem(itemComponent, MOD_ID);
+
+            // 4. 注册后的逻辑扩展
+            var registeredPrefab = ItemAssetsCollection.GetPrefab(info.itemId);
+            if (registeredPrefab != null)
+            {
+                ApplyExtendedLogic(registeredPrefab, info);
+            }
+
+            // 5. 商店注入
+            TryInjectToShop(info);
+        }
+
+        // ==================== 内部功能模块 ====================
+
+        /// <summary>
+        /// 构建物品并处理图标
+        /// </summary>
+        private static Item BuildItemWithIcon(string modPath, MaidItemInfo info)
+        {
+            var builder = ItemBuilder.New()
+                .TypeID(info.itemId)
+                .EnableStacking(info.maxStackCount, 1);
+
+            bool iconSet = false;
+
+            // 加载自定义图标
+            if (!string.IsNullOrEmpty(info.spritePath))
+            {
+                string modFolderName = Path.GetFileName(modPath);
+                string dllPath = Path.Combine(modPath, modFolderName + ".dll");
+                
+                var sprite = ItemUtils.LoadEmbeddedSprite(dllPath, info.spritePath, info.itemId);
+                
+                if (sprite != null)
+                {
+                    builder.Icon(sprite);
+                    iconSet = true;
+                    CMDebug.LogWarning($"{info.itemId}: 自定义图标加载成功");
+                }
+                else
+                {
+                    CMDebug.LogWarning($"{info.itemId}: 图标文件未找到 -> {info.spritePath}");
+                }
+            }
+
+            // 借用参考物品图标
+            if (!iconSet && info.VisualReferenceId > 0)
+            {
+                var refItem = ItemAssetsCollection.GetPrefab(info.VisualReferenceId);
+                if (refItem != null)
+                {
+                    builder.Icon(refItem.Icon);
+                    iconSet = true;
+                    CMDebug.LogWarning($"{info.itemId}: 已借用 ID {info.VisualReferenceId} 的图标");
+                }
+            }
+
+            return builder.Instantiate();
+        }
+
+        /// <summary>
+        /// 应用模组的高级逻辑
+        /// </summary>
+        private static void ApplyExtendedLogic(Item prefab, MaidItemInfo info)
+        {
+            // 1. 视觉克隆
+            if (info.VisualReferenceId > 0)
+            {
+                MaidVisualHelper.CloneVisuals(prefab, info.VisualReferenceId);
+            }
+
+            // 2. 挂载通用使用行为
+            if (info.usages != null)
+            {
+                if (prefab.UsageUtilities.behaviors == null) 
+                    prefab.UsageUtilities.behaviors = new List<UsageBehavior>();
+                if (prefab.GetComponent<SimpleUseBehavior>() == null)
+                {
+                    var behavior = prefab.gameObject.AddComponent<SimpleUseBehavior>();
+                    prefab.UsageUtilities.behaviors.Add(behavior);
+                }
+            }
+
+            // 3. 挂载自定义逻辑组件
+            if (info.CustomComponentType != null)
+            {
+                if (typeof(MonoBehaviour).IsAssignableFrom(info.CustomComponentType))
+                    prefab.gameObject.AddComponent(info.CustomComponentType);
+                else
+                    CMDebug.LogError($"{info.itemId} 的组件类型无效，必须继承 MonoBehaviour");
+            }
+
+            // 4. 注入常量
+            if (info.CustomConstants != null)
+            {
+                foreach (var kvp in info.CustomConstants)
+                {
+                    AddConstantSafe(prefab, kvp.Key, kvp.Value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 类型安全的常量添加
+        /// </summary>
+        private static void AddConstantSafe(Item prefab, string key, object value)
+        {
+            switch (value)
+            {
+                case bool b: prefab.Constants.Add(new CustomData(key, b)); break;
+                case float f: prefab.Constants.Add(new CustomData(key, f)); break;
+                case int i: prefab.Constants.Add(new CustomData(key, (float)i)); break;
+                case string s: prefab.Constants.Add(new CustomData(key, s)); break;
+                default:
+                    CMDebug.LogWarning($"不支持的常量类型: Key={key}, Type={value?.GetType()}");
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// 注册本地化文本
+        /// </summary>
+        private static void RegisterLocalization(MaidItemInfo info)
+        {
+            var dict = SodaCraft.Localizations.LocalizationManager.overrideTexts;
+
+            if (!string.IsNullOrEmpty(info.localizationKey))
+                dict[info.localizationKey] = LocalizationManager.GetText(info.localizationKey, $"[{info.localizationKey}]");
+
+            if (!string.IsNullOrEmpty(info.localizationDesc))
+                dict[info.localizationDesc] = LocalizationManager.GetText(info.localizationDesc, $"[{info.localizationDesc}]");
+        }
+        
+
+        private static void TryInjectToShop(MaidItemInfo info)
+        {
+            if (string.IsNullOrEmpty(info.ShopMerchantId)) return;
+
+            ShopUtils.AddGoods(new ShopGoodsData
+            {
+                merchantProfileID = info.ShopMerchantId,
+                typeID = info.itemId,
+                maxStock = info.ShopMaxStock,          // 使用配置的库存
+                priceFactor = info.ShopPriceFactor,    // 使用配置的价格倍率
+                possibility = info.ShopPossibility,    // 使用配置的概率
+                forceUnlock = info.ShopForceUnlock     // 使用配置的解锁状态
+            });
+            CMDebug.Log($"[商店] 已添加物品 {info.itemId} 到商人 {info.ShopMerchantId}");
         }
     }
 }

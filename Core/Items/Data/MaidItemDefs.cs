@@ -1,14 +1,11 @@
 ﻿using System.Collections.Generic;
 using FastModdingLib;
-using CombatMaid.Core.Items.Components; // 引用组件
+using CombatMaid.Core.Items.Components; 
 
 namespace CombatMaid.Core.Items.Data
 {
     public static class MaidItemDefs
     {
-        public const int ID_MAID_CONTRACT = 88888;
-
-        // 返回类型改为 List<MaidItemInfo>
         public static List<MaidItemInfo> GetDefinitions()
         {
             return new List<MaidItemInfo>
@@ -16,42 +13,32 @@ namespace CombatMaid.Core.Items.Data
                 // === 物品 1: 女仆契约 ===
                 new MaidItemInfo
                 {
-                    // [基础 ItemData 属性]
-                    itemId = ID_MAID_CONTRACT,
+                    itemId = 88888,
                     spritePath = "MaidContract_icon_512.png",
-                    localizationKey = "Item_MaidContract",
-                    localizationDesc = "Item_MaidContract_Desc", // 必须保持localizationKey+_Desc格式
-                    value = 888,
+                    localizationKey = "Item_MaidContract", 
+                    localizationDesc = "Item_MaidContract_Desc", 
+                    value = 5000,
                     maxStackCount = 1,
-                    weight = 0.1f,
-                    tags = new List<string> { "General" },
-                    
+                    weight = 0.01f,
+                    tags = new List<string> { "Maid" },
                     usages = new UsageData
                     {
-                        useTime = 3.0f,
-                        useSound = "Paper", 
+                        useTime = 1.0f,
+                        // useSound = "Paper", 
                         behaviors = new List<UsageBehaviorData>() // 空行为，由 SimpleUseBehavior 接管
                     },
-
-                    // [新增 模组扩展属性]
-                    // 1. 指定外观借用 ID (73 = 信件)
-                    VisualReferenceId = 73,
-                    
-                    // 2. 指定出售商人 (神秘商人)
-                    ShopMerchantId = MerchantIds.Mud,
-                    
-                    // 3. 指定逻辑脚本 (挂载召唤逻辑)
+                    VisualReferenceId = 73, // 信件
                     CustomComponentType = typeof(Component_MaidContract),
-                    
-                    // 4. 指定额外参数
                     CustomConstants = new Dictionary<string, object>
                     {
                         { "ConsumeOnUse", true }
-                    }
+                    },
+                    ShopMerchantId = MerchantIds.Mud,
+                    ShopMaxStock = 5,
+                    ShopPriceFactor = 1.2f,
+                    ShopPossibility = 1f,
+                    ShopForceUnlock = true
                 }
-                
-                // 未来添加新物品直接在这里 new 一个 MaidItemInfo 即可
-                // 比如: new MaidItemInfo { itemId = 88999, VisualReferenceId = 123, ... }
             };
         }
     }

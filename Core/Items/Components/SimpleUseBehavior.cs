@@ -10,19 +10,15 @@ namespace CombatMaid.Core.Items.Components
     /// </summary>
     public class SimpleUseBehavior : UsageBehavior
     {
-        // 1. 判定方法：必须是 public override bool
-        // 对应错误 CS0534 (未实现) 和 CS0115 (找不到方法)
         public override bool CanBeUsed(Item item, object user)
         {
             return true; 
         }
 
-        // 2. 执行方法：必须是 protected override void
-        // 对应错误 CS0507 (无法更改访问修饰符)
+        // 必须是 protected override void
         protected override void OnUse(Item item, object user)
         {
-            // 这里留空即可
-            // 实际的召唤逻辑在 Component_MaidContract 的 item.onUse 事件中执行
+            // 留空
         }
     }
 }
