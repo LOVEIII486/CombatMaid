@@ -82,7 +82,7 @@ namespace CombatMaid.Core
         
         private void HandleDebugInput()
         {
-            if (Input.GetKeyDown(KeyCode.F5)) SpawnSpecificMaid(); 
+            if (Input.GetKeyDown(KeyCode.F5)) SpawnSpecificMaid("Cname_Usec"); 
             if (Input.GetKeyDown(KeyCode.F6)) DespawnTeam();
             if (Input.GetKeyDown(KeyCode.F8)) LoadDefaultPreset();
             if (Input.GetKeyDown(KeyCode.G)) CommandMoveTeamToMouse();

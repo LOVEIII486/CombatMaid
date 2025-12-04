@@ -5,56 +5,30 @@ namespace CombatMaid.Core.Items.Data
 {
     public static class MaidItemDefs
     {
-        // 统一管理 ID 常量，防止魔法数字
         public const int ID_MAID_CONTRACT = 88888;
-        public const int ID_MAID_TEA = 88902;
 
         public static List<ItemData> GetDefinitions()
         {
             return new List<ItemData>
             {
-                // === 物品 1: 女仆契约 ===
+                // === 女仆契约 ===
                 new ItemData
                 {
                     itemId = ID_MAID_CONTRACT,
-                    localizationKey = "Item_MaidContract_Name", // 确保CSV里有这个Key
+                    localizationKey = "Item_MaidContract_Name",
                     localizationDesc = "Item_MaidContract_Desc",
-                    value = 5000,
-                    maxStackCount = 10,
-                    weight = 0.5f,
+                    value = 8888,        // 基础价格
+                    maxStackCount = 1,   // 不可堆叠
+                    weight = 0.1f,
                     tags = new List<string> { "General" },
                     
-                    usages = new UsageData
-                    {
-                        useTime = 2.0f,
-                        useSound = "Eat", 
-                        behaviors = new List<UsageBehaviorData>
-                        {
-                            // 可以在这里添加简单的 Buff，复杂逻辑由 Registry 处理
-                        }
-                    }
-                },
-
-                // === 物品 2: 女仆红茶 ===
-                new ItemData
-                {
-                    itemId = ID_MAID_TEA,
-                    localizationKey = "Maid_Food_Tea",
-                    localizationDesc = "Maid_Food_Tea_Desc",
-                    value = 80,
-                    maxStackCount = 5,
-                    weight = 0.2f,
-                    spritePath = "icon_maid_tea.png", // 需放在 assets/textures/
-                    tags = new List<string> { "Food" },
-                    
+                    // 必须配置 usages，否则游戏里不会显示“使用”按钮
                     usages = new UsageData
                     {
                         useTime = 3.0f,
-                        useSound = "Drink",
-                        behaviors = new List<UsageBehaviorData>
-                        {
-                            new FoodData { energyValue = 15f, waterValue = 20f }
-                        }
+                        useSound = "Paper", // 纸张声音 (如果游戏有)
+                        // 空行为列表，具体逻辑由组件接管
+                        behaviors = new List<UsageBehaviorData>() 
                     }
                 }
             };

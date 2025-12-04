@@ -31,9 +31,6 @@ namespace CombatMaid.Core.Items.DebugTools
             // 2. 尝试添加物品
             // 添加 1 个契约
             AddItemToPlayer(player, MaidItemDefs.ID_MAID_CONTRACT, 1);
-            
-            // 添加 2 个红茶
-            AddItemToPlayer(player, MaidItemDefs.ID_MAID_TEA, 2);
         }
 
         /// <summary>
