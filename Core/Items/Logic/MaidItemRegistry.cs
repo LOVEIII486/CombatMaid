@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using FastModdingLib;
-// using FastModdingLib.Shop; // [删除] 这是一个错误的引用，ShopUtils 直接在 FastModdingLib 下
 using ItemStatsSystem;
 using Duckov.Utilities;
 using CombatMaid.Core.Items.Data;
@@ -9,6 +8,7 @@ using System.IO;
 using Duckov.ItemBuilders; 
 using System.Collections.Generic;
 using Duckov.ItemUsage; 
+using CombatMaid.Localization; // [新增] 引用我们自己的本地化管理器
 
 namespace CombatMaid.Core.Items.Logic
 {
@@ -40,8 +40,25 @@ namespace CombatMaid.Core.Items.Logic
             CMDebug.Log($"[MaidItemRegistry] 初始化完成。成功注册 {successCount}/{items.Count} 个物品。");
         }
 
+        /// <summary>
+        /// [新增] 公共接口：刷新所有物品的本地化文本
+        /// 建议在 ModBehaviour.OnLanguageChanged 中调用
+        /// </summary>
+        public static void RefreshLocalizations()
+        {
+            CMDebug.Log("[MaidItemRegistry] 正在刷新物品本地化文本...");
+            var items = MaidItemDefs.GetDefinitions();
+            foreach (var info in items)
+            {
+                RegisterItemLocalization(info);
+            }
+        }
+
         private static void RegisterSingleItemSafe(string modPath, MaidItemInfo info)
         {
+            // 0. [新增] 优先注册本地化文本，确保物品创建时已有文本可用（虽然通常是渲染时才取）
+            RegisterItemLocalization(info);
+
             // 1. 构建物品
             var builder = ItemBuilder.New()
                 .TypeID(info.itemId)
@@ -56,7 +73,6 @@ namespace CombatMaid.Core.Items.Logic
             {
                 // [关键修复] 路径欺骗的升级版
                 // 强制将 modPath 转换为 DLL 路径格式，以确保 Path.GetDirectoryName() 返回正确的文件夹。
-                // 假设 Mod 的 DLL 名就是 Mod 文件夹名 + ".dll"
                 string modFolderName = Path.GetFileName(modPath); // 获取 "CombatMaid"
                 string pathForFML = Path.Combine(modPath, modFolderName + ".dll");
                 
@@ -71,7 +87,6 @@ namespace CombatMaid.Core.Items.Logic
                 }
                 else
                 {
-                    // 打印正确的期望路径
                     string expectedPath = Path.Combine(modPath, "assets/textures/", info.spritePath);
                     CMDebug.LogWarning($"[Icon-F] 物品 {info.itemId}: 文件加载失败。请检查文件是否存在于: {expectedPath}");
                 }
@@ -85,7 +100,6 @@ namespace CombatMaid.Core.Items.Logic
                 {
                     builder.Icon(refItem.Icon);
                     iconLoaded = true;
-                    // [新增调试日志] 记录借用事件
                     CMDebug.LogWarning($"[Icon-F] 物品 {info.itemId}: 启动回退机制，借用 ID {info.VisualReferenceId} 图标。");
                 }
             }
@@ -113,13 +127,11 @@ namespace CombatMaid.Core.Items.Logic
                 MaidVisualHelper.CloneVisuals(prefab, info.VisualReferenceId);
             }
 
-            // 4b. 挂载万能行为 (修正类型引用错误)
+            // 4b. 挂载万能行为
             if (info.usages != null)
             {
                 var simpleBehavior = prefab.gameObject.AddComponent<SimpleUseBehavior>();
                 if (prefab.UsageUtilities.behaviors == null) 
-                    // [修正] 这里不需要 Duckov.ItemUsage 前缀，或者应该是 ItemStatsSystem.UsageBehavior
-                    // 由于开头引用了 ItemStatsSystem，直接用 UsageBehavior 即可
                     prefab.UsageUtilities.behaviors = new List<UsageBehavior>();
                 
                 prefab.UsageUtilities.behaviors.Add(simpleBehavior);
@@ -138,12 +150,11 @@ namespace CombatMaid.Core.Items.Logic
                 }
             }
 
-            // 4d. 写入自定义参数 (修正 object 转 float 错误)
+            // 4d. 写入自定义参数
             if (info.CustomConstants != null)
             {
                 foreach (var kvp in info.CustomConstants)
                 {
-                    // [修正] 显式类型检查和转换，因为 CustomData 构造函数不支持 object
                     if (kvp.Value is bool bVal)
                     {
                         prefab.Constants.Add(new CustomData(kvp.Key, bVal));
@@ -154,7 +165,6 @@ namespace CombatMaid.Core.Items.Logic
                     }
                     else if (kvp.Value is int iVal)
                     {
-                        // int 自动转 float
                         prefab.Constants.Add(new CustomData(kvp.Key, (float)iVal));
                     }
                     else if (kvp.Value is string sVal)
@@ -172,6 +182,31 @@ namespace CombatMaid.Core.Items.Logic
             if (!string.IsNullOrEmpty(info.ShopMerchantId))
             {
                 InjectToShop(info.itemId, info.ShopMerchantId);
+            }
+        }
+
+        /// <summary>
+        /// [新增] 核心方法：将物品定义的Key和文本注入到游戏系统
+        /// </summary>
+        private static void RegisterItemLocalization(MaidItemInfo info)
+        {
+            // 注意：这里使用全名 SodaCraft.Localizations... 以避免与 CombatMaid.Localization 冲突
+            var gameOverrideDict = SodaCraft.Localizations.LocalizationManager.overrideTexts;
+
+            // 1. 注册物品名称
+            if (!string.IsNullOrEmpty(info.localizationKey))
+            {
+                // 从我们自己的 CSV 读取文本
+                string nameText = LocalizationManager.GetText(info.localizationKey, $"[{info.localizationKey}]");
+                // 注入到游戏的覆盖字典中
+                gameOverrideDict[info.localizationKey] = nameText;
+            }
+
+            // 2. 注册物品描述
+            if (!string.IsNullOrEmpty(info.localizationDesc))
+            {
+                string descText = LocalizationManager.GetText(info.localizationDesc, $"[{info.localizationDesc}]");
+                gameOverrideDict[info.localizationDesc] = descText;
             }
         }
 

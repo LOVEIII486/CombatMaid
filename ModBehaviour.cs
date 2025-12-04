@@ -139,8 +139,16 @@ namespace CombatMaid
 
         private void OnLanguageChanged(SystemLanguage lang)
         {
+            // 1. 刷新 CSV 读取器
             LocalizationManager.Refresh();
+            
+            // 2. [新增] 将新读取到的文本重新注入到游戏系统
+            MaidItemRegistry.RefreshLocalizations();
+            
+            // 3. 刷新设置界面
             Settings.SettingsUI.Register();
+            
+            CMDebug.LogInfo($"语言已切换为 {lang}，物品文本已更新。");
         }
 
         #endregion
