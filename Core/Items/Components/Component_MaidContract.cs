@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using ItemStatsSystem;
-using CombatMaid.Core; // 引用 MaidManager
+using CombatMaid.Core; 
 
 namespace CombatMaid.Core.Items.Components
 {
@@ -19,29 +19,24 @@ namespace CombatMaid.Core.Items.Components
 
         private void OnUseItem(Item item, object user)
         {
-            // 1. 确定生成位置 (玩家前方 1.5 米)
             var player = user as CharacterMainControl;
             if (player == null) return;
 
+            // 1. 在玩家前方生成
             Vector3 spawnPos = player.transform.position + player.transform.forward * 1.5f;
-
-            // 2. 调用现有的 API 生成女仆
-            // 使用 SpawnMaidAt 会自动处理控制器挂载和模型加载
             MaidManager.Instance.SpawnMaidAt(spawnPos);
 
-            // 3. 销毁物品 (消耗逻辑)
-            // 因为不可堆叠，直接销毁整棵物品树
-            item.DestroyTree();
+            // 2. 播放提示并销毁物品
+            player.PopText("契约成立！");
             
-            CMDebug.Log("契约已使用，女仆召唤中...");
+            // 因为在 ItemData 里配置了 behaviors，底层可能会尝试消耗耐久
+            // 但为了保险，我们直接销毁整个物品对象（因为是不可堆叠的一次性道具）
+            item.DestroyTree();
         }
 
         private void OnDestroy()
         {
-            if (_item != null)
-            {
-                _item.onUse -= OnUseItem;
-            }
+            if (_item != null) _item.onUse -= OnUseItem;
         }
     }
 }

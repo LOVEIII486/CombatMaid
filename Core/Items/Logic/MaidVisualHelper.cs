@@ -1,68 +1,84 @@
 ﻿using UnityEngine;
 using ItemStatsSystem;
-using CombatMaid; // 用于访问 CMDebug
+using System.Reflection;
+using CombatMaid; 
 
 namespace CombatMaid.Core.Items.Logic
 {
     public static class MaidVisualHelper
     {
         /// <summary>
-        /// 从现有的原版物品借用模型外观（Mesh, Material, Collider）
+        /// 全面克隆源物品的外观、物理和代理配置
         /// </summary>
-        /// <param name="targetItem">我们创建的新物品</param>
-        /// <param name="sourceId">被借用的原版物品ID</param>
         public static void CloneVisuals(Item targetItem, int sourceId)
         {
             var sourceItem = ItemAssetsCollection.GetPrefab(sourceId);
-            if (sourceItem == null)
-            {
-                CMDebug.LogWarning($"[MaidVisualHelper] 无法找到源物品 ID: {sourceId}，视觉克隆失败。");
-                return;
-            }
+            if (sourceItem == null) return;
 
-            // 1. 借用图标 (如果 ItemData 没配图片，就用原版的)
-            if (targetItem.Icon == null)
-            {
-                targetItem.Icon = sourceItem.Icon;
-            }
+            // 1. 图标与模型
+            if (targetItem.Icon == null) targetItem.Icon = sourceItem.Icon;
+            CloneMeshAndMaterial(targetItem.gameObject, sourceItem.gameObject);
+            ClonePhysics(targetItem.gameObject, sourceItem.gameObject);
 
-            GameObject srcGo = sourceItem.gameObject;
-            GameObject tgtGo = targetItem.gameObject;
+            // 2. [关键] 克隆 Agent 配置 (解决丢弃崩溃)
+            CloneAgentUtilities(targetItem, sourceItem);
+        }
 
-            // 2. 克隆网格 (Mesh)
-            var srcFilter = srcGo.GetComponent<MeshFilter>();
+        private static void CloneMeshAndMaterial(GameObject tgt, GameObject src)
+        {
+            var srcFilter = src.GetComponent<MeshFilter>();
             if (srcFilter != null)
             {
-                var tgtFilter = tgtGo.GetComponent<MeshFilter>() ?? tgtGo.AddComponent<MeshFilter>();
+                var tgtFilter = tgt.GetComponent<MeshFilter>() ?? tgt.AddComponent<MeshFilter>();
                 tgtFilter.sharedMesh = srcFilter.sharedMesh;
             }
 
-            // 3. 克隆材质 (Renderer)
-            var srcRenderer = srcGo.GetComponent<MeshRenderer>();
+            var srcRenderer = src.GetComponent<MeshRenderer>();
             if (srcRenderer != null)
             {
-                var tgtRenderer = tgtGo.GetComponent<MeshRenderer>() ?? tgtGo.AddComponent<MeshRenderer>();
+                var tgtRenderer = tgt.GetComponent<MeshRenderer>() ?? tgt.AddComponent<MeshRenderer>();
                 tgtRenderer.sharedMaterials = srcRenderer.sharedMaterials;
             }
+            
+            tgt.layer = src.layer;
+        }
 
-            // 4. 克隆碰撞体 (解决丢地上穿模问题)
-            var srcCollider = srcGo.GetComponent<BoxCollider>();
+        private static void ClonePhysics(GameObject tgt, GameObject src)
+        {
+            var srcCollider = src.GetComponent<BoxCollider>();
             if (srcCollider != null)
             {
-                var tgtCollider = tgtGo.GetComponent<BoxCollider>() ?? tgtGo.AddComponent<BoxCollider>();
+                var tgtCollider = tgt.GetComponent<BoxCollider>() ?? tgt.AddComponent<BoxCollider>();
                 tgtCollider.center = srcCollider.center;
                 tgtCollider.size = srcCollider.size;
                 tgtCollider.isTrigger = srcCollider.isTrigger;
             }
-            
-            // 保持层级一致 (例如 Item 层)
-            tgtGo.layer = srcGo.layer;
 
-            // 5. 确保有刚体
-            if (tgtGo.GetComponent<Rigidbody>() == null)
+            if (tgt.GetComponent<Rigidbody>() == null)
             {
-                var rb = tgtGo.AddComponent<Rigidbody>();
-                rb.mass = 0.5f; 
+                var rb = tgt.AddComponent<Rigidbody>();
+                rb.mass = 0.5f;
+            }
+        }
+
+        private static void CloneAgentUtilities(Item target, Item source)
+        {
+            // 通过反射将源物品的 Agent配置 (掉落物/手持物定义) 复制给新物品
+            try 
+            {
+                var field = typeof(Item).GetField("agentUtilities", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                if (field != null)
+                {
+                    var sourceAgents = field.GetValue(source);
+                    if (sourceAgents != null)
+                    {
+                        field.SetValue(target, sourceAgents);
+                    }
+                }
+            }
+            catch (System.Exception ex)
+            {
+                CMDebug.LogError($"[MaidVisualHelper] Agent 克隆失败: {ex.Message}");
             }
         }
     }
