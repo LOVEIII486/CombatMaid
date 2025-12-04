@@ -38,7 +38,7 @@ namespace CombatMaid.Core.Items.Data
                     VisualReferenceId = 73,
                     
                     // 2. 指定出售商人 (神秘商人)
-                    ShopMerchantId = MerchantIds.Myst,
+                    ShopMerchantId = MerchantIds.Mud,
                     
                     // 3. 指定逻辑脚本 (挂载召唤逻辑)
                     CustomComponentType = typeof(Component_MaidContract),
