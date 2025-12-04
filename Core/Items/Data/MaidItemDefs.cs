@@ -21,7 +21,7 @@ namespace CombatMaid.Core.Items.Data
                     spritePath = "MaidContract_icon_512.png",
                     localizationKey = "Item_MaidContract",
                     localizationDesc = "Item_MaidContract_Desc", // 必须保持localizationKey+_Desc格式
-                    value = 8888,
+                    value = 888,
                     maxStackCount = 1,
                     weight = 0.1f,
                     tags = new List<string> { "General" },
