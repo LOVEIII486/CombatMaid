@@ -5,7 +5,7 @@ using ItemStatsSystem.Stats;
 namespace CombatMaid.Core.BuffsSystem
 {
     /// <summary>
-    /// 管理由 Buff 产生的属性修改器 (Modifier)
+    /// 管理由 Buff 产生的属性修改器
     /// </summary>
     public class MaidBuffModifierManager
     {

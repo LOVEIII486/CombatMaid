@@ -5,8 +5,6 @@ namespace CombatMaid.Core.BuffsSystem
 {
     public class MaidBuffRegistry
     {
-        private const string LogTag = "[CombatMaid.BuffRegistry]";
-        
         private static MaidBuffRegistry _instance;
         public static MaidBuffRegistry Instance => _instance ??= new MaidBuffRegistry();
 
@@ -17,11 +15,10 @@ namespace CombatMaid.Core.BuffsSystem
         /// </summary>
         public void Initialize()
         {
-            // 在这里注册你的具体技能效果
             // RegisterEffect(new MaidBerserkEffect()); 
             // RegisterEffect(new MaidInvincibleEffect());
             
-            Debug.Log($"{LogTag} 初始化完成，已注册 {_effects.Count} 个效果");
+            CMDebug.Log($"初始化完成，已注册 {_effects.Count} 个效果");
         }
 
         public void RegisterEffect(IMaidBuffEffect effect)

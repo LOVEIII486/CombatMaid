@@ -4,11 +4,10 @@ using Duckov.Buffs;
 using HarmonyLib;
 using UnityEngine;
 using CombatMaid.Localization;
-using ItemStatsSystem; // 确保引用了本地化管理器
+using ItemStatsSystem;
 
 namespace CombatMaid.Core.BuffsSystem
 {
-    // 拦截 Buff.Setup
     [HarmonyPatch(typeof(Buff), "Setup")]
     public static class MaidBuffSetupPatch
     {
@@ -18,7 +17,7 @@ namespace CombatMaid.Core.BuffsSystem
         {
             if (IsMaidBuff(__instance.name))
             {
-                ___effects.Clear(); // 核心：移除所有原生 Effect
+                ___effects.Clear(); // 移除所有原生 Effect
             }
         }
 
@@ -40,14 +39,14 @@ namespace CombatMaid.Core.BuffsSystem
                 // 1. 执行自定义逻辑
                 effect.OnBuffSetup(__instance, target);
                 
-                // 2. 尝试设置本地化名称 (Key 示例: "Buff_MaidBuff_Berserk_Name")
+                // 2. 尝试设置本地化名称 "Buff_MaidBuff_Berserk_Name"
                 string locKey = $"Buff_{buffName}_Name";
                 string localizedName = LocalizationManager.GetText(locKey, buffName);
                 ___displayName = localizedName;
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[CombatMaid] Buff Setup Error ({buffName}): {ex}");
+                CMDebug.LogError($"Buff Setup Error ({buffName}): {ex}");
             }
         }
 
@@ -81,7 +80,7 @@ namespace CombatMaid.Core.BuffsSystem
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError($"[CombatMaid] Buff Destroy Error ({buffName}): {ex}");
+                    CMDebug.LogError($"Buff Destroy Error ({buffName}): {ex}");
                 }
             }
             

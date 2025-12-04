@@ -12,8 +12,6 @@ namespace CombatMaid.Core.BuffsSystem
     /// </summary>
     public static class MaidBuffFactory
     {
-        private const string LogTag = "[CombatMaid.BuffFactory]";
-
         // 缓存已创建的 Buff 模板 (单例)
         private static readonly Dictionary<int, Buff> SharedBuffs = new Dictionary<int, Buff>();
 
@@ -26,7 +24,7 @@ namespace CombatMaid.Core.BuffsSystem
         public struct BuffConfig
         {
             public string Name;          // 必须以 "MaidBuff_" 开头
-            public int Id;               // 唯一的数字 ID (建议 88000 起步)
+            public int Id;               // 唯一的数字 ID
             public float Duration;       // 持续时间
             public bool LimitedLifeTime; // 是否有限时
 
@@ -60,17 +58,16 @@ namespace CombatMaid.Core.BuffsSystem
                 Buff baseBuff = GameplayDataSettings.Buffs.BaseBuff;
                 if (baseBuff == null)
                 {
-                    Debug.LogError($"{LogTag} 严重错误：BaseBuff 未找到");
+                    CMDebug.LogError($"严重错误：BaseBuff 未找到");
                     return null;
                 }
 
                 Buff newBuff = UnityEngine.Object.Instantiate(baseBuff);
-                newBuff.name = config.Name; // 关键：名字必须正确
+                newBuff.name = config.Name;
                 UnityEngine.Object.DontDestroyOnLoad(newBuff.gameObject);
 
                 InitializeReflection();
-                
-                // 设置核心参数
+        
                 _idField?.SetValue(newBuff, config.Id);
                 _limitedLifeTimeField?.SetValue(newBuff, config.LimitedLifeTime);
                 _totalLifeTimeField?.SetValue(newBuff, config.Duration);
@@ -80,7 +77,7 @@ namespace CombatMaid.Core.BuffsSystem
             }
             catch (Exception ex)
             {
-                Debug.LogError($"{LogTag} 创建失败: {ex.Message}");
+                CMDebug.LogError($"创建失败: {ex.Message}");
                 return null;
             }
         }
