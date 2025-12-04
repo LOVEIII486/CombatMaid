@@ -6,6 +6,11 @@ namespace CombatMaid.Core.Items.Data
 {
     /// <summary>
     /// 扩展后的物品定义类
+    /// <para>=== 父类 ItemData 可用字段备忘 ===</para>
+    /// <para>itemId (int), localizationKey (string), localizationDesc (string)</para>
+    /// <para>value (int), weight (float), maxStackCount (int)</para>
+    /// <para>quality (int), displayQuality (DisplayQuality), spritePath (string)</para>
+    /// <para>tags (List string), usages (UsageData)</para>
     /// </summary>
     public class MaidItemInfo : ItemData
     {

@@ -8,7 +8,7 @@
 
     "//--- 生命 ---": "",
     "Health": 120.0,
-    "MoveSpeedFactor": 1.0,
+    "MoveSpeedFactor": 1.1,
     "HasSoul": true,
     "Exp": 0,
     "PushCharacter": false,
@@ -24,7 +24,7 @@
     },
 
     "//--- 感知能力 ---": "",
-    "SightDistance": 16.0,
+    "SightDistance": 13.0,
     "SightAngle": 100.0,
     "HearingAbility": 1.0,
     "NightVisionAbility": 0.5,
@@ -78,7 +78,7 @@
     "MaxTraceTargetChance": 0.8,
 
     "//--- 原生技能 ---": "",
-    "HasSkill": true,
+    "HasSkill": false,
     "HasSkillChance": 1.0,
     "SkillSuccessChance": 1.0,
     "SkillCoolTimeRange": {

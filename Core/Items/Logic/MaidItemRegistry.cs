@@ -211,10 +211,10 @@ namespace CombatMaid.Core.Items.Logic
             {
                 merchantProfileID = info.ShopMerchantId,
                 typeID = info.itemId,
-                maxStock = info.ShopMaxStock,          // 使用配置的库存
-                priceFactor = info.ShopPriceFactor,    // 使用配置的价格倍率
-                possibility = info.ShopPossibility,    // 使用配置的概率
-                forceUnlock = info.ShopForceUnlock     // 使用配置的解锁状态
+                maxStock = info.ShopMaxStock,
+                priceFactor = info.ShopPriceFactor,
+                possibility = info.ShopPossibility,
+                forceUnlock = info.ShopForceUnlock
             });
             CMDebug.Log($"[商店] 已添加物品 {info.itemId} 到商人 {info.ShopMerchantId}");
         }
