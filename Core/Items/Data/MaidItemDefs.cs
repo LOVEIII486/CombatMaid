@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using FastModdingLib;
+using CombatMaid.Core.Items.Components; // 引用组件
 
 namespace CombatMaid.Core.Items.Data
 {
@@ -7,13 +8,17 @@ namespace CombatMaid.Core.Items.Data
     {
         public const int ID_MAID_CONTRACT = 88888;
 
-        public static List<ItemData> GetDefinitions()
+        // 返回类型改为 List<MaidItemInfo>
+        public static List<MaidItemInfo> GetDefinitions()
         {
-            return new List<ItemData>
+            return new List<MaidItemInfo>
             {
-                new ItemData
+                // === 物品 1: 女仆契约 ===
+                new MaidItemInfo
                 {
+                    // [基础 ItemData 属性]
                     itemId = ID_MAID_CONTRACT,
+                    spritePath = "MaidContract_icon_512.png",
                     localizationKey = "Item_MaidContract_Name",
                     localizationDesc = "Item_MaidContract_Desc",
                     value = 8888,
@@ -25,10 +30,28 @@ namespace CombatMaid.Core.Items.Data
                     {
                         useTime = 3.0f,
                         useSound = "Paper", 
-                        // [修改] 清空 behaviors，我们将在代码里手动挂载上面的 SimpleUseBehavior
-                        behaviors = new List<UsageBehaviorData>() 
+                        behaviors = new List<UsageBehaviorData>() // 空行为，由 SimpleUseBehavior 接管
+                    },
+
+                    // [新增 模组扩展属性]
+                    // 1. 指定外观借用 ID (73 = 信件)
+                    VisualReferenceId = 73,
+                    
+                    // 2. 指定出售商人 (神秘商人)
+                    ShopMerchantId = MerchantIds.Myst,
+                    
+                    // 3. 指定逻辑脚本 (挂载召唤逻辑)
+                    CustomComponentType = typeof(Component_MaidContract),
+                    
+                    // 4. 指定额外参数
+                    CustomConstants = new Dictionary<string, object>
+                    {
+                        { "ConsumeOnUse", true }
                     }
                 }
+                
+                // 未来添加新物品直接在这里 new 一个 MaidItemInfo 即可
+                // 比如: new MaidItemInfo { itemId = 88999, VisualReferenceId = 123, ... }
             };
         }
     }
