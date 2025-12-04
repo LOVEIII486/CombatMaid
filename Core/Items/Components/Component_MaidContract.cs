@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using ItemStatsSystem;
-using CombatMaid.Core; 
+using CombatMaid.Core;
 
 namespace CombatMaid.Core.Items.Components
 {
@@ -24,10 +24,10 @@ namespace CombatMaid.Core.Items.Components
 
             // 在玩家前方生成
             Vector3 spawnPos = player.transform.position + player.transform.forward * 1.5f;
-            MaidManager.Instance.SpawnMaidAt(spawnPos);
+            MaidManager.Instance.SpawnMaidAt("RoyalMaid_Bella", spawnPos);
 
             player.PopText("契约成立！");
-            
+
             //似乎不需要
             //item.DestroyTree();
         }
