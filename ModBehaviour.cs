@@ -52,6 +52,15 @@ namespace CombatMaid
                 CMDebug.LogError($"ModSetting 依赖缺失或初始化失败！");
             }
             
+            // 1. 初始化注册表
+            CombatMaid.Core.Items.ItemRegistry.Initialize();
+
+            // 2. 挂载商人注入器
+            if (gameObject.GetComponent<CombatMaid.Core.Items.Merchant.MerchantInjector>() == null)
+            {
+                gameObject.AddComponent<CombatMaid.Core.Items.Merchant.MerchantInjector>();
+            }
+            
             // 输出所有可用模型id
             CombatMaid.Core.CustomModel.CustomModelBridge.LogAvailableModels();
             CombatMaid.Core.BuffsSystem.MaidBuffRegistry.Instance.Initialize();

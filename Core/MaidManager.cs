@@ -15,8 +15,6 @@ namespace CombatMaid.Core
         public static MaidManager Instance { get; private set; }
 
         private List<MaidController> _activeMaids = new List<MaidController>();
-
-        // 当前加载的默认配置
         private MaidProfileData _currentProfileData;
 
         // 默认回退配置
@@ -248,31 +246,36 @@ namespace CombatMaid.Core
             }
         }
         
-        private void SpawnSpecificMaid(string debugKeyOverride = null)
+        /// <summary>
+        /// [新增公共接口] 在指定位置生成配置好的女仆
+        /// </summary>
+        /// <param name="targetPos">生成坐标</param>
+        /// <param name="presetKeyOverride">可选：覆盖用的基底预设Key</param>
+        public void SpawnMaidAt(Vector3 targetPos, string presetKeyOverride = null)
         {
             if (LevelManager.Instance?.MainCharacter == null || MaidSpawner.Instance == null) return;
 
-            Vector3 mousePos = GetMousePosition();
-            if (mousePos == Vector3.zero) return;
-
+            // 1. 确保配置已加载
             if (_currentProfileData == null) LoadDefaultPreset();
 
             var spawnConfig = _currentProfileData.PresetConfig;
             var extraData = _currentProfileData.ExtraData;
             
-            string targetKey = !string.IsNullOrEmpty(extraData.BasePresetKey) ? extraData.BasePresetKey : debugKeyOverride;
-            
-            if (string.IsNullOrEmpty(targetKey)) targetKey = "Cname_Usec";
+            // 2. 确定基底预设 (优先使用 Config 中的定义)
+            string targetKey = !string.IsNullOrEmpty(extraData.BasePresetKey) ? extraData.BasePresetKey : presetKeyOverride;
+            if (string.IsNullOrEmpty(targetKey)) targetKey = "Cname_Usec"; // 保底
 
             CMDebug.Log($"正在基于预设 [{targetKey}] 生成女仆...");
 
-            MaidSpawner.Instance.SpawnMaid(targetKey, mousePos, LevelManager.Instance.MainCharacter, 
+            // 3. 调用 Spawner 生成物理实体
+            MaidSpawner.Instance.SpawnMaid(targetKey, targetPos, LevelManager.Instance.MainCharacter, 
                 spawnConfig, _currentProfileData.ProfileName, (ai) =>
             {
+                // 4. [关键] 挂载控制器并初始化
                 var controller = ai.gameObject.AddComponent<MaidController>();
                 controller.Initialize(_currentProfileData, LevelManager.Instance.MainCharacter);
                 
-                // 应用自定义模型
+                // 5. [关键] 应用自定义模型 (如果有)
                 if (extraData != null && !string.IsNullOrEmpty(extraData.CustomModelID))
                 {
                     this.StartCoroutine(
@@ -283,9 +286,20 @@ namespace CombatMaid.Core
                     );
                 }
                 
+                // 6. 注册到管理列表
                 if (!_activeMaids.Contains(controller)) _activeMaids.Add(controller);
+                
                 if (ai.CharacterMainControl != null) ai.CharacterMainControl.PopText("女仆就绪！");
             });
+        }
+        
+        private void SpawnSpecificMaid(string debugKeyOverride = null)
+        {
+            Vector3 mousePos = GetMousePosition();
+            if (mousePos == Vector3.zero) return;
+
+            // 调用公共方法
+            SpawnMaidAt(mousePos, debugKeyOverride);
         }
 
         public void DespawnTeam()
