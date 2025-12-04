@@ -5,3 +5,5 @@ Setting_AttackMultiplier,攻击倍率,1.0,GeneralSettings
 Setting_MoveSpeed,移动速度,1.0,GeneralSettings
 Item_MaidContract,标准女仆契约,1.0,MaidItemName
 Item_MaidContract_Desc,召唤皇家女仆-贝拉,1.0,MaidItemDescription
+Item_VialMaid_I,瓶中女仆·I型,1.0,MaidItemName
+Item_VialMaid_I_Desc,封存于魔法容器中的临时契约女仆。只需在危急时刻打碎契约瓶，即可短暂召唤出能协助主人撤离的应急女仆。属于一次性使用的短效支援女仆。,1.0,MaidItemDescription
