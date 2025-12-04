@@ -19,6 +19,9 @@
     <Reference Include="0Harmony">
       <HintPath>0Harmony.dll</HintPath>
     </Reference>
+    <Reference Include="FastModdingLib">
+      <HintPath>FastModdingLib.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

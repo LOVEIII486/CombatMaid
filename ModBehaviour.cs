@@ -1,9 +1,12 @@
 using System;
 using CombatMaid.Core;
+using CombatMaid.Core.Items.DebugTools;
+using CombatMaid.Core.Items.Logic;
 using HarmonyLib;
 using Duckov.Modding;
 using CombatMaid.Localization;
 using CombatMaid.ModSettingsApi;
+using FastModdingLib;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -12,6 +15,7 @@ namespace CombatMaid
     public class ModBehaviour : Duckov.Modding.ModBehaviour
     {
         public static ModBehaviour Instance { get; private set; }
+        public string ModRootPath => info.path;
         
         private const string HarmonyId = "com.LOVEIII486.CombatMaid"; 
         
@@ -40,6 +44,19 @@ namespace CombatMaid
             base.OnAfterSetup();
     
             InitializeLocalization(); 
+
+            // --- 修改部分开始 ---
+            // 使用新的 Registry 初始化物品
+            MaidItemRegistry.Initialize(ModRootPath);
+
+            // 挂载调试脚本 (仅在 Debug 模式或即使发布也保留作为彩蛋)
+            // 你也可以加个 Config 判断 if (DebugMode) ...
+            if (gameObject.GetComponent<ItemDebugSpawner>() == null)
+            {
+                gameObject.AddComponent<ItemDebugSpawner>();
+            }
+            // --- 修改部分结束 ---
+
             InitializeMaidSystem();
 
             if (ModSettingAPI.Init(info))
@@ -49,21 +66,8 @@ namespace CombatMaid
             }
             else
             {
-                CMDebug.LogError($"ModSetting 依赖缺失或初始化失败！");
+                CMDebug.LogWarning("ModSettingAPI 初始化失败");
             }
-            
-            // 1. 初始化注册表
-            CombatMaid.Core.Items.ItemRegistry.Initialize();
-
-            // 2. 挂载商人注入器
-            if (gameObject.GetComponent<CombatMaid.Core.Items.Merchant.MerchantInjector>() == null)
-            {
-                gameObject.AddComponent<CombatMaid.Core.Items.Merchant.MerchantInjector>();
-            }
-            
-            // 输出所有可用模型id
-            CombatMaid.Core.CustomModel.CustomModelBridge.LogAvailableModels();
-            CombatMaid.Core.BuffsSystem.MaidBuffRegistry.Instance.Initialize();
         }
 
         private void OnDisable()
@@ -72,6 +76,9 @@ namespace CombatMaid
             CleanupSceneHooks();
             CleanupHarmonyPatches();
             CleanupMaidSystem();
+            
+            // 可选：如果需要在禁用时卸载物品，可以调用 FML 的 UnregisterAllItem
+            ItemUtils.UnregisterAllItem("CombatMaid");
 
             Instance = null;
             CMDebug.LogInfo($"模组已禁用");
@@ -81,16 +88,13 @@ namespace CombatMaid
 
         private void InitializeMaidSystem()
         {
-            if (gameObject.GetComponent<MaidSpawner>() == null)
+            // 这里只需要初始化 Manager，物品加载已经移到上面了
+            if (MaidManager.Instance == null)
             {
-                gameObject.AddComponent<MaidSpawner>();
+                var go = new GameObject("MaidManager");
+                go.AddComponent<MaidManager>();
+                DontDestroyOnLoad(go);
             }
-            if (gameObject.GetComponent<MaidManager>() == null)
-            {
-                gameObject.AddComponent<MaidManager>();
-            }
-
-            CMDebug.LogInfo($"女仆核心系统 (Spawner & Manager) 已挂载");
         }
 
         private void CleanupMaidSystem()
@@ -217,5 +221,17 @@ namespace CombatMaid
         }
 
         #endregion
+        
+        private void OnDestroy()
+        {
+            CleanupHarmonyPatches();
+            CleanupSceneHooks();
+            
+            // --- 新增清理 ---
+            MaidItemRegistry.Cleanup();
+            // ----------------
+            
+            Instance = null;
+        }
     }
 }

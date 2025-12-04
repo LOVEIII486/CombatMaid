@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using CombatMaid.Core.Items;
 using UnityEngine;
 using Duckov.Modding;
 using CombatMaid.Core.MaidConfigs;
 using CombatMaid.Core.MaidFSM.States;
-using Duckov.ItemBuilders; // 引用配置命名空间
+using Duckov.ItemBuilders;
+using ItemStatsSystem; // 引用配置命名空间
 using Newtonsoft.Json;
 
 namespace CombatMaid.Core
@@ -245,6 +247,7 @@ namespace CombatMaid.Core
                 }
             }
         }
+        
         
         /// <summary>
         /// [新增公共接口] 在指定位置生成配置好的女仆
