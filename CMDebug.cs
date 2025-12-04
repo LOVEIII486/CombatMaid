@@ -1,46 +1,52 @@
 ﻿using UnityEngine;
 using System.IO;
-using System.Runtime.CompilerServices; // 用于获取调用者信息
+using System.Runtime.CompilerServices;
 using CombatMaid.Settings;
 
 namespace CombatMaid
 {
     /// <summary>
-    /// 全局调试工具
+    /// 全局日志工具
     /// </summary>
     public static class CMDebug
     {
-        private const string Prefix = "[CombatMaid]";
+        private const string BasePrefix = "[CM]";
 
         /// <summary>
-        /// 普通调试日志
+        /// [调试日志]
         /// </summary>
         public static void Log(object message, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "")
         {
             if (!CombatMaidConfig.DebugMode) return;
-
             string className = Path.GetFileNameWithoutExtension(sourceFilePath);
-            Debug.Log($"{Prefix}[{className}.{memberName}] {message ?? "null"}");
+            Debug.Log($"{BasePrefix}[Debug][{className}.{memberName}] {message ?? "null"}");
         }
 
         /// <summary>
-        /// 警告日志
+        /// [核心日志]
+        /// </summary>
+        public static void LogInfo(object message, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "")
+        {
+            string className = Path.GetFileNameWithoutExtension(sourceFilePath);
+            Debug.Log($"{BasePrefix}[Info][{className}.{memberName}] {message ?? "null"}");
+        }
+
+        /// <summary>
+        /// [警告日志]
         /// </summary>
         public static void LogWarning(object message, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "")
         {
-            // if (!CombatMaidConfig.DebugMode) return;
-
             string className = Path.GetFileNameWithoutExtension(sourceFilePath);
-            Debug.LogWarning($"{Prefix}[{className}.{memberName}] {message ?? "null"}");
+            Debug.LogWarning($"{BasePrefix}[Warn][{className}.{memberName}] {message ?? "null"}");
         }
 
         /// <summary>
-        /// 错误日志
+        /// [错误日志]
         /// </summary>
         public static void LogError(object message, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "")
         {
             string className = Path.GetFileNameWithoutExtension(sourceFilePath);
-            Debug.LogError($"{Prefix}[{className}.{memberName}] {message ?? "null"}");
+            Debug.LogError($"{BasePrefix}[Error][{className}.{memberName}] {message ?? "null"}");
         }
     }
 }

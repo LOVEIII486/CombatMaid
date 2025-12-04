@@ -14,7 +14,6 @@ namespace CombatMaid
         public static ModBehaviour Instance { get; private set; }
         
         private const string HarmonyId = "com.LOVEIII486.CombatMaid"; 
-        private const string LogTag = "[CombatMaid]";
         
         private Harmony _harmony;
         private bool _isPatched = false;
@@ -26,14 +25,14 @@ namespace CombatMaid
             
             if (HarmonyLoad.LoadHarmony() == null)
             {
-                Debug.LogError($"{LogTag} 模组启动失败: 缺少 Harmony 依赖。");
+                CMDebug.LogError($"模组启动失败: 缺少 Harmony 依赖。");
                 return;
             }
             
             InitializeHarmonyPatches();
             InitializeSceneHooks();
             
-            Debug.Log($"{LogTag} 模组已启用");
+            CMDebug.LogInfo($"模组已启用");
         }
         
         protected override void OnAfterSetup()
@@ -50,7 +49,7 @@ namespace CombatMaid
             }
             else
             {
-                Debug.LogError($"{LogTag} ModSetting 依赖缺失或初始化失败！");
+                CMDebug.LogError($"ModSetting 依赖缺失或初始化失败！");
             }
             
             // 输出所有可用模型id
@@ -66,45 +65,39 @@ namespace CombatMaid
             CleanupMaidSystem();
 
             Instance = null;
-            Debug.Log($"{LogTag} 模组已禁用");
+            CMDebug.LogInfo($"模组已禁用");
         }
 
         #region Maid System
 
         private void InitializeMaidSystem()
         {
-            // 1. 挂载生成器 (Spawner)
             if (gameObject.GetComponent<MaidSpawner>() == null)
             {
                 gameObject.AddComponent<MaidSpawner>();
             }
-
-            // 2. 挂载管家 (Manager)
             if (gameObject.GetComponent<MaidManager>() == null)
             {
                 gameObject.AddComponent<MaidManager>();
             }
 
-            Debug.Log($"{LogTag} 女仆核心系统 (Spawner & Manager) 已挂载");
+            CMDebug.LogInfo($"女仆核心系统 (Spawner & Manager) 已挂载");
         }
 
         private void CleanupMaidSystem()
         {
-            // 1. 销毁管理器
             var manager = gameObject.GetComponent<MaidManager>();
             if (manager != null)
             {
                 Destroy(manager);
             }
-
-            // 2. 销毁生成器
             var spawner = gameObject.GetComponent<MaidSpawner>();
             if (spawner != null)
             {
                 Destroy(spawner);
             }
 
-            Debug.Log($"{LogTag} 女仆核心系统已卸载");
+            CMDebug.LogInfo($"女仆核心系统已卸载");
         }
 
         #endregion
@@ -115,7 +108,7 @@ namespace CombatMaid
         {
             LocalizationManager.Initialize(info.path);
             SodaCraft.Localizations.LocalizationManager.OnSetLanguage += OnLanguageChanged;
-            Debug.Log($"{LogTag} 本地化系统已挂载");
+            CMDebug.LogInfo($"本地化系统已挂载");
         }
 
         private void CleanupLocalization()
@@ -146,11 +139,11 @@ namespace CombatMaid
                 }
                 _harmony.PatchAll();
                 _isPatched = true;
-                Debug.Log($"{LogTag} Harmony 补丁应用成功");
+                CMDebug.LogInfo($"Harmony 补丁应用成功");
             }
             catch (Exception ex)
             {
-                Debug.LogError($"{LogTag} Harmony 补丁应用失败: {ex}");
+                CMDebug.LogError($"Harmony 补丁应用失败: {ex}");
             }
         }
 
@@ -162,11 +155,11 @@ namespace CombatMaid
             {
                 _harmony.UnpatchAll(_harmony.Id);
                 _isPatched = false;
-                Debug.Log($"{LogTag} Harmony 补丁已移除");
+                CMDebug.LogInfo($"Harmony 补丁已移除");
             }
             catch (Exception ex)
             {
-                Debug.LogError($"{LogTag} 移除 Harmony 补丁时发生错误: {ex}");
+                CMDebug.LogError($"移除 Harmony 补丁时发生错误: {ex}");
             }
         }
 
@@ -195,7 +188,7 @@ namespace CombatMaid
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            Debug.Log($"{LogTag} 进入场景: {scene.name}");
+            CMDebug.Log($"进入场景: {scene.name}");
 
             if (MaidManager.Instance != null)
             {
@@ -206,7 +199,7 @@ namespace CombatMaid
 
         private void OnSceneUnloaded(Scene scene)
         {
-            Debug.Log($"{LogTag} 场景卸载: {scene.name}");
+            CMDebug.Log($"场景卸载: {scene.name}");
 
             if (MaidManager.Instance != null)
             {
