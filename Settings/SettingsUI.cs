@@ -12,12 +12,13 @@ namespace CombatMaid.Settings
         private const string Key_EnableMaidMode = "EnableMaidMode";
         private const string Key_AttackMultiplier = "AttackMultiplier";
         private const string Key_MoveSpeed = "MoveSpeed";
-
+        private const string Key_DebugMode = "DebugMode";
+        
         public static void Register()
         {
             if (!ModSettingAPI.IsInit)
             {
-                Debug.LogError($"{LogTag} ModSettingAPI 未初始化");
+                CMDebug.LogError($"{LogTag} ModSettingAPI 未初始化");
                 return;
             }
 
@@ -33,10 +34,21 @@ namespace CombatMaid.Settings
                 (value) => 
                 {
                     CombatMaidConfig.EnableMaidMode = value;
-                    Debug.Log($"{LogTag} [实时同步] 女仆模式: {value}");
+                    CMDebug.Log($"{LogTag} [实时同步] 女仆模式: {value}");
                 }
             );
-
+            
+            ModSettingAPI.AddToggle(
+                Key_DebugMode, 
+                "调试模式 (Debug Mode)",
+                CombatMaidConfig.DebugMode, 
+                (value) => 
+                {
+                    CombatMaidConfig.DebugMode = value;
+                    CMDebug.Log($"调试模式已{(value ? "开启" : "关闭")}");
+                }
+            );
+            
             // 攻击倍率滑块
             ModSettingAPI.AddSlider(
                 Key_AttackMultiplier,
@@ -46,7 +58,7 @@ namespace CombatMaid.Settings
                 (value) =>
                 {
                     CombatMaidConfig.AttackMultiplier = value;
-                    Debug.Log($"{LogTag} [实时同步] 攻击倍率: {value:F1}");
+                    CMDebug.Log($"{LogTag} [实时同步] 攻击倍率: {value:F1}");
                 },
                 1, 5
             );
@@ -60,7 +72,7 @@ namespace CombatMaid.Settings
                 (value) =>
                 {
                     CombatMaidConfig.MoveSpeed = value;
-                    Debug.Log($"{LogTag} [实时同步] 移动速度: {value}");
+                    CMDebug.Log($"{LogTag} [实时同步] 移动速度: {value}");
                 }
             );
 
@@ -75,7 +87,7 @@ namespace CombatMaid.Settings
                 false
             );
             
-            Debug.Log($"{LogTag} 设置菜单已注册");
+            CMDebug.Log($"{LogTag} 设置菜单已注册");
         }
     }
 }

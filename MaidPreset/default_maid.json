@@ -6,12 +6,12 @@
     "ShowName": true,
     "ShowHealthBar": true,
 
-    "//--- 生存能力 (大幅优于 Usec: 60) ---": "",
+    "//--- 生命 ---": "",
     "Health": 500.0,
     "MoveSpeedFactor": 1.2,
     "HasSoul": true,
     "Exp": 500,
-    "PushCharacter": false,
+    "PushCharacter": true,
 
     "//--- 物品配置 ---": "",
     "CustomItemIDs": [
@@ -29,14 +29,14 @@
       "y": 0
     },
 
-    "//--- 感知能力 (优于 Usec: 16m/100°) ---": "",
+    "//--- 感知能力 ---": "",
     "SightDistance": 16.0,
     "SightAngle": 100.0,
     "HearingAbility": 1.2,
     "NightVisionAbility": 1.0,
     "ForgetTime": 10.0,
 
-    "//--- 反应与射击 (核心战斗力) ---": "",
+    "//--- 反应与射击 ---": "",
     "ReactionTime": 0.15,
     "NightReactionTimeFactor": 1.0,
     "ShootDelay": 0.1,
@@ -71,12 +71,10 @@
     "DamageMultiplier": 1.1,
     "BulletSpeedMultiplier": 1.2,
     "GunDistanceMultiplier": 1.2,
-    "// Usec是0.5, 这里设为0.4以提高精度": "",
     "GunScatterMultiplier": 0.4,
     "ScatterMultiIfTargetRunning": 1.5,
     "ScatterMultiIfOffScreen": 1.5,
     "GunCritRateGain": 0.1,
-    "// Usec是1.5, 设为1.8提高进攻欲望": "",
     "AiCombatFactor": 1.8,
 
     "//--- 索敌逻辑 ---": "",
@@ -85,7 +83,7 @@
     "MinTraceTargetChance": 1.0,
     "MaxTraceTargetChance": 1.0,
 
-    "//--- 原生技能 (全部关闭, 交给Mod托管) ---": "",
+    "//--- 原生技能 ---": "",
     "HasSkill": false,
     "HasSkillChance": 0.0,
     "SkillSuccessChance": 1.0,
@@ -94,7 +92,7 @@
       "y": 1.0
     },
 
-    "//--- 抗性 (参考 Usec 全1.0) ---": "",
+    "//--- 抗性  ---": "",
     "ResistPhysics": 1.0,
     "ResistFire": 1.0,
     "ResistPoison": 1.0,
@@ -108,8 +106,6 @@
     "CustomModelID": "10004",
     "EnableAutoHeal": true,
     "TacticalMode": "Assault",
-
-    "//--- 技能配置 (Mod) ---": "",
     "EnableGrenade": true,
     "GrenadeItemID": 67,
     "BuffSkillName": "",
