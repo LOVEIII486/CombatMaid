@@ -4,7 +4,8 @@ using System.Reflection;
 using UnityEngine;
 using Duckov.Modding;
 using CombatMaid.Core.MaidConfigs;
-using CombatMaid.Core.MaidFSM.States; // 引用配置命名空间
+using CombatMaid.Core.MaidFSM.States;
+using Duckov.ItemBuilders; // 引用配置命名空间
 using Newtonsoft.Json;
 
 namespace CombatMaid.Core
