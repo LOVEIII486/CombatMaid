@@ -11,14 +11,13 @@ namespace CombatMaid.Core.Items.Data
         {
             return new List<MaidItemInfo>
             {
-                // === 物品 1: 女仆契约 ===
-                new MaidItemInfo
+                new MaidItemInfo // 女仆契约
                 {
                     itemId = 88888,
                     spritePath = "MaidContract_icon_512.png",
                     localizationKey = "Item_MaidContract",
                     localizationDesc = "Item_MaidContract_Desc",
-                    value = 5000,
+                    value = 50000,
                     maxStackCount = 1,
                     weight = 0.01f,
                     tags = new List<string> { "Maid" },
@@ -90,7 +89,7 @@ namespace CombatMaid.Core.Items.Data
                     localizationDesc = "Item_VialMaid_II_Desc",
                     spritePath = "VialMaid_II.png",
 
-                    value = 5000,
+                    value = 6000,
                     weight = 1.2f,
                     maxStackCount = 3,
                     maxDurability = 0f,
@@ -133,7 +132,7 @@ namespace CombatMaid.Core.Items.Data
                     localizationDesc = "Item_VialMaid_III_Desc",
                     spritePath = "VialMaid_III.png",
 
-                    value = 12000,
+                    value = 15000,
                     weight = 1.5f,
                     maxStackCount = 2,
                     maxDurability = 0f,
