@@ -1,12 +1,12 @@
 ﻿using UnityEngine;
-using CombatMaid.Core.MaidSkillSystem; // 引用我们自己的 Helper
+using CombatMaid.Core.MaidSkillSystem;
 
 namespace CombatMaid.Core.MaidSkillSystem.Skills
 {
     public class Skill_GrenadeThrower : MaidSkillBase
     {
         public override string SkillName => "GrenadeThrow";
-        public override float Cooldown => 15.0f; // 冷却 15秒
+        public override float Cooldown => 15.0f;
 
         private int _grenadeItemId;
         private float _throwRange = 25.0f;
@@ -38,7 +38,6 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
             var target = Controller.AI.searchedEnemy;
             if (target == null) return false;
 
-            // [修复] 调用 MaidSkillHelper 而不是 EliteBehaviorHelper
             MaidSkillHelper.LaunchGrenade(
                 Owner, 
                 _grenadeItemId, 

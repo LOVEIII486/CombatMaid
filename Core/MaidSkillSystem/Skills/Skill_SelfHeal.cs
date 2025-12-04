@@ -7,19 +7,16 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
     public class Skill_SelfHeal : MaidSkillBase
     {
         public override string SkillName => "SelfHeal";
-        public override float Cooldown => 5.0f; // 冷却 5秒
+        public override float Cooldown => 5.0f;
 
         private const float HealthThreshold = 0.8f; // 80% 血以下触发
         private readonly HashSet<int> _medIds = new HashSet<int> { 10, 20, 17, 3, 15, 16 };
 
         protected override bool CheckTriggerCondition()
         {
-            // 1. 检查血量
             if (Owner.Health.CurrentHealth / Owner.Health.MaxHealth >= HealthThreshold) 
                 return false;
-
-            // 2. 检查是否有药 (简单的预检查，避免频繁进 TryExecute)
-            // 这里可以简化，直接让 TryExecute 去找
+            
             return true;
         }
 
@@ -37,12 +34,10 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
                 {
                     Owner.UseItem(item);
                     Owner.PopText("使用药品");
-                    return true; // 成功吃药
+                    return true;
                 }
             }
-            
-            // 没药了，可以弹个字提示
-            // Owner.PopText("缺药!"); 
+            Owner.PopText("缺药!"); 
             return false;
         }
     }

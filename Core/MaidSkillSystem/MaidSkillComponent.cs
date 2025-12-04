@@ -4,15 +4,13 @@ using UnityEngine;
 namespace CombatMaid.Core.MaidSkillSystem
 {
     /// <summary>
-    /// 女仆技能管理器 (挂载在 GameObject 上)
+    /// 女仆技能管理器
     /// </summary>
     public class MaidSkillComponent : MonoBehaviour
     {
         private MaidController _controller;
         private List<IMaidSkill> _skills = new List<IMaidSkill>();
         private bool _isInitialized = false;
-
-        // [修复] 添加 SkillCount 属性供外部访问
         public int SkillCount => _skills.Count;
 
         public void Initialize(MaidController controller)
@@ -30,7 +28,7 @@ namespace CombatMaid.Core.MaidSkillSystem
             
             skill.Initialize(_controller);
             _skills.Add(skill);
-            Debug.Log($"[MaidSkill] 已装载技能: {skill.SkillName}");
+            CMDebug.Log($"已装载技能: {skill.SkillName}");
         }
 
         private void Update()

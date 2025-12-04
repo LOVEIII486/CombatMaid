@@ -80,7 +80,7 @@ namespace CombatMaid.Core
 
             // 3. 设置基础 AI 归属
             AI.leader = player;
-            AI.patrolRange = 50.0f; // 给予较大的巡逻范围，具体由状态机控制
+            AI.patrolRange = 25.0f; // 给予较大的巡逻范围，具体由状态机控制
             AI.patrolPosition = player.transform.position;
 
             // 4. 初始化技能系统

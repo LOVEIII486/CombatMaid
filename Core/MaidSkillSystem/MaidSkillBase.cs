@@ -29,7 +29,7 @@ namespace CombatMaid.Core.MaidSkillSystem
         public virtual void Initialize(MaidController controller)
         {
             Controller = controller;
-            _cooldownTimer = Cooldown; // 初始冷却，防止生成瞬间全扔出去
+            _cooldownTimer = Cooldown;
         }
 
         public void OnUpdate(float deltaTime)
@@ -56,11 +56,9 @@ namespace CombatMaid.Core.MaidSkillSystem
         }
 
         public virtual void OnCleanup() { }
-
-        // --- 子类必须实现 ---
         
         /// <summary>
-        /// 检查是否应该释放技能 (例如：血量低于X，周围有敌人)
+        /// 检查是否应该释放技能
         /// </summary>
         protected abstract bool CheckTriggerCondition();
 
@@ -71,7 +69,7 @@ namespace CombatMaid.Core.MaidSkillSystem
 
         protected virtual void OnSkillExecuted() 
         {
-            // Debug.Log($"[Skill] {SkillName} 释放成功");
+            CMDebug.Log($"{SkillName} 释放成功");
         }
     }
 }
