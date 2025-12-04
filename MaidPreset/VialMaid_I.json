@@ -62,7 +62,7 @@
     "CanTalk": true,
 
     "//--- 战斗数值修正 ---": "",
-    "DamageMultiplier": 1.0,
+    "DamageMultiplier": 0.8,
     "BulletSpeedMultiplier": 1.0,
     "GunDistanceMultiplier": 1.0,
     "GunScatterMultiplier": 0.5,
