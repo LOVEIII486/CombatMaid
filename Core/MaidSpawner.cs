@@ -133,7 +133,7 @@ namespace CombatMaid.Core
         // ==================== 预设配置逻辑 ====================
 
         /// <summary>
-        /// 全面解析 MaidConfig 并应用到 CharacterRandomPreset
+        /// 解析 MaidConfig 并应用
         /// </summary>
         private CharacterRandomPreset CreateFullCustomPreset(CharacterRandomPreset source, MaidConfig config,
             string profileName)
@@ -287,8 +287,65 @@ namespace CombatMaid.Core
             return bestFit;
         }
         
+        // ==================== 调试函数 ====================
+        
         /// <summary>
-        /// 输出原始预设的所有属性值
+        /// [调试] 输出所有已加载的预设 Key
+        /// </summary>
+        public void DebugListAllKeys()
+        {
+            if (!_isInitialized) return;
+            
+            CMDebug.Log("========== [可用预设列表] ==========");
+            foreach (var key in _presetMap.Keys)
+            {
+                CMDebug.Log($"- {key}");
+            }
+            CMDebug.Log("==================================");
+        }
+
+        /// <summary>
+        /// [调试] 批量输出官方参考数值
+        /// </summary>
+        public void DebugExportReferenceStats()
+        {
+            if (!_isInitialized)
+            {
+                CMDebug.LogWarning("MaidSpawner 尚未初始化，请稍后再试。");
+                return;
+            }
+
+            // 这里列出你感兴趣的官方预设 ID
+            string[] targetKeys = new string[]
+            {
+                "Cname_Usec",
+                "Cname_Speedy",
+                "Cname_Raider",
+                "Cname_StormCreature",
+                "Cname_Vida",
+                "Cname_BALeader",
+                "Cname_Boss_3Shot"
+            };
+
+            CMDebug.Log("========== 开始导出官方参考数值 ==========");
+            
+            foreach (var key in targetKeys)
+            {
+                if (_presetMap.ContainsKey(key))
+                {
+                    LogPresetDebugInfo(key); 
+                }
+                else
+                {
+                    CMDebug.LogWarning($"未找到官方预设: {key} (可能是拼写错误或该版本游戏未包含)");
+                }
+            }
+            
+            CMDebug.Log("========== 导出结束 ==========");
+        }
+        
+        /// <summary>
+        /// [调试] 输出原始预设的所有属性值
         /// </summary>
         public void LogPresetDebugInfo(string presetKey)
         {

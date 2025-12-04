@@ -66,11 +66,20 @@ namespace CombatMaid.Core
             // F6 清除
             if (Input.GetKeyDown(KeyCode.F6)) DespawnTeam();
             
-            // F8 重载配置 (方便调试JSON修改)
+            // F8 重载配置
             if (Input.GetKeyDown(KeyCode.F8)) LoadAllPresets();
             
             // G 移动指令
             if (Input.GetKeyDown(KeyCode.G)) CommandMoveTeamToMouse();
+            
+            if (Input.GetKeyDown(KeyCode.F9))
+            {
+                if (MaidSpawner.Instance != null)
+                {
+                    MaidSpawner.Instance.DebugListAllKeys();
+                    MaidSpawner.Instance.DebugExportReferenceStats();
+                }
+            }
         }
 
         // ==================== JSON 加载逻辑 ====================
