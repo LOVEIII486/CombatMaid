@@ -11,7 +11,7 @@
     "MoveSpeedFactor": 1.25,
     "HasSoul": true,
     "Exp": 0,
-    "PushCharacter": false,
+    "PushCharacter": true,
 
     "//--- 物品配置 ---": "",
     "CustomItemIDs": [],
