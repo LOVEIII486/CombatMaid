@@ -8,6 +8,8 @@ using Duckov.Modding;
 using SodaCraft.Localizations;
 using ItemStatsSystem;
 using CombatMaid.Core.MaidConfigs;
+using Cysharp.Threading.Tasks;
+using Duckov.Scenes;
 
 namespace CombatMaid.Core
 {
@@ -15,7 +17,6 @@ namespace CombatMaid.Core
     {
         public static MaidSpawner Instance { get; private set; }
 
-        private const float SpawnCheckRadius = 5.0f;
         private Egg _eggPrefab;
         private bool _isInitialized = false;
 
@@ -89,45 +90,78 @@ namespace CombatMaid.Core
                 return;
             }
 
-            try
-            {
-                if (config == null) config = new MaidConfig();
-                
-                CharacterRandomPreset finalPreset = CreateFullCustomPreset(sourcePreset, config, profileName);
-                _tempPresets.Add(finalPreset);
-                
-                Egg egg = Instantiate(_eggPrefab, position, Quaternion.identity);
-                float hatchTime = 0.05f;
-                egg.Init(position, player.transform.forward, player, finalPreset, hatchTime);
-                
-                StartCoroutine(WaitForSpawnRoutine(position, hatchTime, onSuccess));
-            }
-            catch (Exception ex)
-            {
-                CMDebug.LogError($"生成异常: {ex}");
-            }
+            // 1. 准备预设
+            if (config == null) config = new MaidConfig();
+            CharacterRandomPreset finalPreset = CreateFullCustomPreset(sourcePreset, config, profileName);
+            _tempPresets.Add(finalPreset);
+
+            // 2. 启动异步生成流程
+            SpawnMaidDirectlyAsync(finalPreset, position, player, onSuccess).Forget();
         }
 
-        private IEnumerator WaitForSpawnRoutine(Vector3 pos, float hatchTime, Action<AICharacterController> callback)
+        private async UniTaskVoid SpawnMaidDirectlyAsync(CharacterRandomPreset preset, Vector3 position, 
+            CharacterMainControl player, Action<AICharacterController> callback)
         {
-            yield return new WaitForSeconds(hatchTime + 0.1f);
-            float timeout = 2.0f;
-            AICharacterController targetAI = null;
-
-            while (timeout > 0)
+            try 
             {
-                targetAI = FindJustSpawnedAI(pos);
-                if (targetAI != null)
+                // A. 播放特效 (借用 Egg 的特效资源)
+                if (_eggPrefab != null && _eggPrefab.spawnFx != null)
                 {
-                    callback?.Invoke(targetAI);
-                    yield break;
+                    Instantiate(_eggPrefab.spawnFx, position, Quaternion.identity);
                 }
 
-                timeout -= Time.deltaTime;
-                yield return null;
-            }
+                // B. 获取当前场景 Index
+                int sceneIndex = 0;
+                if (MultiSceneCore.MainScene.HasValue)
+                {
+                    sceneIndex = MultiSceneCore.MainScene.Value.buildIndex;
+                }
+                else
+                {
+                    // 如果拿不到 MainScene，就拿当前激活的场景
+                    sceneIndex = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex;
+                }
 
-            CMDebug.LogError($"生成超时。");
+                // C. 直接异步生成角色，并获得返回值
+                // 参数参考 Egg.cs: pos + down*0.25f, forward, sceneIndex, group=null, unk=false
+                CharacterMainControl spawnedChar = await preset.CreateCharacterAsync(
+                    position + Vector3.down * 0.25f, 
+                    player.transform.forward,
+                    sceneIndex, 
+                    null, 
+                    false
+                );
+
+                // D. 初始化 AI 关系
+                if (spawnedChar != null)
+                {
+                    AICharacterController ai = spawnedChar.GetComponentInChildren<AICharacterController>();
+                    
+                    // 修正位置
+                    spawnedChar.SetPosition(position + Vector3.down * 0.25f);
+
+                    if (ai != null)
+                    {
+                        // 设置 PetAI
+                        var petComponent = ai.GetComponent<PetAI>();
+                        if (petComponent != null)
+                        {
+                            petComponent.SetMaster(player);
+                        }
+
+                        // 设置队长和队伍
+                        ai.leader = player;
+                        spawnedChar.SetTeam(player.Team);
+                        
+                        callback?.Invoke(ai);
+                        CMDebug.Log($"精准生成成功: {spawnedChar.name}");
+                    }
+                }
+            }
+            catch (System.Exception ex)
+            {
+                CMDebug.LogError($"异步生成失败: {ex}");
+            }
         }
 
         // ==================== 预设配置逻辑 ====================
@@ -266,25 +300,6 @@ namespace CombatMaid.Core
                     list.Add(desc);
                 }
             }
-        }
-
-        private AICharacterController FindJustSpawnedAI(Vector3 spawnPos)
-        {
-            var allAIs = FindObjectsOfType<AICharacterController>();
-            AICharacterController bestFit = null;
-            float minDistance = SpawnCheckRadius;
-            foreach (var ai in allAIs)
-            {
-                if (ai.CharacterMainControl.Health.IsDead) continue;
-                float dist = Vector3.Distance(ai.transform.position, spawnPos);
-                if (dist < minDistance)
-                {
-                    minDistance = dist;
-                    bestFit = ai;
-                }
-            }
-
-            return bestFit;
         }
         
         // ==================== 调试函数 ====================
