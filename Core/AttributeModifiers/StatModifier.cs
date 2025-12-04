@@ -1,19 +1,16 @@
 ﻿using System.Collections.Generic;
-using ItemStatsSystem.Stats; // 游戏原生属性系统命名空间
+using ItemStatsSystem.Stats;
 using UnityEngine;
-using CombatMaid; // 引用 ModBehaviour
+using CombatMaid;
 
 namespace CombatMaid.Core.AttributeModifiers
 {
     /// <summary>
-    /// Stat 修改器 - 封装游戏原生的 ItemStatsSystem
+    /// Stat 修改器
     /// </summary>
     public static class StatModifier
     {
-        private const string LogTag = "[CombatMaid.StatModifier]";
-
         // ========== Stat 属性白名单 ==========
-        // 包含生存、移动、枪械、抗性等常用属性
         private static readonly HashSet<string> StatAttributes = new HashSet<string>
         {
             // === 生存基础 ===
@@ -72,18 +69,18 @@ namespace CombatMaid.Core.AttributeModifiers
             if (character == null || character.CharacterItem == null) return null;
             if (!CanModify(attributeName))
             {
-                Debug.LogWarning($"{LogTag} 属性 {attributeName} 不在支持列表中");
+                CMDebug.LogWarning($"属性 {attributeName} 不在支持列表中");
                 return null;
             }
 
             var stat = character.CharacterItem.GetStat(attributeName);
             if (stat == null)
             {
-                Debug.LogWarning($"{LogTag} 无法获取 Stat: {attributeName}");
+                CMDebug.LogWarning($"无法获取 Stat: {attributeName}");
                 return null;
             }
 
-            // [修改] Source 传入 ModBehaviour.Instance，表明这是 CombatMaid 施加的修改
+            // Source 传入 ModBehaviour.Instance，表明这是 CombatMaid 施加的修改
             var modifier = new Modifier(type, value, ModBehaviour.Instance); 
             stat.AddModifier(modifier);
             
@@ -101,7 +98,7 @@ namespace CombatMaid.Core.AttributeModifiers
             }
         }
 
-        // ========== 常用常量定义 (方便代码调用) ==========
+        // ========== 常用常量定义  ==========
         public static class Attributes
         {
             // 生存

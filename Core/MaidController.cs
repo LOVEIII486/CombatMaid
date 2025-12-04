@@ -9,13 +9,11 @@ using CombatMaid.Core.MaidSkillSystem.Skills;
 namespace CombatMaid.Core
 {
     /// <summary>
-    /// 女仆核心控制器 (FSM重构版)
+    /// 女仆核心控制器
     /// 职责：组件组装、状态机驱动、对外接口
     /// </summary>
     public class MaidController : MonoBehaviour
     {
-        private const string LogTag = "[CombatMaid.MaidController]";
-        
         // ==================== 静态注册表 ====================
         
         private static readonly Dictionary<AICharacterController, MaidController> _maidRegistry 
@@ -34,7 +32,7 @@ namespace CombatMaid.Core
         public CharacterMainControl MainOwner { get; private set; }
         
         /// <summary>
-        /// 有限状态机：管理 AI 的行为模式 (自主/指令/跟随)
+        /// 有限状态机：管理 AI 的行为模式
         /// </summary>
         public MaidStateMachine StateMachine { get; private set; }
         
@@ -45,7 +43,7 @@ namespace CombatMaid.Core
         
         [Header("Distance Config")]
         public float ForceFollowDistance = 15.0f;     // 超过此距离 -> 请求进入强制跟随状态
-        public float HoldMaxDistance = 25.0f;         // [新增] 驻守模式下的最大宽容距离 (超过这个距离才会破防跟上)
+        public float HoldMaxDistance = 25.0f;         // 驻守模式下的最大宽容距离 (超过这个距离才会破防跟上)
         public float TeleportDistance = 30.0f;        // 超过此距离 -> 强制传送
         public float TeleportTimeout = 8.0f;          // 强制跟随卡住超过此时间 -> 传送
         public float SafeDistanceToResumeCombat = 10.0f; // 回到此距离内 -> 恢复自主战斗状态
@@ -70,7 +68,7 @@ namespace CombatMaid.Core
     
             if (AI == null)
             {
-                Debug.LogError($"{LogTag} 严重错误：找不到 AICharacterController！");
+                CMDebug.LogError($"严重错误：找不到 AICharacterController！");
                 return;
             }
 
@@ -82,11 +80,10 @@ namespace CombatMaid.Core
 
             // 3. 设置基础 AI 归属
             AI.leader = player;
-            AI.patrolRange = 100.0f; // 给予较大的巡逻范围，具体由状态机控制 patrolPosition
+            AI.patrolRange = 50.0f; // 给予较大的巡逻范围，具体由状态机控制
             AI.patrolPosition = player.transform.position;
 
-            // 4. 初始化技能系统 (核心变更：替代原 MaidHeal 组件)
-            // 之前是直接 AddComponent<MaidHeal>，现在统一由 SkillComponent 管理
+            // 4. 初始化技能系统
             SkillSystem = gameObject.GetComponent<MaidSkillComponent>();
             if (SkillSystem == null) SkillSystem = gameObject.AddComponent<MaidSkillComponent>();
             SkillSystem.Initialize(this);
@@ -97,22 +94,20 @@ namespace CombatMaid.Core
             {
                 var extra = profileData.ExtraData;
 
-                // 1. [生存] 自动回血
+                // 1. 自动回血
                 if (extra.EnableAutoHeal)
                 {
                     SkillSystem.AddSkill(new Skill_SelfHeal());
                 }
 
-                // 2. [攻击] 投掷手雷
+                // 2. 投掷手雷
                 if (extra.EnableGrenade)
                 {
-                    // 如果 JSON 里配了 ID 就用，没配用默认 133
-                    int grenId = extra.GrenadeItemID > 0 ? extra.GrenadeItemID : 133;
+                    int grenId = extra.GrenadeItemID > 0 ? extra.GrenadeItemID : 67;
                     SkillSystem.AddSkill(new Skill_GrenadeThrower(grenId));
                 }
 
-                // 3. [支援] 施加 Buff
-                // 只要填了 Buff 名字，就认为启用了这个技能
+                // 3. 施加 自定义 Buff
                 if (!string.IsNullOrEmpty(extra.BuffSkillName) && extra.BuffSkillID > 0)
                 {
                     SkillSystem.AddSkill(new Skill_BuffPlayer(extra.BuffSkillName, extra.BuffSkillID));
@@ -122,7 +117,7 @@ namespace CombatMaid.Core
             // 5. 初始化状态机
             InitializeStateMachine();
     
-            Debug.Log($"{LogTag} 初始化完成。宿主: {player.name}, 技能数: {SkillSystem.SkillCount}");
+            CMDebug.Log($"初始化完成。宿主: {player.name}, 技能数: {SkillSystem.SkillCount}");
         }
 
         private void InitializeStateMachine()
@@ -136,7 +131,7 @@ namespace CombatMaid.Core
             StateMachine.AddState(new State_HoldPosition());
             StateMachine.AddState(new State_PassiveFollow());
 
-            // 启动默认状态 (自主模式)
+            // 启动默认状态 自主模式
             StateMachine.ChangeState<State_Autonomous>();
         }
 
@@ -145,7 +140,7 @@ namespace CombatMaid.Core
             if (AI == null || MaidCharacter == null || MaidCharacter.Health.IsDead) 
                 return;
 
-            // 1. 驱动状态机心跳
+            // 驱动状态机心跳
             StateMachine?.Update();
         }
 
@@ -182,7 +177,7 @@ namespace CombatMaid.Core
             
             float dist = Vector3.Distance(transform.position, MainOwner.transform.position);
             
-            // 紧急情况：如果距离极远(可能掉出地图或被卡飞)，直接在这里处理传送，避免状态机逻辑还没跑完人没了
+            // 紧急情况：如果距离极远，直接在这里处理传送，
             // 但为了逻辑统一，建议尽量交给 State_ForceFollow 处理。
             // 这里只做阈值判断。
             if (dist > TeleportDistance) return true;

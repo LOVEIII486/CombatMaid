@@ -7,13 +7,10 @@ using UnityEngine;
 namespace CombatMaid.Core.AttributeModifiers
 {
     /// <summary>
-    /// AI 字段修改器 - 通过反射修改 AICharacterController 的私有字段
+    /// AI 字段修改器
     /// </summary>
     public static class AIFieldModifier
-    {
-        private const string LogTag = "[CombatMaid.AIFieldModifier]";
-        
-        // 辅助组件：用于在对象激活时启动协程
+    {   
         private class ModificationApplier : MonoBehaviour
         {
             private void Start()
@@ -35,7 +32,6 @@ namespace CombatMaid.Core.AttributeModifiers
             return character.GetComponentInParent<AICharacterController>();
         }
 
-        // 存储结构
         private struct PendingModification
         {
             public string FieldName;
@@ -48,7 +44,7 @@ namespace CombatMaid.Core.AttributeModifiers
 
         private static readonly HashSet<CharacterMainControl> _processingCharacters = new HashSet<CharacterMainControl>();
 
-        // ========== AI 字段定义 (对应 AICharacterController 源码) ==========
+        // ========== AI 字段定义 ==========
         public static class Fields
         {
             public const string ReactionTime = "reactionTime";
@@ -65,7 +61,7 @@ namespace CombatMaid.Core.AttributeModifiers
             public const string ItemSkillCoolTime = "itemSkillCoolTime";
         }
 
-        // 白名单：防止反射修改了不该改的字段导致崩溃
+        // 白名单
         private static readonly HashSet<string> ValidFields = new HashSet<string>
         {
             Fields.ReactionTime, Fields.ShootDelay, Fields.ShootCanMove, Fields.CanDash, Fields.DefaultWeaponOut,
@@ -75,8 +71,7 @@ namespace CombatMaid.Core.AttributeModifiers
 
         public static bool CanModify(string fieldName) => ValidFields.Contains(fieldName);
 
-        // ========== 延迟修改接口 (推荐) ==========
-        // 如果你不确定 AI 是否已经初始化完毕，用这个
+        // ========== 延迟修改接口 ==========
         public static void ModifyDelayed(CharacterMainControl character, string fieldName, float value, bool multiply = false)
         {
             if (character == null) return;
@@ -112,7 +107,6 @@ namespace CombatMaid.Core.AttributeModifiers
         }
 
         // ========== 立即修改接口 ==========
-        // 仅在确定 AI 已经存在时调用
         public static void ModifyImmediate(CharacterMainControl character, string fieldName, float value, bool multiply = false)
         {
             var ai = GetAI(character);
@@ -126,10 +120,8 @@ namespace CombatMaid.Core.AttributeModifiers
 
         private static IEnumerator ApplyPendingModifications(CharacterMainControl character)
         {
-            // 等待帧结束，确保 Start/Awake 跑完
             yield return new WaitForEndOfFrame();
 
-            // 双重保险
             if (character != null && GetAI(character) == null)
             {
                 yield return new WaitForEndOfFrame();
@@ -174,7 +166,7 @@ namespace CombatMaid.Core.AttributeModifiers
 
                 if (field == null)
                 {
-                    Debug.LogWarning($"{LogTag} 字段 '{fieldName}' 未在 {type.Name} 中找到");
+                    CMDebug.LogWarning($"字段 '{fieldName}' 未在 {type.Name} 中找到");
                     return;
                 }
 
@@ -209,7 +201,7 @@ namespace CombatMaid.Core.AttributeModifiers
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"{LogTag} 修改 {fieldName} 异常: {ex.Message}");
+                CMDebug.LogWarning($"修改 {fieldName} 异常: {ex.Message}");
             }
         }
     }

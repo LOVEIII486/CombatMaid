@@ -10,7 +10,6 @@ namespace CombatMaid.Localization
     /// </summary>
     public static class LocalizationManager
     {
-        private const string LogTag = "[CombatMaid.Localization]";
         private const string LocalizationFolderName = "Localization";
         
         // 缓存已加载的语言提供者，避免重复IO
@@ -27,7 +26,7 @@ namespace CombatMaid.Localization
         {
             if (_isInitialized)
             {
-                Debug.LogWarning($"{LogTag} 本地化系统已初始化，跳过重复初始化");
+                CMDebug.LogWarning($"本地化系统已初始化，跳过重复初始化");
                 return;
             }
 
@@ -40,7 +39,7 @@ namespace CombatMaid.Localization
                 // 尝试加载当前语言，如果失败则执行后备逻辑
                 if (!LoadAndSetLanguage(_currentLanguage))
                 {
-                    Debug.LogWarning($"{LogTag} 无法加载语言 {_currentLanguage}，尝试后备语言...");
+                    CMDebug.LogWarning($"无法加载语言 {_currentLanguage}，尝试后备语言...");
                     
                     // 优先使用英文作为后备
                     if (!LoadAndSetLanguage(SystemLanguage.English))
@@ -49,7 +48,7 @@ namespace CombatMaid.Localization
                         if (!LoadAndSetLanguage(SystemLanguage.ChineseSimplified) &&
                             !LoadAndSetLanguage(SystemLanguage.Chinese))
                         {
-                            Debug.LogError($"{LogTag} 严重错误：无法加载任何语言文件（English/Chinese）！");
+                            CMDebug.LogError($"严重错误：无法加载任何语言文件（English/Chinese）！");
                         }
                     }
                 }
@@ -58,7 +57,7 @@ namespace CombatMaid.Localization
             }
             catch (Exception ex)
             {
-                Debug.LogError($"{LogTag} 初始化失败: {ex.Message}\n{ex.StackTrace}");
+                CMDebug.LogError($"初始化失败: {ex.Message}\n{ex.StackTrace}");
             }
         }
 
@@ -79,12 +78,12 @@ namespace CombatMaid.Localization
                 {
                     if (LoadAndSetLanguage(_currentLanguage))
                     {
-                        Debug.Log($"{LogTag} 语言已刷新: {_currentLanguage}");
+                        CMDebug.Log($"语言已刷新: {_currentLanguage}");
                     }
                     else
                     {
                         // 如果新语言加载失败，保持旧的Provider或尝试后备
-                        Debug.LogWarning($"{LogTag} 切换到 {_currentLanguage} 失败，尝试使用后备语言");
+                        CMDebug.LogWarning($"切换到 {_currentLanguage} 失败，尝试使用后备语言");
                         if (_currentProvider == null)
                         {
                             LoadAndSetLanguage(SystemLanguage.English);
@@ -97,7 +96,7 @@ namespace CombatMaid.Localization
             }
             catch (Exception ex)
             {
-                Debug.LogError($"{LogTag} 刷新失败: {ex.Message}");
+                CMDebug.LogError($"刷新失败: {ex.Message}");
             }
         }
 
@@ -187,12 +186,12 @@ namespace CombatMaid.Localization
                 LoadedProviders[language] = provider;
                 _currentProvider = provider;
                 
-                Debug.Log($"{LogTag} 已加载并切换语言: {fileName}");
+                CMDebug.LogInfo($"已加载并切换语言: {fileName}");
                 return true;
             }
             catch (Exception ex)
             {
-                Debug.LogError($"{LogTag} 加载文件失败 {fileName}: {ex.Message}");
+                CMDebug.LogError($"加载文件失败 {fileName}: {ex.Message}");
                 return false;
             }
         }

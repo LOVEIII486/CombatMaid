@@ -3,12 +3,12 @@
 namespace CombatMaid.Core.AttributeModifiers
 {
     /// <summary>
-    /// 统一属性修改器 (门面类)
+    /// 统一属性修改器
     /// 自动分发 Stat 和 AI 字段的修改请求
     /// </summary>
     public static class AttributeModifier
     {
-        // ========== 快捷修改常用属性 (Helper) ==========
+        // ========== 快捷修改常用属性 ==========
         public static class Quick
         {
             /// <summary>
@@ -58,7 +58,7 @@ namespace CombatMaid.Core.AttributeModifiers
             }
         }
 
-        // ========== 标准属性名称定义 (常量池) ==========
+        // ========== 标准属性名称定义 ==========
         // 用这个类来避免手写字符串出错
         public static class StandardAttributes
         {

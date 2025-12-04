@@ -10,7 +10,6 @@ namespace CombatMaid
     /// </summary>
     public static class HarmonyLoad
     {
-        private const string LogTag = "[CombatMaid.HarmonyLoad]";
         private static Assembly _harmonyAssembly;
 
         /// <summary>
@@ -33,11 +32,11 @@ namespace CombatMaid
 
             if (_harmonyAssembly != null)
             {
-                Debug.Log($"{LogTag} 检测到环境已加载 Harmony: {_harmonyAssembly.FullName}");
+                CMDebug.LogInfo($"检测到环境已加载 Harmony: {_harmonyAssembly.FullName}");
                 return _harmonyAssembly;
             }
 
-            Debug.LogError($"{LogTag} 严重错误: 未找到 Harmony 库！请确保已安装依赖库或 Mod 加载器提供了 Harmony 环境。");
+            CMDebug.LogError($"严重错误: 未找到 Harmony 库！请确保已安装依赖库或 Mod 加载器提供了 Harmony 环境。");
             return null;
         }
     }

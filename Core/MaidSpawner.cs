@@ -13,7 +13,6 @@ namespace CombatMaid.Core
 {
     public class MaidSpawner : MonoBehaviour
     {
-        private const string LogTag = "[CombatMaid.MaidSpawner]";
         public static MaidSpawner Instance { get; private set; }
 
         private const float SpawnCheckRadius = 5.0f;
@@ -23,8 +22,7 @@ namespace CombatMaid.Core
         private List<CharacterRandomPreset> _tempPresets = new List<CharacterRandomPreset>();
 
         private Dictionary<string, CharacterRandomPreset> _presetMap = new Dictionary<string, CharacterRandomPreset>();
-
-        // [新增] 预设缓存池：防止同一个配置重复生成 ScriptableObject
+        
         private Dictionary<string, CharacterRandomPreset> _generatedPresetsCache =
             new Dictionary<string, CharacterRandomPreset>();
 
@@ -61,7 +59,7 @@ namespace CombatMaid.Core
 
             if (_eggPrefab == null)
             {
-                Debug.LogError($"{LogTag} 严重错误：未找到 Egg 预制体。");
+                CMDebug.LogError($"严重错误：未找到 Egg 预制体。");
                 yield break;
             }
 
@@ -87,29 +85,26 @@ namespace CombatMaid.Core
 
             if (string.IsNullOrEmpty(presetNameKey) || !_presetMap.TryGetValue(presetNameKey, out var sourcePreset))
             {
-                Debug.LogError($"{LogTag} 预设 '{presetNameKey}' 不存在。");
+                CMDebug.LogError($"预设 '{presetNameKey}' 不存在。");
                 return;
             }
 
             try
             {
                 if (config == null) config = new MaidConfig();
-
-                // 1. 创建并配置基础预设 (数值、物品等)
+                
                 CharacterRandomPreset finalPreset = CreateFullCustomPreset(sourcePreset, config, profileName);
                 _tempPresets.Add(finalPreset);
-
-                // 2. 生成蛋
+                
                 Egg egg = Instantiate(_eggPrefab, position, Quaternion.identity);
                 float hatchTime = 0.05f;
                 egg.Init(position, player.transform.forward, player, finalPreset, hatchTime);
-
-                // 3. 等待生成并回调
+                
                 StartCoroutine(WaitForSpawnRoutine(position, hatchTime, onSuccess));
             }
             catch (Exception ex)
             {
-                Debug.LogError($"{LogTag} 生成异常: {ex}");
+                CMDebug.LogError($"生成异常: {ex}");
             }
         }
 
@@ -132,23 +127,22 @@ namespace CombatMaid.Core
                 yield return null;
             }
 
-            Debug.LogError($"{LogTag} 生成超时。");
+            CMDebug.LogError($"生成超时。");
         }
 
         // ==================== 预设配置逻辑 ====================
 
         /// <summary>
-        /// 全面解析 MaidConfig 并应用到 CharacterRandomPreset (带缓存)
+        /// 全面解析 MaidConfig 并应用到 CharacterRandomPreset
         /// </summary>
         private CharacterRandomPreset CreateFullCustomPreset(CharacterRandomPreset source, MaidConfig config,
             string profileName)
         {
             // 1. 生成基于 ProfileName 的固定后缀
-            // 这样同一个配置生成的预设 ID 永远是相同的
             string uniqueSuffix = $"_CM_{profileName}";
             string finalKey = source.nameKey + uniqueSuffix;
 
-            // 2. [核心优化] 检查缓存
+            // 2. 检查缓存
             // 如果这个预设之前已经生成过，直接返回缓存的实例，不再 Instantiate
             if (_generatedPresetsCache.TryGetValue(finalKey, out var cachedPreset))
             {
@@ -159,15 +153,14 @@ namespace CombatMaid.Core
             CharacterRandomPreset preset = Instantiate(source);
             LogPresetDebugInfo("Cname_Usec");
             
-            preset.name = source.name + uniqueSuffix; // Unity 资产名 (e.g. Cname_Usec_CM_RoyalMaid_Bella)
-            preset.nameKey = finalKey; // 本地化 Key
+            preset.name = source.name + uniqueSuffix;
+            preset.nameKey = finalKey;
             preset.team = Teams.player;
 
             // 注册本地化名称
             string displayName = !string.IsNullOrEmpty(config.CustomName) ? config.CustomName : "战斗女仆";
             if (LocalizationManager.overrideTexts != null)
             {
-                // 使用索引器赋值，如果 Key 已存在会自动更新，不存在会自动添加
                 LocalizationManager.overrideTexts[finalKey] = displayName;
             }
 
@@ -248,7 +241,7 @@ namespace CombatMaid.Core
                 SetupInventory(preset, config.CustomItemIDs);
             }
 
-            // 4. [核心优化] 将新生成的预设加入缓存
+            // 4. 将新生成的预设加入缓存
             _generatedPresetsCache.Add(finalKey, preset);
 
             return preset;
@@ -295,20 +288,19 @@ namespace CombatMaid.Core
         }
         
         /// <summary>
-        /// 输出原始预设的所有属性值，用于参考默认配置
+        /// 输出原始预设的所有属性值
         /// </summary>
-        /// <param name="presetKey">预设Key，例如 "Cname_Usec"</param>
         public void LogPresetDebugInfo(string presetKey)
         {
             if (!_isInitialized)
             {
-                Debug.LogWarning($"{LogTag} Spawner 未初始化，无法读取预设");
+                CMDebug.LogWarning($"Spawner 未初始化，无法读取预设");
                 return;
             }
 
             if (!_presetMap.TryGetValue(presetKey, out var p))
             {
-                Debug.LogError($"{LogTag} 找不到预设: {presetKey}");
+                CMDebug.LogError($"找不到预设: {presetKey}");
                 return;
             }
 
@@ -391,18 +383,15 @@ namespace CombatMaid.Core
             sb.AppendLine($"WantItem: {p.wantItem}");
             sb.AppendLine($"DropBoxOnDead: {p.dropBoxOnDead}");
 
-            // 读取物品列表 (需要反射)
+            // 读取物品列表
             var items = ReflectionHelper.GetPrivateField<IList>(p, "itemsToGenerate");
             if (items != null && items.Count > 0)
             {
                 sb.Append("CustomItemIDs: [");
                 foreach (var item in items)
                 {
-                    // 这里的 item 是 RandomItemGenerateDescription 类型
-                    // 我们尝试读取它的 itemPool -> entries
-                    // 这是一个简化的反射读取，只为了看ID
                     try {
-                        var pool = item.GetType().GetField("itemPool").GetValue(item); // RandomContainer
+                        var pool = item.GetType().GetField("itemPool").GetValue(item);
                         var entries = pool.GetType().GetField("entries", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(pool) as IList;
                         if (entries != null) {
                             foreach (var entry in entries) {
@@ -421,7 +410,7 @@ namespace CombatMaid.Core
 
             sb.AppendLine("=============================================");
 
-            Debug.Log(sb.ToString());
+            CMDebug.Log(sb.ToString());
         }
 
     }
@@ -439,7 +428,7 @@ namespace CombatMaid.Core
             }
             else
             {
-                Debug.LogWarning($"[Reflection] Field '{fieldName}' not found in type '{type.Name}'");
+                CMDebug.LogWarning($"Field '{fieldName}' not found in type '{type.Name}'");
             }
         }
 
