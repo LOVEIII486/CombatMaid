@@ -4,7 +4,7 @@ using UnityEngine;
 namespace CombatMaid.Core.MaidConfigs
 {
     /// <summary>
-    /// 纯净的预设配置类 (无捏脸版)
+    /// 纯净的预设配置类
     /// </summary>
     [System.Serializable]
     public class MaidConfig
