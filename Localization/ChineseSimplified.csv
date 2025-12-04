@@ -7,3 +7,7 @@ Item_MaidContract,标准女仆契约,1.0,MaidItemName
 Item_MaidContract_Desc,召唤皇家女仆-贝拉,1.0,MaidItemDescription
 Item_VialMaid_I,瓶中女仆·I型,1.0,MaidItemName
 Item_VialMaid_I_Desc,封存于魔法容器中的临时契约女仆。只需在危急时刻打碎契约瓶，即可短暂召唤出能协助主人撤离的应急女仆。属于一次性使用的短效支援女仆。,1.0,MaidItemDescription
+Item_VialMaid_II,瓶中女仆·II型,1.0,MaidItemName
+Item_VialMaid_II_Desc,封存于强化容器中的强袭契约女仆。比I型更具攻击性，能以极高的机动性迅速切入战场清除威胁。是值得信赖的军用级单兵支援战力。,1.0,MaidItemDescription
+Item_VialMaid_III,瓶中女仆·III型,1.0,MaidItemName
+Item_VialMaid_III_Desc,封存于皇家秘银容器中的特级契约女仆。拥有极高的战斗性能。极其昂贵，但在面对绝境时，她就是你最坚实的最后一道防线。,1.0,MaidItemDescription
