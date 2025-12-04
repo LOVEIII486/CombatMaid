@@ -10,7 +10,6 @@ namespace CombatMaid.Core.CustomModel
     /// </summary>
     public static class CustomModelBridge
     {
-        private const string LogTag = "[CombatMaid.Bridge]";
         private static bool _isInitialized = false;
         private static bool _isModAvailable = false;
 
@@ -47,7 +46,7 @@ namespace CombatMaid.Core.CustomModel
                 var bundles = _bundlesField.GetValue(null) as IList;
                 if (bundles == null || bundles.Count == 0) return;
 
-                Debug.Log($"{LogTag} === 可用模型列表 ===");
+                CMDebug.Log($"=== 可用模型列表 ===");
                 foreach (object bundle in bundles)
                 {
                     string bundleName = GetPropString(bundle, _bundleNameProp) ?? "Unknown";
@@ -57,13 +56,13 @@ namespace CombatMaid.Core.CustomModel
                     {
                         foreach (object model in models)
                         {
-                            Debug.Log($">>> 包名: [{bundleName}] | ID: [{GetModelID(model)}]");
+                            CMDebug.Log($">>> 包名: [{bundleName}] | ID: [{GetModelID(model)}]");
                         }
                     }
                 }
-                Debug.Log($"{LogTag} ======================");
+                CMDebug.Log($"======================");
             }
-            catch (Exception ex) { Debug.LogError($"{LogTag} 列出模型失败: {ex.Message}"); }
+            catch (Exception ex) { CMDebug.LogError($"列出模型失败: {ex.Message}"); }
         }
 
         /// <summary>
@@ -89,11 +88,11 @@ namespace CombatMaid.Core.CustomModel
                     model = args[2];
                 }
             }
-            catch (Exception ex) { Debug.LogWarning($"{LogTag} 查找模型失败: {ex.Message}"); }
+            catch (Exception ex) { CMDebug.LogWarning($"查找模型失败: {ex.Message}"); }
 
             if (!found)
             {
-                Debug.LogWarning($"{LogTag} 未找到模型 ID: {modelId}");
+                CMDebug.LogWarning($"未找到模型 ID: {modelId}");
                 yield break;
             }
 
@@ -120,11 +119,11 @@ namespace CombatMaid.Core.CustomModel
                 _changeMethod.Invoke(handler, null);
 
                 HideOriginalEquipment(target);
-                Debug.Log($"{LogTag} 模型应用成功: {GetModelID(model)}");
+                CMDebug.Log($"模型应用成功: {GetModelID(model)}");
             }
             catch(Exception ex)
             {
-                Debug.LogError($"{LogTag} 应用异常: {ex.Message}");
+                CMDebug.LogError($"应用异常: {ex.Message}");
             }
         }
 
@@ -161,7 +160,7 @@ namespace CombatMaid.Core.CustomModel
                 if (_bundlesField != null && _findMethod != null && _initMethod != null)
                 {
                     _isModAvailable = true;
-                    Debug.Log($"{LogTag} 模组连接成功");
+                    CMDebug.Log($"模组连接成功");
                 }
             }
             catch { /* 忽略反射错误，视为未安装模组 */ }
