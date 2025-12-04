@@ -14,10 +14,10 @@ namespace CombatMaid.Core.MaidFSM.States
 
         public override void Enter()
         {
-            // 1. 暂停原生AI，防止它干扰移动
+            // 1. 暂停原生AI
             SetNativeBrainActive(false);
 
-            // 2. 清除瞄准锁定，防止身体扭曲
+            // 2. 清除瞄准锁定
             if (Controller.AI != null)
             {
                 Controller.AI.aimTarget = null;
@@ -44,7 +44,6 @@ namespace CombatMaid.Core.MaidFSM.States
 
         private void HandleArrivalLogic()
         {
-            // 移植原有的“战术遗忘”逻辑
             // 如果移动后离敌人太远，就清除仇恨
             var ai = Controller.AI;
             if (ai != null && ai.searchedEnemy != null)

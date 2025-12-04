@@ -28,7 +28,7 @@ namespace CombatMaid.Core.MaidFSM
             ChangeState(typeof(T));
         }
         
-        // 带参数切换（例如移动指令需要传入目标点）
+        // 带参数切换
         public void ChangeState<T>(Action<T> initializer) where T : MaidStateBase
         {
             if (_states.TryGetValue(typeof(T), out var state))
@@ -47,16 +47,16 @@ namespace CombatMaid.Core.MaidFSM
                 if (CurrentState != null)
                 {
                     CurrentState.Exit();
-                    Debug.Log($"[FSM] 退出状态: {CurrentState.GetType().Name}");
+                    CMDebug.Log($"退出状态: {CurrentState.GetType().Name}");
                 }
 
                 CurrentState = newState;
                 CurrentState.Enter();
-                Debug.Log($"[FSM] 进入状态: {CurrentState.GetType().Name}");
+                CMDebug.Log($"进入状态: {CurrentState.GetType().Name}");
             }
             else
             {
-                Debug.LogError($"[FSM] 试图切换到未注册的状态: {type.Name}");
+                CMDebug.LogError($"试图切换到未注册的状态: {type.Name}");
             }
         }
 

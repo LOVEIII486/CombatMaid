@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using NodeCanvas.Framework; // 用于控制大脑
+using NodeCanvas.Framework;
 
 namespace CombatMaid.Core.MaidFSM
 {
@@ -23,7 +23,7 @@ namespace CombatMaid.Core.MaidFSM
         public virtual void Exit() { }
         public virtual void Update() { }
 
-        // 辅助方法：控制原生大脑开关
+        // 控制原生大脑开关
         protected void SetNativeBrainActive(bool active)
         {
             if (Brain == null) return;

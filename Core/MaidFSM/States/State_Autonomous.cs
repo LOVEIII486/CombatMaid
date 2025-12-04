@@ -12,7 +12,7 @@
             
             if (Controller.AI != null && Controller.AI.CharacterMainControl != null)
             {
-                // 可以根据需要设置被动巡逻点
+                // 根据需要设置被动巡逻点
                 if (Controller.MainOwner != null)
                 {
                     Controller.AI.patrolPosition = Controller.MainOwner.transform.position;
@@ -22,7 +22,7 @@
 
         public override void Update()
         {
-            // 在自主模式下，我们仍然需要检查是否离主人太远
+            // 仍然需要检查是否离主人太远
             // 如果太远，则请求切换到强制跟随状态
             if (Controller.IsTooFarFromOwner())
             {

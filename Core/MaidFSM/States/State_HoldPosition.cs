@@ -14,7 +14,7 @@ namespace CombatMaid.Core.MaidFSM.States
 
         public override void Enter()
         {
-            // 1. 开启大脑，保持战斗力
+            // 1. 开启大脑
             SetNativeBrainActive(true);
 
             // 2. 钉住当前位置
@@ -32,13 +32,13 @@ namespace CombatMaid.Core.MaidFSM.States
 
         public override void Update()
         {
-            // 1. 持续锁定巡逻点 (防止其他逻辑意外修改)
+            // 1. 持续锁定巡逻点
             if (Controller.AI != null)
             {
                 Controller.AI.patrolPosition = _holdPoint;
             }
 
-            // 2. 距离检查 (低频检测节省性能)
+            // 2. 距离检查
             _checkTimer += Time.deltaTime;
             if (_checkTimer > 0.5f)
             {
@@ -53,7 +53,7 @@ namespace CombatMaid.Core.MaidFSM.States
 
             float dist = Vector3.Distance(Controller.transform.position, Controller.MainOwner.transform.position);
 
-            // 使用更大的宽容距离 (HoldMaxDistance)
+            // 使用更大的宽容距离
             if (dist > Controller.HoldMaxDistance)
             {
                 Controller.MaidCharacter?.PopText("距离过远-放弃驻守");
@@ -64,10 +64,10 @@ namespace CombatMaid.Core.MaidFSM.States
 
         public override void Exit()
         {
-            // 退出时恢复正常的巡逻范围 (原版默认通常是较大的范围或者由 Controller 动态控制)
+            // 退出时恢复正常的巡逻范围
             if (Controller.AI != null)
             {
-                Controller.AI.patrolRange = 100.0f; 
+                Controller.AI.patrolRange = 20.0f; 
             }
         }
     }
