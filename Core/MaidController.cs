@@ -166,6 +166,24 @@ namespace CombatMaid.Core
                 state.TargetPosition = position;
             });
         }
+        
+        public void ForceHeal()
+        {
+            if (SkillSystem == null) return;
+
+            // 尝试获取自愈技能实例
+            var healSkill = SkillSystem.GetSkill<Skill_SelfHeal>();
+            
+            if (healSkill != null)
+            {
+                CMDebug.Log($"{MaidCharacter.name} 收到强制治疗指令...");
+                healSkill.ForceActivate(); // 需要在 Skill_SelfHeal 中实现此方法
+            }
+            else
+            {
+                CMDebug.LogWarning($"{MaidCharacter.name} 未装备自愈技能 (EnableAutoHeal=false?)");
+            }
+        }
 
         /// <summary>
         /// 供 State_Autonomous 轮询使用

@@ -14,6 +14,9 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
 
         protected override bool CheckTriggerCondition()
         {
+            if (Owner == null || Owner.Health == null) return false;
+
+            // 只有血量低于阈值才自动触发
             if (Owner.Health.CurrentHealth / Owner.Health.MaxHealth >= HealthThreshold) 
                 return false;
             
@@ -21,6 +24,26 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
         }
 
         protected override bool TryExecute()
+        {
+            return ExecuteHealLogic();
+        }
+
+        /// <summary>
+        /// 强制触发接口，忽略血量阈值和冷却
+        /// </summary>
+        public void ForceActivate()
+        {
+            if (Owner == null || Owner.Health.IsDead) return;
+
+            CMDebug.Log($"[{SkillName}] 收到强制治疗指令");
+            
+            ExecuteHealLogic(isForce: true);
+        }
+
+        /// <summary>
+        /// 核心逻辑：遍历背包 -> 找药 -> 使用
+        /// </summary>
+        private bool ExecuteHealLogic(bool isForce = false)
         {
             var inventory = Owner.CharacterItem.Inventory;
             if (inventory == null) return false;
@@ -30,13 +53,16 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
                 if (item == null || item.StackCount <= 0) continue;
                 
                 bool isDrug = item.GetComponent<Drug>() != null || _medIds.Contains(item.TypeID);
+                
                 if (isDrug)
                 {
                     Owner.UseItem(item);
-                    Owner.PopText("使用药品");
+                    Owner.PopText($"使用药品: {item.DisplayName}");
                     return true;
                 }
             }
+
+            // 没药了
             Owner.PopText("缺药!"); 
             return false;
         }

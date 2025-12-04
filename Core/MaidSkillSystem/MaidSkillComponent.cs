@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using System.Linq; // [新增] 引用 Linq
 
 namespace CombatMaid.Core.MaidSkillSystem
 {
@@ -29,6 +30,24 @@ namespace CombatMaid.Core.MaidSkillSystem
             skill.Initialize(_controller);
             _skills.Add(skill);
             CMDebug.Log($"已装载技能: {skill.SkillName}");
+        }
+
+        /// <summary>
+        /// [新增] 按类型查找技能实例
+        /// </summary>
+        /// <typeparam name="T">具体的技能类型 (如 Skill_SelfHeal)</typeparam>
+        /// <returns>找到的技能实例，没找到返回 null</returns>
+        public T GetSkill<T>() where T : class, IMaidSkill
+        {
+            // 遍历查找第一个匹配该类型的技能
+            foreach (var skill in _skills)
+            {
+                if (skill is T targetSkill)
+                {
+                    return targetSkill;
+                }
+            }
+            return null;
         }
 
         private void Update()

@@ -72,6 +72,8 @@ namespace CombatMaid.Core
             // G 移动指令
             if (Input.GetKeyDown(KeyCode.G)) CommandMoveTeamToMouse();
             
+            if (Input.GetKeyDown(KeyCode.H)) CommandForceHealTeam();
+            
             if (Input.GetKeyDown(KeyCode.F9))
             {
                 if (MaidSpawner.Instance != null)
@@ -280,6 +282,19 @@ namespace CombatMaid.Core
                     // 稍微分散一点移动，避免重叠
                     Vector3 offset = new Vector3(Random.Range(-0.5f, 0.5f), 0, Random.Range(-0.5f, 0.5f));
                     maid.ForceMoveTo(targetPos + offset);
+                }
+            }
+        }
+        
+        private void CommandForceHealTeam()
+        {
+            CMDebug.Log("[指令] 强制全队尝试使用医疗包 (H)");
+            for (int i = _activeMaids.Count - 1; i >= 0; i--)
+            {
+                var maid = _activeMaids[i];
+                if (maid != null && !maid.MaidCharacter.Health.IsDead)
+                {
+                    maid.ForceHeal();
                 }
             }
         }
