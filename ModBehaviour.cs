@@ -2,6 +2,7 @@ using System;
 using CombatMaid.Core;
 using CombatMaid.Core.Items.DebugTools;
 using CombatMaid.Core.Items.Logic;
+using CombatMaid.Core.SkillTreeSystem;
 using HarmonyLib;
 using Duckov.Modding;
 using CombatMaid.Localization;
@@ -64,8 +65,11 @@ namespace CombatMaid
                 gameObject.AddComponent<ItemDebugSpawner>();
             }
 
+            // 初始化女仆系统
             InitializeMaidSystem();
-            new GameObject("CM_SkillTreeManager").AddComponent<CombatMaid.Core.SkillTreeSystem.SkillTreeManager>();
+            
+            // [修复] 初始化技能树系统（创建为独立 GameObject，DontDestroyOnLoad）
+            InitializeSkillTreeSystem();
         }
 
         private void OnDisable()
@@ -73,7 +77,9 @@ namespace CombatMaid
             CleanupLocalization();
             CleanupSceneHooks();
             CleanupHarmonyPatches();
-            CleanupMaidSystem();
+            // [修复] 不要在这里清理系统，等到 OnDestroy 时再清理
+            // CleanupMaidSystem();
+            // CleanupSkillTreeSystem();
             
             ItemUtils.UnregisterAllItem("CombatMaid");
 
@@ -85,15 +91,10 @@ namespace CombatMaid
 
         private void InitializeMaidSystem()
         {
-            // 确保核心管理器单例存在
             if (MaidManager.Instance == null)
             {
                 var go = new GameObject("MaidManager");
-                
-                // 1. 挂载管理器
                 go.AddComponent<MaidManager>();
-                
-                // 2. 挂载生成器
                 go.AddComponent<MaidSpawner>(); 
                 
                 DontDestroyOnLoad(go);
@@ -103,18 +104,39 @@ namespace CombatMaid
 
         private void CleanupMaidSystem()
         {
-            var manager = gameObject.GetComponent<MaidManager>();
-            if (manager != null)
+            if (MaidManager.Instance != null)
             {
-                Destroy(manager);
-            }
-            var spawner = gameObject.GetComponent<MaidSpawner>();
-            if (spawner != null)
-            {
-                Destroy(spawner);
+                Destroy(MaidManager.Instance.gameObject);
             }
 
             CMDebug.LogInfo($"女仆核心系统已卸载");
+        }
+
+        #endregion
+        
+        #region Skill Tree System
+
+        private void InitializeSkillTreeSystem()
+        {
+            if (SkillTreeManager.Instance == null)
+            {
+                var go = new GameObject("CM_SkillTreeManager");
+                go.AddComponent<SkillTreeManager>();
+                go.AddComponent<SkillTreeDebugger>();       // 技能树调试器 (F10)
+                
+                DontDestroyOnLoad(go);
+                CMDebug.Log("技能树系统已初始化。");
+            }
+        }
+
+        private void CleanupSkillTreeSystem()
+        {
+            if (SkillTreeManager.Instance != null)
+            {
+                Destroy(SkillTreeManager.Instance.gameObject);
+            }
+
+            CMDebug.LogInfo($"技能树系统已卸载");
         }
 
         #endregion
@@ -230,8 +252,14 @@ namespace CombatMaid
             CleanupHarmonyPatches();
             CleanupSceneHooks();
             
+            // [修复] 在这里清理所有系统
+            CleanupMaidSystem();
+            CleanupSkillTreeSystem();
+            
             MaidItemRegistry.Cleanup();
             Instance = null;
+            
+            CMDebug.LogInfo("模组已完全销毁");
         }
     }
 }

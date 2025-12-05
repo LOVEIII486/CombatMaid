@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Duckov.Scenes;
-using Duckov.PerkTrees; // 引用 Perk 基础类
-using HarmonyLib; // 用于反射读取 Perk 状态
+using Duckov.PerkTrees;
+using HarmonyLib;
 
 namespace CombatMaid.Core.SkillTreeSystem
 {
@@ -12,13 +12,13 @@ namespace CombatMaid.Core.SkillTreeSystem
         public static SkillTreeManager Instance { get; private set; }
 
         private const string TREE_ID = "MaidCombatSkills";
-        private bool _isInitialized = false;
+        private bool _isTreeBuilt = false;
+        private PerkTree _customTree;
+        private bool _isInitializing = false;  // [新增] 防止协程重复执行
 
         // 运行时状态缓存
         private SkillTreeSaveData _saveData;
         private Dictionary<string, Perk> _runtimePerks = new Dictionary<string, Perk>();
-        
-        // [修复 1] 新增缺失的字典定义：用于 ID -> SkillNodeDef 的快速查找
         private Dictionary<string, SkillNodeDef> _nodeDefsMap = new Dictionary<string, SkillNodeDef>();
 
         private void Awake()
@@ -29,66 +29,122 @@ namespace CombatMaid.Core.SkillTreeSystem
 
         private void Start()
         {
-            LevelManager.OnAfterLevelInitialized += OnLevelLoaded;
+            // [修复] 监听所有场景加载事件
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnAnySceneLoaded;
         }
 
         private void OnDestroy()
         {
-            LevelManager.OnAfterLevelInitialized -= OnLevelLoaded;
-            SaveProgress(); // 销毁前强制保存
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnAnySceneLoaded;
+            SaveProgress();
         }
 
-        private void OnLevelLoaded()
+        // [新增] 响应任何场景加载
+        private void OnAnySceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
         {
-            if (MultiSceneCore.MainSceneID != "Base" || _isInitialized) return;
-
-            StartCoroutine(InitSkillTreeRoutine());
+            // 只在 Base 或 Base_SceneV2 场景时尝试注册
+            if (scene.name == "Base" || scene.name == "Base_SceneV2")
+            {
+                CMDebug.Log($"[SkillTreeManager] 检测到基地场景: {scene.name}");
+                StartCoroutine(InitSkillTreeRoutine());
+            }
         }
 
         private IEnumerator InitSkillTreeRoutine()
         {
-            yield return null; // 等待一帧
-
-            GameObject skillBuilding = FindSkillMachine();
-            if (skillBuilding == null)
+            // [保护] 防止协程重复执行
+            if (_isInitializing)
             {
-                CMDebug.LogWarning("[SkillTreeManager] 未找到 SkillMachine 建筑，跳过加载。");
+                CMDebug.Log("[SkillTreeManager] 初始化正在进行中，跳过");
                 yield break;
             }
 
-            // 1. 加载存档
-            _saveData = SkillTreePersistence.Load();
+            _isInitializing = true;
+            
+            try
+            {
+                yield return new WaitForSeconds(0.5f); // 等待场景完全加载
 
-            // 2. 构建技能树
-            BuildSkillTree(skillBuilding);
+                GameObject skillBuilding = FindSkillMachine();
+                if (skillBuilding == null)
+                {
+                    CMDebug.LogWarning("[SkillTreeManager] 未找到 SkillMachine 建筑，跳过加载。");
+                    yield break;
+                }
 
-            // 3. 恢复已购买状态
-            RestorePurchasedState();
+                CMDebug.Log($"[SkillTreeManager] 找到建筑: {skillBuilding.name}");
 
-            // 4. 启动状态监视器 (用于自动保存)
-            StartCoroutine(StateWatcherRoutine());
+                // [修复] 状态一致性检查
+                if (!_isTreeBuilt || _customTree == null)
+                {
+                    CMDebug.Log("[SkillTreeManager] 开始构建技能树（首次或修复损坏状态）");
+                    
+                    try
+                    {
+                        // 1. 加载存档
+                        _saveData = SkillTreePersistence.Load();
 
-            _isInitialized = true;
+                        // 2. 构建技能树
+                        BuildSkillTree();
+
+                        // 3. 验证构建结果
+                        if (_customTree == null)
+                        {
+                            CMDebug.LogError("[SkillTreeManager] ✗ BuildSkillTree 失败：_customTree 仍为 null");
+                            _isTreeBuilt = false; // 重置状态，下次重试
+                            yield break;
+                        }
+
+                        // 4. 恢复已购买状态
+                        RestorePurchasedState();
+
+                        _isTreeBuilt = true;
+                        CMDebug.LogInfo("[SkillTreeManager] ✓ 技能树构建成功");
+                    }
+                    catch (System.Exception ex)
+                    {
+                        CMDebug.LogError($"[SkillTreeManager] 构建技能树时发生异常: {ex.Message}\n{ex.StackTrace}");
+                        _isTreeBuilt = false; // 重置状态
+                        _customTree = null;
+                        yield break;
+                    }
+                }
+                else
+                {
+                    CMDebug.Log("[SkillTreeManager] 技能树已存在，跳过构建");
+                }
+
+                // [关键修复] 每次进入场景都重新注册交互点
+                if (_customTree != null)
+                {
+                    CMDebug.Log($"[SkillTreeManager] 准备注册交互点到建筑: {skillBuilding.name}");
+                    SkillTreeBuilder.RegisterInteraction(skillBuilding, TREE_ID, "战斗女仆模组: 战术技能");
+                    CMDebug.LogInfo("[SkillTreeManager] ✓ 交互点已重新注册");
+                }
+                else
+                {
+                    CMDebug.LogError("[SkillTreeManager] ✗ _customTree 为 null，无法注册交互点！");
+                    CMDebug.LogError($"[SkillTreeManager] 状态异常：_isTreeBuilt={_isTreeBuilt}, _customTree={_customTree}");
+                }
+            }
+            finally
+            {
+                _isInitializing = false;
+            }
         }
 
         private GameObject FindSkillMachine()
         {
-            // 1. 尝试全局查找
             GameObject obj = GameObject.Find("SkillMachine");
             if (obj != null) return obj;
 
-            // 2. 尝试在当前子场景中查找 (修复 IsCreated -> HasValue)
             if (MultiSceneCore.ActiveSubScene.HasValue)
             {
-                // 获取可空类型的实际值 (.Value)
                 var scene = MultiSceneCore.ActiveSubScene.Value;
-
-                // 确保场景有效再遍历
                 if (scene.IsValid())
                 {
                     foreach (var root in scene.GetRootGameObjects())
                     {
-                        // Duckov 的建筑通常挂在名为 "Buildings" 的根节点下
                         if (root.name == "Buildings")
                             return root.transform.Find("SkillMachine")?.gameObject;
                     }
@@ -98,44 +154,68 @@ namespace CombatMaid.Core.SkillTreeSystem
             return null;
         }
 
-        private void BuildSkillTree(GameObject building)
+        private void BuildSkillTree()
         {
             CMDebug.Log("[SkillTreeManager] 开始构建技能树...");
             _runtimePerks.Clear();
-            _nodeDefsMap.Clear(); // [修复 2] 清理旧数据
+            _nodeDefsMap.Clear();
 
-            var tree = SkillTreeBuilder.CreateEmptyTree(TREE_ID, "女仆战术");
-            var nodes = GetNodeDefinitions();
-
-            // 构建实体
-            foreach (var nodeDef in nodes)
+            try
             {
-                // [修复 3] 填充字典
-                if (!_nodeDefsMap.ContainsKey(nodeDef.ID))
+                // 1. 创建树
+                _customTree = SkillTreeBuilder.CreateEmptyTree(TREE_ID, "女仆战术");
+                
+                if (_customTree == null)
                 {
-                    _nodeDefsMap.Add(nodeDef.ID, nodeDef);
+                    CMDebug.LogError("[BuildSkillTree] CreateEmptyTree 返回 null！");
+                    return;
+                }
+                
+                CMDebug.Log($"[BuildSkillTree] 技能树已创建: {_customTree.name}");
+
+                // 2. 获取节点定义
+                var nodes = GetNodeDefinitions();
+                CMDebug.Log($"[BuildSkillTree] 加载了 {nodes.Count} 个节点定义");
+
+                // 3. 添加节点
+                foreach (var nodeDef in nodes)
+                {
+                    if (!_nodeDefsMap.ContainsKey(nodeDef.ID))
+                    {
+                        _nodeDefsMap.Add(nodeDef.ID, nodeDef);
+                    }
+
+                    string iconName = !string.IsNullOrEmpty(nodeDef.IconFileName) 
+                        ? nodeDef.IconFileName 
+                        : "default_icon.png";
+                    nodeDef.Icon = SkillIconLoader.LoadIcon(iconName);
+
+                    var perk = SkillTreeBuilder.AddNodeToTree(_customTree, nodeDef);
+                    if (perk != null)
+                    {
+                        _runtimePerks.Add(nodeDef.ID, perk);
+                    }
+                    else
+                    {
+                        CMDebug.LogWarning($"[BuildSkillTree] 节点 {nodeDef.ID} 添加失败");
+                    }
                 }
 
-                // 图标加载逻辑
-                string iconName = !string.IsNullOrEmpty(nodeDef.IconFileName) 
-                    ? nodeDef.IconFileName 
-                    : "default_icon.png";
-                nodeDef.Icon = SkillIconLoader.LoadIcon(iconName);
-
-                var perk = SkillTreeBuilder.AddNodeToTree(tree, nodeDef);
-                if (perk != null)
-                {
-                    _runtimePerks.Add(nodeDef.ID, perk);
-                }
+                // 4. 重建连接
+                SkillTreeBuilder.RebuildGraphConnections(_customTree, nodes, _runtimePerks);
+                
+                CMDebug.LogInfo($"[BuildSkillTree] ✓ 技能树构建完成，共 {_runtimePerks.Count} 个节点");
             }
-
-            SkillTreeBuilder.RebuildGraphConnections(tree, nodes, _runtimePerks);
-            SkillTreeBuilder.RegisterInteraction(building, TREE_ID, "战斗女仆模组: 战术技能");
+            catch (System.Exception ex)
+            {
+                CMDebug.LogError($"[BuildSkillTree] 构建过程中发生异常: {ex.Message}\n{ex.StackTrace}");
+                _customTree = null; // 确保状态一致
+                throw; // 重新抛出让上层处理
+            }
         }
 
         private List<SkillNodeDef> GetNodeDefinitions()
         {
-            // 这里建议未来移到独立的 Config 文件或类中
             return new List<SkillNodeDef>
             {
                 new SkillNodeDef
@@ -145,7 +225,7 @@ namespace CombatMaid.Core.SkillTreeSystem
                     Description = "增加 50 点最大生命值。",
                     Position = new Vector2(0, 0),
                     CostMoney = 100,
-                    StatModifiers = new Dictionary<string, float> { { "health", 50f } }
+                    PlayerStatModifiers = new Dictionary<string, float> { { "MaxHealth", 50f } }
                 },
                 new SkillNodeDef
                 {
@@ -155,7 +235,7 @@ namespace CombatMaid.Core.SkillTreeSystem
                     Position = new Vector2(150, 0),
                     CostMoney = 500,
                     RequiredLevel = 2,
-                    StatModifiers = new Dictionary<string, float> { { "reload_speed", 0.2f } },
+                    PlayerStatModifiers = new Dictionary<string, float> { { "ReloadSpeedGain", 0.2f } },
                     PrerequisiteIDs = new List<string> { "maid_basic_train" }
                 }
             };
@@ -168,37 +248,29 @@ namespace CombatMaid.Core.SkillTreeSystem
             foreach (var kvp in _runtimePerks)
             {
                 string id = kvp.Key;
+                Perk perk = kvp.Value;
                 
-                // 检查是否解锁
-                bool isUnlocked = _saveData.UnlockedNodeIDs.Contains(id); 
+                // 使用公共属性而不是反射
+                bool isUnlocked = perk != null && perk.Unlocked;
 
-                if (isUnlocked)
+                if (isUnlocked && _nodeDefsMap.TryGetValue(id, out SkillNodeDef def))
                 {
-                    // 现在 _nodeDefsMap 已经存在并被填充了
-                    if (_nodeDefsMap.TryGetValue(id, out SkillNodeDef def))
+                    if (def.MaidStatModifiers != null && def.MaidStatModifiers.Count > 0) 
                     {
-                        // 1. 应用属性
-                        if (def.MaidStatModifiers != null && def.MaidStatModifiers.Count > 0) 
+                        foreach (var statKvp in def.MaidStatModifiers)
                         {
-                            foreach (var statKvp in def.MaidStatModifiers)
-                            {
-                                CombatMaid.Core.AttributeModifiers.AttributeModifier.Modify(
-                                    maid.MaidCharacter, 
-                                    statKvp.Key, 
-                                    statKvp.Value, 
-                                    false
-                                );
-                            }
+                            CombatMaid.Core.AttributeModifiers.AttributeModifier.Modify(
+                                maid.MaidCharacter, 
+                                statKvp.Key, 
+                                statKvp.Value, 
+                                false
+                            );
                         }
+                    }
 
-                        // 2. 应用技能 (如果有)
-                        // 注意：你需要确保 MaidManager 有处理 AbilityID 的逻辑，或者在这里直接处理
-                        if (!string.IsNullOrEmpty(def.MaidAbilityID)) 
-                        {
-                            // 示例逻辑：如果 abilityID 是 "Grenade"，则添加手雷技能
-                            // 这里只是示例，具体取决于你的 AbilityID 怎么定义
-                            // maid.SkillSystem.UnlockAbility(def.MaidAbilityID);
-                        }
+                    if (!string.IsNullOrEmpty(def.MaidAbilityID)) 
+                    {
+                        // 处理技能解锁逻辑
                     }
                 }
             }
@@ -212,54 +284,54 @@ namespace CombatMaid.Core.SkillTreeSystem
             {
                 if (_runtimePerks.TryGetValue(id, out Perk perk))
                 {
-                    // 使用反射强制设置 unlocked 状态 (Perk 类的 unlocked 字段通常是 private/protected)
-                    Traverse.Create(perk).Field("unlocked").SetValue(true);
-                    // 如果原版逻辑需要 ApplyStats，这里可能需要手动触发一次，或者依赖原版加载逻辑
-                    // 通常 PerkTree 只有在购买时才 Apply。如果是加载存档，你可能需要手动 Apply 属性加成。
+                    // 使用反射强制设置 unlocked 状态
+                    Traverse.Create(perk).Property("Unlocked").SetValue(true);
+                    CMDebug.Log($"[RestorePurchasedState] 已恢复节点: {id}");
                 }
             }
         }
 
-        private IEnumerator StateWatcherRoutine()
-        {
-            while (true)
-            {
-                yield return new WaitForSeconds(1.0f); // 每秒检查一次
-                CheckAndSave();
-            }
-        }
-
-        private void CheckAndSave()
-        {
-            if (_saveData == null) return;
-
-            bool isDirty = false;
-            foreach (var kvp in _runtimePerks)
-            {
-                string id = kvp.Key;
-                Perk perk = kvp.Value;
-
-                // 检查是否已购买/解锁
-                bool isUnlocked = Traverse.Create(perk).Field("unlocked").GetValue<bool>();
-
-                if (isUnlocked && !_saveData.UnlockedNodeIDs.Contains(id))
-                {
-                    _saveData.UnlockedNodeIDs.Add(id);
-                    isDirty = true;
-                }
-            }
-
-            if (isDirty)
-            {
-                SaveProgress();
-            }
-        }
-
+        // ============================================================
+        // [核心修复] 使用公共属性而不是私有字段
+        // ============================================================
         public void SaveProgress()
         {
-            if (_saveData != null)
+            if (_saveData == null || _runtimePerks == null) return;
+
+            try
             {
-                SkillTreePersistence.Save(_saveData);
+                bool hasChanges = false;
+                
+                foreach (var kvp in _runtimePerks)
+                {
+                    string id = kvp.Key;
+                    Perk perk = kvp.Value;
+                    
+                    if (perk == null) continue;
+
+                    // [修复点] 使用 Perk.Unlocked 公共属性（首字母大写）
+                    bool isUnlocked = perk.Unlocked;
+
+                    if (isUnlocked && !_saveData.UnlockedNodeIDs.Contains(id))
+                    {
+                        _saveData.UnlockedNodeIDs.Add(id);
+                        hasChanges = true;
+                        CMDebug.Log($"[SaveProgress] 新解锁节点: {id}");
+                    }
+                }
+
+                if (hasChanges)
+                {
+                    SkillTreePersistence.Save(_saveData);
+                }
+                else
+                {
+                    CMDebug.Log($"[SaveProgress] 无变化，跳过保存");
+                }
+            }
+            catch (System.Exception ex)
+            {
+                CMDebug.LogError($"[SaveProgress] 保存失败: {ex.Message}");
             }
         }
     }
