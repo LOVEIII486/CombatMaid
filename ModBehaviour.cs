@@ -49,8 +49,7 @@ namespace CombatMaid
             // 使用新的 Registry 初始化物品
             MaidItemRegistry.Initialize(ModRootPath);
 
-            // 挂载调试脚本 (仅在 Debug 模式或即使发布也保留作为彩蛋)
-            // 你也可以加个 Config 判断 if (DebugMode) ...
+            // 挂载调试脚本
             if (gameObject.GetComponent<ItemDebugSpawner>() == null)
             {
                 gameObject.AddComponent<ItemDebugSpawner>();
@@ -77,7 +76,6 @@ namespace CombatMaid
             CleanupHarmonyPatches();
             CleanupMaidSystem();
             
-            // 可选：如果需要在禁用时卸载物品，可以调用 FML 的 UnregisterAllItem
             ItemUtils.UnregisterAllItem("CombatMaid");
 
             Instance = null;
@@ -96,7 +94,7 @@ namespace CombatMaid
                 // 1. 挂载管理器
                 go.AddComponent<MaidManager>();
                 
-                // 2. [新增关键修复] 挂载生成器！没有它就无法生成实体
+                // 2. 挂载生成器
                 go.AddComponent<MaidSpawner>(); 
                 
                 DontDestroyOnLoad(go);
@@ -139,16 +137,8 @@ namespace CombatMaid
 
         private void OnLanguageChanged(SystemLanguage lang)
         {
-            // 1. 刷新 CSV 读取器
             LocalizationManager.Refresh();
-            
-            // 2. [新增] 将新读取到的文本重新注入到游戏系统
-            MaidItemRegistry.RefreshLocalizations();
-            
-            // 3. 刷新设置界面
             Settings.SettingsUI.Register();
-            
-            CMDebug.LogInfo($"语言已切换为 {lang}，物品文本已更新。");
         }
 
         #endregion
@@ -222,7 +212,6 @@ namespace CombatMaid
             {
                 MaidManager.Instance.OnLevelStart(scene.name);
             }
-            
         }
 
         private void OnSceneUnloaded(Scene scene)
@@ -242,10 +231,7 @@ namespace CombatMaid
             CleanupHarmonyPatches();
             CleanupSceneHooks();
             
-            // --- 新增清理 ---
             MaidItemRegistry.Cleanup();
-            // ----------------
-            
             Instance = null;
         }
     }
