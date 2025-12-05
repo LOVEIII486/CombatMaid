@@ -44,20 +44,7 @@ namespace CombatMaid
             base.OnAfterSetup();
     
             InitializeLocalization(); 
-
-            // --- 修改部分开始 ---
-            // 使用新的 Registry 初始化物品
-            MaidItemRegistry.Initialize(ModRootPath);
-
-            // 挂载调试脚本
-            if (gameObject.GetComponent<ItemDebugSpawner>() == null)
-            {
-                gameObject.AddComponent<ItemDebugSpawner>();
-            }
-            // --- 修改部分结束 ---
-
-            InitializeMaidSystem();
-
+            
             if (ModSettingAPI.Init(info))
             {
                 Settings.CombatMaidConfig.Load();
@@ -67,6 +54,18 @@ namespace CombatMaid
             {
                 CMDebug.LogWarning("ModSettingAPI 初始化失败");
             }
+
+            // 使用新的 Registry 初始化物品
+            MaidItemRegistry.Initialize(ModRootPath);
+
+            // 挂载调试脚本
+            if (gameObject.GetComponent<ItemDebugSpawner>() == null)
+            {
+                gameObject.AddComponent<ItemDebugSpawner>();
+            }
+
+            InitializeMaidSystem();
+            new GameObject("CM_SkillTreeManager").AddComponent<CombatMaid.Core.SkillTreeSystem.SkillTreeManager>();
         }
 
         private void OnDisable()
