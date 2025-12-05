@@ -68,28 +68,47 @@ namespace CombatMaid.Core.SkillTreeSystem
         {
             if (tree == null || def == null) return null;
 
-            // 1. 创建节点 GameObject
             GameObject nodeObj = new GameObject($"Perk_{def.ID}");
             nodeObj.transform.SetParent(tree.transform);
             nodeObj.transform.localPosition = Vector3.zero;
 
-            // 2. 添加属性修改器 (ModifyCharacterStatsBase)
-            var statsComp = nodeObj.AddComponent<ModifyCharacterStatsBase>();
-            var entries = new List<ModifyCharacterStatsBase.Entry>();
-            
-            foreach (var kvp in def.StatModifiers)
-            {
-                entries.Add(new ModifyCharacterStatsBase.Entry
-                {
-                    key = kvp.Key,
-                    value = kvp.Value,
-                    percentage = false 
-                });
-            }
-            Traverse.Create(statsComp).Field("entries").SetValue(entries);
+            // ============================================================
+            // 1. 挂载自动存档组件 (所有节点必备)
+            // ============================================================
+            nodeObj.AddComponent<PerkAutoSaveBehaviour>();
 
-            // 3. 配置 Perk 组件
-            Perk perk = nodeObj.AddComponent<Perk>(); 
+            // ============================================================
+            // 2. 挂载玩家属性加成 (如果有配置)
+            // ============================================================
+            if (def.PlayerStatModifiers != null && def.PlayerStatModifiers.Count > 0)
+            {
+                var statsComp = nodeObj.AddComponent<SilentModifyCharacterStats>();
+                var entries = new List<ModifyCharacterStatsBase.Entry>();
+                foreach (var kvp in def.PlayerStatModifiers)
+                {
+                    entries.Add(new ModifyCharacterStatsBase.Entry { key = kvp.Key, value = kvp.Value, percentage = false });
+                }
+                // 使用反射写入 private 字段
+                Traverse.Create(statsComp).Field("entries").SetValue(entries);
+            }
+
+            // ============================================================
+            // 3. [新增] 挂载女仆技能逻辑 (如果有配置)
+            // ============================================================
+            if ((def.MaidStatModifiers != null && def.MaidStatModifiers.Count > 0) || 
+                !string.IsNullOrEmpty(def.MaidAbilityID))
+            {
+                var maidBeh = nodeObj.AddComponent<MaidSkillGrantBehaviour>();
+                // 注入数据
+                maidBeh.SkillID = def.ID;
+                maidBeh.MaidStatModifiers = def.MaidStatModifiers;
+                maidBeh.UnlockAbilityID = def.MaidAbilityID;
+            }
+
+            // ============================================================
+            // 4. 标准 Perk 初始化逻辑 (保持不变)
+            // ============================================================
+            Perk perk = nodeObj.AddComponent<Perk>();
             Traverse tPerk = Traverse.Create(perk);
             
             tPerk.Field("displayName").SetValue(def.DisplayName);
@@ -176,35 +195,62 @@ namespace CombatMaid.Core.SkillTreeSystem
                 graph.UpdateGraph();
             }
         }
-
+        
         /// <summary>
-        /// 在建筑上添加交互点
+        /// 在建筑上添加交互点 (终极修复版：位置重合 + 移除碰撞)
         /// </summary>
         public static void RegisterInteraction(GameObject buildingObj, string treeId, string interactionLabel)
         {
             var existingInvoker = buildingObj.GetComponentInChildren<PerkTreeUIInvoker>();
             if (existingInvoker == null)
             {
-                Debug.LogError("[SkillTreeSystem] 目标建筑没有 PerkTreeUIInvoker，无法挂载交互。");
+                CMDebug.LogError("[SkillTreeSystem] 目标建筑没有 PerkTreeUIInvoker，无法挂载交互。");
                 return;
             }
 
-            GameObject interactObj = new GameObject($"Interact_{treeId}");
-            interactObj.transform.SetParent(existingInvoker.transform.parent);
-            interactObj.transform.localPosition = Vector3.zero;
+            // 1. 克隆现有的交互点
+            // 使用现有点的父级作为父级，这样 Instantiate 会自动保持相对位置一致
+            GameObject interactObj = Object.Instantiate(existingInvoker.gameObject, existingInvoker.transform.parent);
+            interactObj.name = $"Interact_{treeId}";
+            
+            // [修复 1] 显式对齐位置和旋转 (虽然 Instantiate 默认会保持，但为了保险起见)
+            interactObj.transform.localPosition = existingInvoker.transform.localPosition;
+            interactObj.transform.localRotation = existingInvoker.transform.localRotation;
+            interactObj.transform.localScale = existingInvoker.transform.localScale;
 
-            PerkTreeUIInvoker newInvoker = interactObj.AddComponent<PerkTreeUIInvoker>();
+            // [修复 2] 移除克隆体上的碰撞体 (Collider)
+            // 这样玩家就无法直接对着这个新点按 F，只能通过原版点的菜单访问它
+            // 避免了“出现两个互动点”的尴尬
+            var collider = interactObj.GetComponent<Collider>();
+            if (collider != null)
+            {
+                Object.Destroy(collider);
+            }
+
+            // 2. 配置组件
+            PerkTreeUIInvoker newInvoker = interactObj.GetComponent<PerkTreeUIInvoker>();
             newInvoker.InteractName = interactionLabel;
             newInvoker.perkTreeID = treeId;
-            newInvoker.MarkerActive = false;
+            newInvoker.MarkerActive = false; // 不显示头顶图标
 
-            var groupList = Traverse.Create(existingInvoker).Field("otherInterablesInGroup").GetValue<List<InteractableBase>>();
-            if (groupList != null)
+            // 3. 清理克隆体的组列表 (防止嵌套死循环)
+            var newInvokerGroupList = Traverse.Create(newInvoker).Field("otherInterablesInGroup").GetValue<List<InteractableBase>>();
+            if (newInvokerGroupList != null)
             {
-                groupList.Add(newInvoker);
+                newInvokerGroupList.Clear();
+            }
+
+            // 4. 将新点注册到【原版】交互点的组里
+            var mainGroupList = Traverse.Create(existingInvoker).Field("otherInterablesInGroup").GetValue<List<InteractableBase>>();
+            if (mainGroupList != null)
+            {
+                mainGroupList.Add(newInvoker);
             }
             
+            // 5. 刷新原版交互列表 UI
             existingInvoker.GetInteractableList();
+            
+            CMDebug.Log($"[SkillTreeSystem] 交互点已完美挂载: {interactionLabel}");
         }
     }
 }

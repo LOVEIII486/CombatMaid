@@ -4,6 +4,7 @@ using System.Reflection;
 using UnityEngine;
 using Duckov.Modding;
 using CombatMaid.Core.MaidConfigs;
+using CombatMaid.Core.SkillTreeSystem;
 using Newtonsoft.Json;
 
 namespace CombatMaid.Core
@@ -14,30 +15,33 @@ namespace CombatMaid.Core
 
         // Key = ProfileName
         private Dictionary<string, MaidProfileData> _maidProfiles = new Dictionary<string, MaidProfileData>();
-        
+
         private List<MaidController> _activeMaids = new List<MaidController>();
-        
+
         // 集火系统变量
-        public CharacterMainControl FocusTarget { get; private set; } 
+        public CharacterMainControl FocusTarget { get; private set; }
         private float _focusExpireTimer = 0f;
         private const float FocusDuration = 5.0f;
         private const float RaycastDistance = 25f;
         private int _enemyLayerMask;
-        
+
         private void Awake()
         {
             if (Instance == null)
             {
                 Instance = this;
                 DontDestroyOnLoad(gameObject);
-                
+
                 _enemyLayerMask = LayerMask.GetMask("Default", "Character", "Hitbox", "Enemy");
-                
+
                 LoadAllPresets();
-                
+
                 CMDebug.Log("MaidManager 初始化完成。");
             }
-            else { Destroy(this); }
+            else
+            {
+                Destroy(this);
+            }
         }
 
         private void Update()
@@ -57,23 +61,23 @@ namespace CombatMaid.Core
         {
             DespawnTeam();
         }
-        
+
         private void HandleDebugInput()
         {
             // F5 测试生成默认的贝拉
-            if (Input.GetKeyDown(KeyCode.F5)) SpawnSpecificMaid("RoyalMaid_Bella"); 
-            
+            if (Input.GetKeyDown(KeyCode.F5)) SpawnSpecificMaid("RoyalMaid_Bella");
+
             // F6 清除
             if (Input.GetKeyDown(KeyCode.F6)) DespawnTeam();
-            
+
             // F8 重载配置
             if (Input.GetKeyDown(KeyCode.F8)) LoadAllPresets();
-            
+
             // G 移动指令
             if (Input.GetKeyDown(KeyCode.G)) CommandMoveTeamToMouse();
-            
+
             if (Input.GetKeyDown(KeyCode.H)) CommandForceHealTeam();
-            
+
             if (Input.GetKeyDown(KeyCode.F9))
             {
                 if (MaidSpawner.Instance != null)
@@ -89,7 +93,7 @@ namespace CombatMaid.Core
         public void LoadAllPresets()
         {
             _maidProfiles.Clear();
-            
+
             string modAssemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             string presetDir = Path.Combine(modAssemblyDir, "MaidPreset");
 
@@ -116,7 +120,7 @@ namespace CombatMaid.Core
                         {
                             CMDebug.LogWarning($"检测到重复的 ProfileName: {data.ProfileName}，将覆盖旧配置。");
                         }
-                        
+
                         _maidProfiles[data.ProfileName] = data;
                         CMDebug.Log($"已加载预设: {data.ProfileName} ({data.PresetConfig?.CustomName})");
                     }
@@ -147,7 +151,7 @@ namespace CombatMaid.Core
                 CMDebug.LogError("生成失败：MaidSpawner 未初始化！");
                 return;
             }
-            
+
             if (LevelManager.Instance?.MainCharacter == null) return;
 
             // 2. 查找配置
@@ -160,21 +164,21 @@ namespace CombatMaid.Core
             // 3. 准备数据
             var spawnConfig = profileData.PresetConfig;
             var extraData = profileData.ExtraData;
-            
+
             // 确定基底
-            string baseKey = extraData != null && !string.IsNullOrEmpty(extraData.BasePresetKey) 
-                ? extraData.BasePresetKey 
+            string baseKey = extraData != null && !string.IsNullOrEmpty(extraData.BasePresetKey)
+                ? extraData.BasePresetKey
                 : "Cname_Usec";
 
             CMDebug.Log($"正在生成 [{profileName}] (Base: {baseKey})...");
 
             // 4. 执行生成
             MaidSpawner.Instance.SpawnMaid(
-                baseKey, 
-                targetPos, 
-                LevelManager.Instance.MainCharacter, 
-                spawnConfig, 
-                profileName, 
+                baseKey,
+                targetPos,
+                LevelManager.Instance.MainCharacter,
+                spawnConfig,
+                profileName,
                 (ai) => OnMaidSpawnedCallback(ai.CharacterMainControl, profileData)
             );
         }
@@ -189,25 +193,25 @@ namespace CombatMaid.Core
             // 1. 挂载控制器
             var controller = ai.gameObject.AddComponent<MaidController>();
             controller.Initialize(profileData, LevelManager.Instance.MainCharacter);
-            
+
             // 2. 应用自定义模型
             if (profileData.ExtraData != null && !string.IsNullOrEmpty(profileData.ExtraData.CustomModelID))
             {
                 StartCoroutine(CombatMaid.Core.CustomModel.CustomModelBridge.ApplyModelByIDAsync(
-                    ai, 
+                    ai,
                     profileData.ExtraData.CustomModelID
                 ));
             }
-            
+
             // 3. 加入管理列表
-            if (!_activeMaids.Contains(controller)) 
+            if (!_activeMaids.Contains(controller))
             {
                 _activeMaids.Add(controller);
             }
-            
+
             ai.PopText(profileData.PresetConfig?.CustomName + " 参上！");
         }
-        
+
         private void SpawnSpecificMaid(string profileName)
         {
             Vector3 mousePos = GetMousePosition();
@@ -215,6 +219,60 @@ namespace CombatMaid.Core
             {
                 SpawnMaidAt(profileName, mousePos);
             }
+        }
+
+        public void ApplyGlobalSkillEffect(MaidSkillGrantBehaviour effectData)
+        {
+            // 遍历当前所有活着的女仆
+            foreach (var maid in _activeMaids)
+            {
+                if (maid == null) continue;
+                ApplyEffectToSingleMaid(maid, effectData.MaidStatModifiers, effectData.UnlockAbilityID);
+            }
+        }
+
+        // [新增] 处理单个女仆的强化逻辑 (建议提取为公共方法)
+        private void ApplyEffectToSingleMaid(MaidController maid, Dictionary<string, float> stats, string abilityID)
+        {
+            // 1. 应用属性 (使用 AttributeModifier 工具)
+            if (stats != null)
+            {
+                foreach (var kvp in stats)
+                {
+                    // 假设这里 value 是增量，isMultiplier 设为 false (视你的需求而定)
+                    AttributeModifiers.AttributeModifier.Modify(
+                        maid.MaidCharacter,
+                        kvp.Key,
+                        kvp.Value,
+                        isMultiplier: false
+                    );
+                }
+            }
+
+            // 2. 解锁技能 (如果有)
+            if (!string.IsNullOrEmpty(abilityID))
+            {
+                // 这里调用你之前的技能系统逻辑
+                // maid.SkillSystem.UnlockSkill(abilityID);
+                CMDebug.Log($"女仆 {maid.name} 习得了新能力: {abilityID}");
+            }
+        }
+
+        // [重要] 在生成女仆时，需要读取所有【已解锁】的技能并应用
+        // 请在 SpawnMaidAt 方法的 onSuccess 回调里，或者 MaidController.Initialize 里调用此逻辑
+        private void ApplyUnlockedSkillsOnSpawn(MaidController newMaid)
+        {
+            // 获取所有已解锁的节点ID
+            var savedData = SkillTreePersistence.Load();
+            // 注意：这里读取磁盘可能较慢，建议在 Manager 初始化时缓存一份 savedData
+
+            // 我们需要获取技能的定义数据 (Def)
+            // 这意味着 SkillTreeManager 需要提供一个根据 ID 查 Def 的方法
+            // 或者，我们可以简单点，只保存加成数值的汇总？
+
+            // 更稳妥的做法：
+            // 让 SkillTreeManager 提供一个 API: GetTotalMaidBonuses()
+            // 然后在这里应用。
         }
 
         // ==================== 队伍控制 & 集火逻辑 ====================
@@ -239,7 +297,7 @@ namespace CombatMaid.Core
                 FocusTarget = null;
             }
         }
-        
+
         private void DetectPlayerTarget()
         {
             if (Camera.main == null) return;
@@ -255,6 +313,7 @@ namespace CombatMaid.Core
                         FocusTarget = target;
                         CMDebug.Log($"[指令] 集火目标: {target.name}");
                     }
+
                     _focusExpireTimer = FocusDuration;
                 }
             }
@@ -285,7 +344,7 @@ namespace CombatMaid.Core
                 }
             }
         }
-        
+
         private void CommandForceHealTeam()
         {
             CMDebug.Log("[指令] 强制全队尝试使用医疗包 (H)");
@@ -310,43 +369,40 @@ namespace CombatMaid.Core
                     else if (maid.gameObject != null) Destroy(maid.gameObject);
                 }
             }
+
             _activeMaids.Clear();
             CMDebug.Log("女仆队伍已解散");
         }
     }
-    
+
     // ==================== 数据结构定义 ====================
 
     [System.Serializable]
     public class MaidProfileData
     {
         // 如 "RoyalMaid_Bella"
-        public string ProfileName; 
-        
+        public string ProfileName;
+
         // 基础数值配置
-        public MaidConfig PresetConfig; 
-        
+        public MaidConfig PresetConfig;
+
         // 模组特有的行为配置
-        public MaidExtraInfo ExtraData; 
+        public MaidExtraInfo ExtraData;
     }
 
     [System.Serializable]
     public class MaidExtraInfo
     {
         public string Description;
-        
-        [Header("基底预设")]
-        public string BasePresetKey = "Cname_Usec";
 
-        [Header("外观模型")]
-        public string CustomModelID = ""; 
-        
-        [Header("Mod行为")]
-        public bool EnableAutoHeal = true;
+        [Header("基底预设")] public string BasePresetKey = "Cname_Usec";
+
+        [Header("外观模型")] public string CustomModelID = "";
+
+        [Header("Mod行为")] public bool EnableAutoHeal = true;
         public string TacticalMode = "Standard";
-        
-        [Header("技能配置")]
-        public bool EnableGrenade = false;
+
+        [Header("技能配置")] public bool EnableGrenade = false;
         public int GrenadeItemID = 67;
         public string BuffSkillName = "";
         public int BuffSkillID = 0;

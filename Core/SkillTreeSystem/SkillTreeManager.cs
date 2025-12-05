@@ -17,6 +17,9 @@ namespace CombatMaid.Core.SkillTreeSystem
         // 运行时状态缓存
         private SkillTreeSaveData _saveData;
         private Dictionary<string, Perk> _runtimePerks = new Dictionary<string, Perk>();
+        
+        // [修复 1] 新增缺失的字典定义：用于 ID -> SkillNodeDef 的快速查找
+        private Dictionary<string, SkillNodeDef> _nodeDefsMap = new Dictionary<string, SkillNodeDef>();
 
         private void Awake()
         {
@@ -99,6 +102,7 @@ namespace CombatMaid.Core.SkillTreeSystem
         {
             CMDebug.Log("[SkillTreeManager] 开始构建技能树...");
             _runtimePerks.Clear();
+            _nodeDefsMap.Clear(); // [修复 2] 清理旧数据
 
             var tree = SkillTreeBuilder.CreateEmptyTree(TREE_ID, "女仆战术");
             var nodes = GetNodeDefinitions();
@@ -106,16 +110,18 @@ namespace CombatMaid.Core.SkillTreeSystem
             // 构建实体
             foreach (var nodeDef in nodes)
             {
-                // [核心修改] 图标加载逻辑
-                // 1. 确定文件名：如果有配置则用配置的，否则用默认
+                // [修复 3] 填充字典
+                if (!_nodeDefsMap.ContainsKey(nodeDef.ID))
+                {
+                    _nodeDefsMap.Add(nodeDef.ID, nodeDef);
+                }
+
+                // 图标加载逻辑
                 string iconName = !string.IsNullOrEmpty(nodeDef.IconFileName) 
                     ? nodeDef.IconFileName 
                     : "default_icon.png";
-
-                // 2. 调用加载器 (确保你已经按照上一条回答创建了 SkillIconLoader)
                 nodeDef.Icon = SkillIconLoader.LoadIcon(iconName);
 
-                // 3. 继续后续构建
                 var perk = SkillTreeBuilder.AddNodeToTree(tree, nodeDef);
                 if (perk != null)
                 {
@@ -153,6 +159,49 @@ namespace CombatMaid.Core.SkillTreeSystem
                     PrerequisiteIDs = new List<string> { "maid_basic_train" }
                 }
             };
+        }
+        
+        public void ApplyPassiveEffectsToMaid(MaidController maid)
+        {
+            if (_saveData == null) return;
+
+            foreach (var kvp in _runtimePerks)
+            {
+                string id = kvp.Key;
+                
+                // 检查是否解锁
+                bool isUnlocked = _saveData.UnlockedNodeIDs.Contains(id); 
+
+                if (isUnlocked)
+                {
+                    // 现在 _nodeDefsMap 已经存在并被填充了
+                    if (_nodeDefsMap.TryGetValue(id, out SkillNodeDef def))
+                    {
+                        // 1. 应用属性
+                        if (def.MaidStatModifiers != null && def.MaidStatModifiers.Count > 0) 
+                        {
+                            foreach (var statKvp in def.MaidStatModifiers)
+                            {
+                                CombatMaid.Core.AttributeModifiers.AttributeModifier.Modify(
+                                    maid.MaidCharacter, 
+                                    statKvp.Key, 
+                                    statKvp.Value, 
+                                    false
+                                );
+                            }
+                        }
+
+                        // 2. 应用技能 (如果有)
+                        // 注意：你需要确保 MaidManager 有处理 AbilityID 的逻辑，或者在这里直接处理
+                        if (!string.IsNullOrEmpty(def.MaidAbilityID)) 
+                        {
+                            // 示例逻辑：如果 abilityID 是 "Grenade"，则添加手雷技能
+                            // 这里只是示例，具体取决于你的 AbilityID 怎么定义
+                            // maid.SkillSystem.UnlockAbility(def.MaidAbilityID);
+                        }
+                    }
+                }
+            }
         }
 
         private void RestorePurchasedState()

@@ -22,5 +22,16 @@ namespace CombatMaid.Core.SkillTreeSystem
         public Dictionary<int, int> CostItems = new Dictionary<int, int>(); 
         public Dictionary<string, float> StatModifiers = new Dictionary<string, float>();
         public List<string> PrerequisiteIDs = new List<string>();
+        
+        // --- 玩家相关 ---
+        // 玩家获得的属性 (使用 SilentModifyCharacterStats)
+        public Dictionary<string, float> PlayerStatModifiers = new Dictionary<string, float>();
+
+        // --- 女仆相关 [新增] ---
+        // 女仆获得的属性 (如 "MaxHealth": 50)
+        public Dictionary<string, float> MaidStatModifiers = new Dictionary<string, float>();
+        
+        // 女仆获得的特殊能力ID (如 "GrenadeThrow")
+        public string MaidAbilityID;
     }
 }
