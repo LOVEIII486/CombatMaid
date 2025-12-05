@@ -12,9 +12,13 @@ namespace CombatMaid.Core.SkillTreeSystem
         public static SkillTreeManager Instance { get; private set; }
 
         private const string TREE_ID = "MaidCombatSkills";
+        private const string DEFAULT_CONFIG_FILE = "SkillTree_Combat.json"; // [新增] 默认配置文件名
+        
         private bool _isTreeBuilt = false;
         private PerkTree _customTree;
-        private bool _isInitializing = false;  // [新增] 防止协程重复执行
+        private bool _isInitializing = false;
+        
+        private SkillTreeConfig _currentConfig; // [新增] 当前加载的配置
 
         // 运行时状态缓存
         private SkillTreeSaveData _saveData;
@@ -162,8 +166,31 @@ namespace CombatMaid.Core.SkillTreeSystem
 
             try
             {
-                // 1. 创建树
-                _customTree = SkillTreeBuilder.CreateEmptyTree(TREE_ID, "女仆战术");
+                // 1. 加载配置文件
+                if (_currentConfig == null)
+                {
+                    string modPath = ModBehaviour.Instance?.ModRootPath;
+                    if (string.IsNullOrEmpty(modPath))
+                    {
+                        CMDebug.LogError("[BuildSkillTree] 无法获取模组路径");
+                        return;
+                    }
+
+                    _currentConfig = SkillTreeConfigLoader.LoadFromFile(modPath, DEFAULT_CONFIG_FILE);
+                    
+                    if (_currentConfig == null)
+                    {
+                        CMDebug.LogError("[BuildSkillTree] 配置文件加载失败");
+                        return;
+                    }
+                }
+
+                // 2. 创建树
+                string treeName = !string.IsNullOrEmpty(_currentConfig.TreeName) 
+                    ? _currentConfig.TreeName 
+                    : "女仆战术";
+                    
+                _customTree = SkillTreeBuilder.CreateEmptyTree(TREE_ID, treeName);
                 
                 if (_customTree == null)
                 {
@@ -173,11 +200,11 @@ namespace CombatMaid.Core.SkillTreeSystem
                 
                 CMDebug.Log($"[BuildSkillTree] 技能树已创建: {_customTree.name}");
 
-                // 2. 获取节点定义
-                var nodes = GetNodeDefinitions();
-                CMDebug.Log($"[BuildSkillTree] 加载了 {nodes.Count} 个节点定义");
+                // 3. 转换配置为节点定义
+                var nodes = SkillTreeConfigLoader.ConvertToNodeDefs(_currentConfig);
+                CMDebug.Log($"[BuildSkillTree] 转换了 {nodes.Count} 个节点定义");
 
-                // 3. 添加节点
+                // 4. 添加节点
                 foreach (var nodeDef in nodes)
                 {
                     if (!_nodeDefsMap.ContainsKey(nodeDef.ID))
@@ -185,6 +212,7 @@ namespace CombatMaid.Core.SkillTreeSystem
                         _nodeDefsMap.Add(nodeDef.ID, nodeDef);
                     }
 
+                    // 加载图标
                     string iconName = !string.IsNullOrEmpty(nodeDef.IconFileName) 
                         ? nodeDef.IconFileName 
                         : "default_icon.png";
@@ -201,7 +229,7 @@ namespace CombatMaid.Core.SkillTreeSystem
                     }
                 }
 
-                // 4. 重建连接
+                // 5. 重建连接
                 SkillTreeBuilder.RebuildGraphConnections(_customTree, nodes, _runtimePerks);
                 
                 CMDebug.LogInfo($"[BuildSkillTree] ✓ 技能树构建完成，共 {_runtimePerks.Count} 个节点");
@@ -209,37 +237,13 @@ namespace CombatMaid.Core.SkillTreeSystem
             catch (System.Exception ex)
             {
                 CMDebug.LogError($"[BuildSkillTree] 构建过程中发生异常: {ex.Message}\n{ex.StackTrace}");
-                _customTree = null; // 确保状态一致
-                throw; // 重新抛出让上层处理
+                _customTree = null;
+                throw;
             }
         }
 
-        private List<SkillNodeDef> GetNodeDefinitions()
-        {
-            return new List<SkillNodeDef>
-            {
-                new SkillNodeDef
-                {
-                    ID = "maid_basic_train",
-                    DisplayName = "女仆基础训练",
-                    Description = "增加 50 点最大生命值。",
-                    Position = new Vector2(0, 0),
-                    CostMoney = 100,
-                    PlayerStatModifiers = new Dictionary<string, float> { { "MaxHealth", 50f } }
-                },
-                new SkillNodeDef
-                {
-                    ID = "maid_reload",
-                    DisplayName = "极速换弹",
-                    Description = "换弹速度提升 20%。",
-                    Position = new Vector2(150, 0),
-                    CostMoney = 500,
-                    RequiredLevel = 2,
-                    PlayerStatModifiers = new Dictionary<string, float> { { "ReloadSpeedGain", 0.2f } },
-                    PrerequisiteIDs = new List<string> { "maid_basic_train" }
-                }
-            };
-        }
+        
+        // [已移除] GetNodeDefinitions() - 现在从 JSON 加载
         
         public void ApplyPassiveEffectsToMaid(MaidController maid)
         {
