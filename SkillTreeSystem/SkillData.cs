@@ -3,27 +3,24 @@ using UnityEngine;
 
 namespace CombatMaid.Core.SkillTreeSystem
 {
-    /// <summary>
-    /// 简化版技能节点数据
-    /// </summary>
     public class SkillNodeDef
     {
-        public string ID;               // 内部唯一ID
-        public string DisplayName;      // 显示名称
-        public string Description;      // 描述文本
-        public Sprite Icon;             // 图标
-        public Vector2 Position;        // 在技能树面板上的坐标 (0,0 是中心)
+        public string ID;               
+        public string DisplayName;      
+        public string Description;      
         
-        // 消耗与需求
+        // [新增] 图标文件名配置
+        // 如果为空，逻辑层会自动使用 "default_icon.png"
+        public string IconFileName; 
+
+        // 运行时加载后的 Sprite 对象 (不需要手动配置，由管理器填充)
+        public Sprite Icon;             
+        
+        public Vector2 Position;        
         public int CostMoney = 0;
         public int RequiredLevel = 1;
-        public Dictionary<int, int> CostItems = new Dictionary<int, int>(); // 物品ID -> 数量
-
-        // 属性加成 (Key参考 ItemStatsSystem.Stat)
-        // 例如: "health", "move_speed", "attack_damage"
+        public Dictionary<int, int> CostItems = new Dictionary<int, int>(); 
         public Dictionary<string, float> StatModifiers = new Dictionary<string, float>();
-
-        // 前置技能ID列表
         public List<string> PrerequisiteIDs = new List<string>();
     }
 }

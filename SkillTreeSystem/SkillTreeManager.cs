@@ -106,10 +106,16 @@ namespace CombatMaid.Core.SkillTreeSystem
             // 构建实体
             foreach (var nodeDef in nodes)
             {
-                // [新增] 加载图标 (假设文件名存在 IconPath 字段，或者这里先写死 default.png)
-                // 建议你在 SkillNodeDef 里加一个 string IconFileName 字段
-                nodeDef.Icon = SkillIconLoader.LoadIcon("default_icon.png");
+                // [核心修改] 图标加载逻辑
+                // 1. 确定文件名：如果有配置则用配置的，否则用默认
+                string iconName = !string.IsNullOrEmpty(nodeDef.IconFileName) 
+                    ? nodeDef.IconFileName 
+                    : "default_icon.png";
 
+                // 2. 调用加载器 (确保你已经按照上一条回答创建了 SkillIconLoader)
+                nodeDef.Icon = SkillIconLoader.LoadIcon(iconName);
+
+                // 3. 继续后续构建
                 var perk = SkillTreeBuilder.AddNodeToTree(tree, nodeDef);
                 if (perk != null)
                 {
