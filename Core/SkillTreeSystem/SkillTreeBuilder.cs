@@ -7,6 +7,8 @@ using Duckov.PerkTrees.Behaviours;
 using Duckov.PerkTrees.Interactable;
 using Duckov.Economy;
 using NodeCanvas.Framework;
+using CombatMaid.Localization; // [引用] 模组本地化
+using SodaCraft.Localizations; // [引用] 游戏原生本地化
 
 namespace CombatMaid.Core.SkillTreeSystem
 {
@@ -60,7 +62,7 @@ namespace CombatMaid.Core.SkillTreeSystem
         }
 
         /// <summary>
-        /// 向技能树添加一个节点（修复版：正确的组件注册顺序）
+        /// 向技能树添加一个节点
         /// </summary>
         public static Perk AddNodeToTree(PerkTree tree, SkillNodeDef def)
         {
@@ -72,14 +74,28 @@ namespace CombatMaid.Core.SkillTreeSystem
             nodeObj.transform.localPosition = Vector3.zero;
 
             // ============================================================
-            // 2. [关键修复] 必须先添加 Perk，再添加任何 Behaviour
-            //    这样游戏引擎才能正确建立 Perk -> Behaviour 的连接
+            // 2. 配置 Perk 基础属性
             // ============================================================
             Perk perk = nodeObj.AddComponent<Perk>();
-            perk.name = $"Perk_{def.ID}"; // 设置名称
+            perk.name = $"Perk_{def.ID}"; 
             
             Traverse tPerk = Traverse.Create(perk);
+            
             tPerk.Field("displayName").SetValue(def.DisplayName);
+            string constructedDescKey = def.DisplayName + "_Desc";
+            
+            string lookupKey = !string.IsNullOrEmpty(def.Description) ? def.Description : constructedDescKey;
+            string finalDescText = CombatMaid.Localization.LocalizationManager.GetText(lookupKey, "暂无描述");
+
+            // 注入到游戏原生本地化字典中
+            if (SodaCraft.Localizations.LocalizationManager.overrideTexts != null)
+            {
+                SodaCraft.Localizations.LocalizationManager.overrideTexts[constructedDescKey] = finalDescText;
+                string nameText = CombatMaid.Localization.LocalizationManager.GetText(def.DisplayName, def.DisplayName);
+                SodaCraft.Localizations.LocalizationManager.overrideTexts[def.DisplayName] = nameText;
+            }
+            
+            tPerk.Field("hasDescription").SetValue(true);
             tPerk.Field("master").SetValue(tree);
             tPerk.Field("icon").SetValue(def.Icon);
 
@@ -132,13 +148,7 @@ namespace CombatMaid.Core.SkillTreeSystem
             }
 
             // ============================================================
-            // 4. 验证 Behaviour 注册情况（调试用）
-            // ============================================================
-            var allBehaviours = nodeObj.GetComponents<PerkBehaviour>().ToList();
-            CMDebug.Log($"[SkillTreeBuilder] 节点 {def.ID} 已注册 {allBehaviours.Count} 个 Behaviour");
-
-            // ============================================================
-            // 5. 将节点注册到树的列表和图数据中
+            // 4. 将节点注册到树的列表和图数据中
             // ============================================================
             Traverse.Create(tree).Field("perks").GetValue<List<Perk>>().Add(perk);
 
@@ -149,12 +159,15 @@ namespace CombatMaid.Core.SkillTreeSystem
                 graphNode.cachedPosition = def.Position;
                 graph.allNodes.Add(graphNode);
             }
+            
+            // 调试日志
+            CMDebug.Log($"[SkillTreeBuilder] 节点 {def.ID} 创建成功 (Key: {def.DisplayName})");
 
             return perk;
         }
 
         /// <summary>
-        /// 重建图连接（修复版）
+        /// 重建图连接
         /// </summary>
         public static void RebuildGraphConnections(PerkTree tree, List<SkillNodeDef> allDefs,
             Dictionary<string, Perk> createdPerks)
@@ -201,7 +214,7 @@ namespace CombatMaid.Core.SkillTreeSystem
         }
 
         /// <summary>
-        /// 在建筑上添加交互点（终极修复版）
+        /// 在建筑上添加交互点
         /// </summary>
         public static void RegisterInteraction(GameObject buildingObj, string treeId, string interactionLabel)
         {

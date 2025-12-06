@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy /Y &quot;$(TargetPath)&quot; &quot;E:\Game\Steam\steamapps\common\Escape from Duckov\Duckov_Data\Mods\CombatMaid\CombatMaid.dll&quot;&#xA;xcopy /Y /S /I &quot;$(ProjectDir)Localization\*.csv&quot; &quot;E:\Game\Steam\steamapps\common\Escape from Duckov\Duckov_Data\Mods\CombatMaid\Localization\&quot;&#xA;xcopy /Y /S /I &quot;$(ProjectDir)MaidPreset\*.json&quot; &quot;E:\Game\Steam\steamapps\common\Escape from Duckov\Duckov_Data\Mods\CombatMaid\MaidPreset\&quot;&#xA;xcopy /Y /E /I &quot;$(ProjectDir)Res\assets&quot; &quot;E:\Game\Steam\steamapps\common\Escape from Duckov\Duckov_Data\Mods\CombatMaid\assets\&quot;" />
+    <Exec Command="copy /Y &quot;$(TargetPath)&quot; &quot;E:\Game\Steam\steamapps\common\Escape from Duckov\Duckov_Data\Mods\CombatMaid\CombatMaid.dll&quot;&#xA;xcopy /Y /S /I &quot;$(ProjectDir)Localization\*.csv&quot; &quot;E:\Game\Steam\steamapps\common\Escape from Duckov\Duckov_Data\Mods\CombatMaid\Localization\&quot;&#xA;xcopy /Y /E /I &quot;$(ProjectDir)Res\*&quot; &quot;E:\Game\Steam\steamapps\common\Escape from Duckov\Duckov_Data\Mods\CombatMaid\&quot;" />
   </Target>
 
 </Project>

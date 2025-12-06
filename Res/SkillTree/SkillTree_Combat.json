@@ -1,0 +1,80 @@
+{
+  "TreeID": "MaidCombatSkills",
+  "TreeName": "SkillTree_Maid_Name",
+  "Description": "SkillTree_Maid_Desc",
+  "Version": "1.0.0",
+
+  "Nodes": [
+    {
+      "ID": "maid_basic_train",
+      "DisplayName": "Perk_Maid_Basic",
+      "Description": "Perk_Maid_Basic_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 100,
+      "RequiredLevel": 1,
+      "Position": { "x": 0, "y": 0 },
+      "PrerequisiteIDs": [],
+      "PlayerStatModifiers": {},
+      "MaidStatModifiers": {
+        "GunDamageMultiplier": 0.1,
+        "WalkSpeed": 0.5,
+        "RunSpeed": 0.5
+      },
+      "MaidAbilityID": ""
+    },
+
+    {
+      "ID": "maid_reload_master",
+      "DisplayName": "Perk_Maid_Reload",
+      "Description": "Perk_Maid_Reload_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 500,
+      "RequiredLevel": 2,
+      "Position": { "x": -100, "y": 150 },
+      "PrerequisiteIDs": [ "maid_basic_train" ],
+      "PlayerStatModifiers": {},
+      "MaidStatModifiers": {
+        "ReloadSpeedGain": 0.3
+      },
+      "MaidAbilityID": ""
+    },
+
+    {
+      "ID": "maid_sharp_shooter",
+      "DisplayName": "Perk_Maid_Sniper",
+      "Description": "Perk_Maid_Sniper_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 800,
+      "RequiredLevel": 2,
+      "Position": { "x": 100, "y": 150 },
+      "PrerequisiteIDs": [ "maid_basic_train" ],
+      "PlayerStatModifiers": {},
+      "MaidStatModifiers": {
+        "GunScatterMultiplier": -0.2,
+        "GunCritRateGain": 0.15,
+        "GunCritDamageGain": 0.25
+      },
+      "MaidAbilityID": ""
+    },
+
+    {
+      "ID": "maid_combat_expert",
+      "DisplayName": "Perk_Maid_Grenade",
+      "Description": "Perk_Maid_Grenade_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 2000,
+      "RequiredLevel": 5,
+      "Position": { "x": 0, "y": 300 },
+      "PrerequisiteIDs": [ "maid_reload_master", "maid_sharp_shooter" ],
+      "PlayerStatModifiers": {},
+      "MaidStatModifiers": {
+        "GunDamageMultiplier": 0.25,
+        "RecoilControl": 0.3,
+        "AimTurnSpeed": 100,
+        "PatrolRange": 5,
+        "CombatMoveRange": 5
+      },
+      "MaidAbilityID": "GrenadeThrow"
+    }
+  ]
+}
