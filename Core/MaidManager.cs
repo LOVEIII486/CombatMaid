@@ -4,7 +4,8 @@ using System.Reflection;
 using UnityEngine;
 using Duckov.Modding;
 using CombatMaid.Core.MaidConfigs;
-using CombatMaid.Core.SkillTreeSystem;
+using CombatMaid.Core.WineFox;
+using CombatMaid.Core.AttributeModifiers;
 using Newtonsoft.Json;
 
 namespace CombatMaid.Core
@@ -13,7 +14,7 @@ namespace CombatMaid.Core
     {
         public static MaidManager Instance { get; private set; }
 
-        // Key = ProfileName
+        // Key = ProfileName (仅存储普通女仆的只读配置)
         private Dictionary<string, MaidProfileData> _maidProfiles = new Dictionary<string, MaidProfileData>();
 
         private List<MaidController> _activeMaids = new List<MaidController>();
@@ -53,8 +54,6 @@ namespace CombatMaid.Core
         public void OnLevelStart(string sceneName)
         {
             CMDebug.Log($"场景加载: {sceneName}");
-            // 之后可以在这里重新加载配置以便热更
-            // LoadAllPresets(); 
         }
 
         public void OnLevelEnd()
@@ -76,8 +75,10 @@ namespace CombatMaid.Core
             // G 移动指令
             if (Input.GetKeyDown(KeyCode.G)) CommandMoveTeamToMouse();
 
+            // H 强制回血
             if (Input.GetKeyDown(KeyCode.H)) CommandForceHealTeam();
 
+            // F9 调试输出
             if (Input.GetKeyDown(KeyCode.F9))
             {
                 if (MaidSpawner.Instance != null)
@@ -88,7 +89,7 @@ namespace CombatMaid.Core
             }
         }
 
-        // ==================== JSON 加载逻辑 ====================
+        // ==================== JSON 加载逻辑 (普通女仆) ====================
 
         public void LoadAllPresets()
         {
@@ -139,13 +140,11 @@ namespace CombatMaid.Core
         // ==================== 核心生成逻辑 ====================
 
         /// <summary>
-        /// 根据 ProfileName 在指定位置生成女仆
+        /// [入口A] 根据 ProfileName 字符串生成女仆
+        /// 包含特殊逻辑分流：如果是酒狐，则从存档读取
         /// </summary>
-        /// <param name="profileName">JSON中定义的唯一ID (例如 "RoyalMaid_Bella")</param>
-        /// <param name="targetPos">生成位置</param>
         public void SpawnMaidAt(string profileName, Vector3 targetPos)
         {
-            // 1. 基础检查
             if (MaidSpawner.Instance == null)
             {
                 CMDebug.LogError("生成失败：MaidSpawner 未初始化！");
@@ -154,62 +153,110 @@ namespace CombatMaid.Core
 
             if (LevelManager.Instance?.MainCharacter == null) return;
 
-            // 2. 查找配置
-            if (!_maidProfiles.TryGetValue(profileName, out var profileData))
+            // --- 数据源分流 ---
+            MaidProfileData finalData = null;
+            bool isWineFox = (profileName == "RoyalMaid_WineFox");
+
+            if (isWineFox)
             {
-                CMDebug.LogError($"生成失败：找不到名为 '{profileName}' 的女仆配置！请检查 JSON 文件。");
-                return;
+                // 分支A：酒狐 - 走持久化逻辑 (存档 + 技能树)
+                finalData = WineFoxDataManager.LoadOrInit();
+                if (finalData == null)
+                {
+                    CMDebug.LogError($"生成失败：酒狐数据初始化严重错误！");
+                    return;
+                }
+            }
+            else
+            {
+                // 分支B：普通女仆 - 走内存字典
+                if (!_maidProfiles.TryGetValue(profileName, out finalData))
+                {
+                    CMDebug.LogError($"生成失败：找不到名为 '{profileName}' 的女仆配置！");
+                    return;
+                }
             }
 
-            // 3. 准备数据
+            // --- 调用核心重载 ---
+            SpawnMaidAt(targetPos, finalData, (controller) =>
+            {
+                // 如果是酒狐，额外挂载同步组件
+                if (isWineFox && controller != null)
+                {
+                    var sync = controller.gameObject.AddComponent<WineFoxDataSync>();
+                    sync.Initialize(controller, finalData);
+                    CMDebug.Log("已挂载酒狐数据同步组件");
+                }
+            });
+        }
+
+        /// <summary>
+        /// [入口B] 专用于酒狐生成的快捷方法 (给外部契约调用)
+        /// </summary>
+        public void SpawnWineFox(Vector3 position)
+        {
+            // 复用 SpawnMaidAt 的字符串入口逻辑，它会自动处理分流
+            SpawnMaidAt("RoyalMaid_WineFox", position);
+        }
+
+        /// <summary>
+        /// [核心重载] 直接根据 Data 对象生成实体
+        /// 所有的生成逻辑最终都汇总到这里
+        /// </summary>
+        public void SpawnMaidAt(Vector3 targetPos, MaidProfileData profileData, System.Action<MaidController> onComplete = null)
+        {
+            if (profileData == null) return;
+
             var spawnConfig = profileData.PresetConfig;
             var extraData = profileData.ExtraData;
-
-            // 确定基底
+            
             string baseKey = extraData != null && !string.IsNullOrEmpty(extraData.BasePresetKey)
                 ? extraData.BasePresetKey
                 : "Cname_Usec";
 
-            CMDebug.Log($"正在生成 [{profileName}] (Base: {baseKey})...");
+            CMDebug.Log($"正在生成 [{profileData.ProfileName}] (Base: {baseKey})...");
 
-            // 4. 执行生成
             MaidSpawner.Instance.SpawnMaid(
                 baseKey,
                 targetPos,
                 LevelManager.Instance.MainCharacter,
                 spawnConfig,
-                profileName,
-                (ai) => OnMaidSpawnedCallback(ai.CharacterMainControl, profileData)
+                profileData.ProfileName,
+                (ai) =>
+                {
+                    // 1. 通用初始化
+                    var controller = OnMaidSpawnedCallback(ai.CharacterMainControl, profileData);
+                    
+                    // 2. 触发回调 (用于外部挂载额外组件)
+                    onComplete?.Invoke(controller);
+                }
             );
         }
 
         /// <summary>
-        /// 生成后的初始化回调
+        /// 生成后的通用初始化步骤
         /// </summary>
-        private void OnMaidSpawnedCallback(CharacterMainControl ai, MaidProfileData profileData)
+        private MaidController OnMaidSpawnedCallback(CharacterMainControl character, MaidProfileData profileData)
         {
-            if (ai == null) return;
+            if (character == null) return null;
 
-            // 1. 挂载控制器
-            var controller = ai.gameObject.AddComponent<MaidController>();
+            // 1. 挂载核心控制器
+            var controller = character.gameObject.AddComponent<MaidController>();
             controller.Initialize(profileData, LevelManager.Instance.MainCharacter);
 
-            // 2. 应用自定义模型
+            // 2. 应用自定义模型 
             if (profileData.ExtraData != null && !string.IsNullOrEmpty(profileData.ExtraData.CustomModelID))
             {
                 StartCoroutine(CombatMaid.Core.CustomModel.CustomModelBridge.ApplyModelByIDAsync(
-                    ai,
+                    character, 
                     profileData.ExtraData.CustomModelID
                 ));
             }
-
-            // 3. 加入管理列表
-            if (!_activeMaids.Contains(controller))
-            {
-                _activeMaids.Add(controller);
-            }
-
-            ai.PopText(profileData.PresetConfig?.CustomName + " 参上！");
+    
+            // 3. 注册到列表
+            if (!_activeMaids.Contains(controller)) _activeMaids.Add(controller);
+    
+            return controller;
         }
 
         private void SpawnSpecificMaid(string profileName)
@@ -220,61 +267,76 @@ namespace CombatMaid.Core
                 SpawnMaidAt(profileName, mousePos);
             }
         }
-
-        public void ApplyGlobalSkillEffect(MaidSkillGrantBehaviour effectData)
+        
+        
+        public void ApplyGlobalSkillEffect(CombatMaid.Core.SkillTreeSystem.MaidSkillGrantBehaviour effectData)
         {
-            // 遍历当前所有活着的女仆
+            if (effectData == null) return;
+            if (_activeMaids.Count == 0) return;
+
+            CMDebug.Log($"[SkillTree] 收到强化通知，正在扫描场上的酒狐...");
+
+            int count = 0;
             foreach (var maid in _activeMaids)
             {
-                if (maid == null) continue;
-                ApplyEffectToSingleMaid(maid, effectData.MaidStatModifiers, effectData.UnlockAbilityID);
-            }
-        }
+                if (maid == null || maid.MaidCharacter == null) continue;
 
-        // [新增] 处理单个女仆的强化逻辑 (建议提取为公共方法)
-        private void ApplyEffectToSingleMaid(MaidController maid, Dictionary<string, float> stats, string abilityID)
-        {
-            // 1. 应用属性 (使用 AttributeModifier 工具)
-            if (stats != null)
-            {
-                foreach (var kvp in stats)
+                // 1. [核心过滤] 只对挂载了同步组件的“酒狐”生效
+                // 需确保引用命名空间: using CombatMaid.Core.WineFox;
+                var wineFoxSync = maid.GetComponent<CombatMaid.Core.WineFox.WineFoxDataSync>();
+                if (wineFoxSync == null) continue;
+
+                count++;
+                
+                // 2. 应用属性加成 (MaidStatModifiers)
+                if (effectData.MaidStatModifiers != null)
                 {
-                    // 假设这里 value 是增量，isMultiplier 设为 false (视你的需求而定)
-                    AttributeModifiers.AttributeModifier.Modify(
-                        maid.MaidCharacter,
-                        kvp.Key,
-                        kvp.Value,
-                        isMultiplier: false
-                    );
+                    foreach (var kvp in effectData.MaidStatModifiers)
+                    {
+                        // 调用你现有的属性修改工具
+                        // 假设技能树给的是直接数值加成 (isMultiplier = false)
+                        // 如果你的技能树设计是百分比(如 0.1 代表 10%)，请将 isMultiplier 改为 true
+                        CombatMaid.Core.AttributeModifiers.AttributeModifier.Modify(
+                            maid.MaidCharacter,
+                            kvp.Key,
+                            kvp.Value,
+                            isMultiplier: false 
+                        );
+                        
+                        maid.MaidCharacter.PopText($"{kvp.Key} UP!");
+                    }
+                }
+
+                // 3. 应用新技能解锁 (UnlockAbilityID)
+                if (!string.IsNullOrEmpty(effectData.UnlockAbilityID))
+                {
+                    // 检查是否已经拥有该技能，防止重复添加
+                    // 这里假设 SkillSystem 有个 HasSkill 方法，或者我们直接加，Factory通常会处理
+                    // 构建一个临时的配置对象
+                    var skillConfig = new MaidSkillConfig 
+                    { 
+                        SkillID = effectData.UnlockAbilityID 
+                        // 如果技能树支持传参，可以在这里扩展
+                    };
+
+                    // 使用工厂创建技能
+                    var newSkill = CombatMaid.Core.MaidSkillSystem.MaidSkillFactory.CreateSkill(skillConfig);
+                    
+                    if (newSkill != null)
+                    {
+                        maid.SkillSystem.AddSkill(newSkill);
+                        maid.MaidCharacter.PopText($"习得技能: {newSkill.SkillName}!");
+                        CMDebug.Log($"酒狐 {maid.name} 实时习得了 {newSkill.SkillName}");
+                    }
                 }
             }
-
-            // 2. 解锁技能 (如果有)
-            if (!string.IsNullOrEmpty(abilityID))
+            
+            if (count > 0)
             {
-                // 这里调用你之前的技能系统逻辑
-                // maid.SkillSystem.UnlockSkill(abilityID);
-                CMDebug.Log($"女仆 {maid.name} 习得了新能力: {abilityID}");
+                CMDebug.Log($"[SkillTree] 已实时强化 {count} 只酒狐实例。");
             }
         }
-
-        // [重要] 在生成女仆时，需要读取所有【已解锁】的技能并应用
-        // 请在 SpawnMaidAt 方法的 onSuccess 回调里，或者 MaidController.Initialize 里调用此逻辑
-        private void ApplyUnlockedSkillsOnSpawn(MaidController newMaid)
-        {
-            // 获取所有已解锁的节点ID
-            var savedData = SkillTreePersistence.Load();
-            // 注意：这里读取磁盘可能较慢，建议在 Manager 初始化时缓存一份 savedData
-
-            // 我们需要获取技能的定义数据 (Def)
-            // 这意味着 SkillTreeManager 需要提供一个根据 ID 查 Def 的方法
-            // 或者，我们可以简单点，只保存加成数值的汇总？
-
-            // 更稳妥的做法：
-            // 让 SkillTreeManager 提供一个 API: GetTotalMaidBonuses()
-            // 然后在这里应用。
-        }
-
+        
         // ==================== 队伍控制 & 集火逻辑 ====================
 
         private void UpdateFocusTarget()
@@ -285,13 +347,11 @@ namespace CombatMaid.Core
                 if (_focusExpireTimer <= 0)
                 {
                     FocusTarget = null;
-                    // CMDebug.Log("集火指令结束");
                 }
             }
 
             if (Input.GetMouseButton(0)) DetectPlayerTarget();
 
-            // 目标死亡检测
             if (FocusTarget != null && (FocusTarget.Health == null || FocusTarget.Health.IsDead))
             {
                 FocusTarget = null;
@@ -313,7 +373,6 @@ namespace CombatMaid.Core
                         FocusTarget = target;
                         CMDebug.Log($"[指令] 集火目标: {target.name}");
                     }
-
                     _focusExpireTimer = FocusDuration;
                 }
             }
@@ -338,9 +397,9 @@ namespace CombatMaid.Core
                 var maid = _activeMaids[i];
                 if (maid != null)
                 {
-                    // 稍微分散一点移动，避免重叠
                     Vector3 offset = new Vector3(Random.Range(-0.5f, 0.5f), 0, Random.Range(-0.5f, 0.5f));
                     maid.ForceMoveTo(targetPos + offset);
+                    maid.MaidCharacter.PopText("战术移动！");
                 }
             }
         }
@@ -351,10 +410,8 @@ namespace CombatMaid.Core
             for (int i = _activeMaids.Count - 1; i >= 0; i--)
             {
                 var maid = _activeMaids[i];
-                if (maid != null && !maid.MaidCharacter.Health.IsDead)
-                {
-                    maid.ForceHeal();
-                }
+                maid.ForceHeal(); 
+                maid.MaidCharacter.PopText("手动治疗！");
             }
         }
 
@@ -369,7 +426,6 @@ namespace CombatMaid.Core
                     else if (maid.gameObject != null) Destroy(maid.gameObject);
                 }
             }
-
             _activeMaids.Clear();
             CMDebug.Log("女仆队伍已解散");
         }
@@ -380,13 +436,8 @@ namespace CombatMaid.Core
     [System.Serializable]
     public class MaidProfileData
     {
-        // 如 "RoyalMaid_Bella"
         public string ProfileName;
-
-        // 基础数值配置
         public MaidConfig PresetConfig;
-
-        // 模组特有的行为配置
         public MaidExtraInfo ExtraData;
     }
 
@@ -394,26 +445,24 @@ namespace CombatMaid.Core
     public class MaidExtraInfo
     {
         public string Description;
-        
-        [Header("生成基底")]
+
+        [Header("生成基底")] 
         public string BasePresetKey = "Cname_Usec";
 
-        [Header("外观模型")]
-        public string CustomModelID = ""; 
-        
-        [Header("Mod行为")]
+        [Header("外观模型")] 
+        public string CustomModelID = "";
+
+        [Header("Mod行为")] 
         public string TacticalMode = "Standard";
-        
-        [Header("通用技能配置")]
+
+        [Header("通用技能配置")] 
         public List<MaidSkillConfig> Skills = new List<MaidSkillConfig>();
     }
-    
+
     [System.Serializable]
     public class MaidSkillConfig
     {
-        public string SkillID; // 技能唯一标识符，例如 "Grenade", "AutoHeal", "Buff"
-        // 使用字典存储任意参数：Key=参数名, Value=值
-        // JSON 中写作: "Params": { "ItemID": 67, "Delay": 2.0 }
+        public string SkillID; // 例如 "Grenade", "AutoHeal"
         public Dictionary<string, object> Params = new Dictionary<string, object>();
     }
 }
