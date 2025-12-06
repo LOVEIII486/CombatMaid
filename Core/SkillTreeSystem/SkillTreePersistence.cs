@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
-using CombatMaid; // 引用 CMDebug 和 ModBehaviour
+using CombatMaid;
 using UnityEngine;
 
 namespace CombatMaid.Core.SkillTreeSystem
@@ -21,7 +21,7 @@ namespace CombatMaid.Core.SkillTreeSystem
         private const string SaveFolderName = "CombatMaidSaves";
 
         /// <summary>
-        /// [修改] 获取存档完整路径：指向游戏根目录/CombatMaidSaves
+        /// 获取存档完整路径：指向游戏根目录/CombatMaidSaves
         /// </summary>
         private static string GetSavePath()
         {

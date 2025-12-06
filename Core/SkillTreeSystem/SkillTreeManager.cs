@@ -78,44 +78,64 @@ namespace CombatMaid.Core.SkillTreeSystem
 
                 CMDebug.Log($"[SkillTreeManager] 找到建筑: {skillBuilding.name}");
 
-                // 状态一致性检查
-                if (!_isTreeBuilt || _customTree == null)
+                // 🔧 修复：检查技能树是否还在 PerkTreeManager 的注册列表中
+                bool treeNeedsReregistration = false;
+                if (_customTree != null)
                 {
-                    CMDebug.Log("[SkillTreeManager] 开始构建技能树（首次或修复损坏状态）");
-
-                    try
+                    var registeredTree = PerkTreeManager.GetPerkTree(TREE_ID);
+                    if (registeredTree == null || registeredTree != _customTree)
                     {
-                        // 1. 加载存档
-                        _saveData = SkillTreePersistence.Load();
+                        CMDebug.LogWarning("[SkillTreeManager] 技能树对象存在但未在 PerkTreeManager 中注册，需要重新注册");
+                        treeNeedsReregistration = true;
+                    }
+                }
 
-                        // 2. 构建技能树
-                        BuildSkillTree();
+                // 状态一致性检查
+                if (!_isTreeBuilt || _customTree == null || treeNeedsReregistration)
+                {
+                    if (treeNeedsReregistration)
+                    {
+                        CMDebug.Log("[SkillTreeManager] 重新注册现有技能树到 PerkTreeManager");
+                        ReregisterTreeToPerkTreeManager();
+                    }
+                    else
+                    {
+                        CMDebug.Log("[SkillTreeManager] 开始构建技能树（首次或修复损坏状态）");
 
-                        // 3. 验证构建结果
-                        if (_customTree == null)
+                        try
                         {
-                            CMDebug.LogError("[SkillTreeManager] ✗ BuildSkillTree 失败：_customTree 仍为 null");
-                            _isTreeBuilt = false; // 重置状态，下次重试
+                            // 1. 加载存档
+                            _saveData = SkillTreePersistence.Load();
+
+                            // 2. 构建技能树
+                            BuildSkillTree();
+
+                            // 3. 验证构建结果
+                            if (_customTree == null)
+                            {
+                                CMDebug.LogError("[SkillTreeManager] ✗ BuildSkillTree 失败：_customTree 仍为 null");
+                                _isTreeBuilt = false; // 重置状态，下次重试
+                                yield break;
+                            }
+
+                            // 4. 恢复已购买状态
+                            RestorePurchasedState();
+
+                            _isTreeBuilt = true;
+                            CMDebug.LogInfo("[SkillTreeManager] ✓ 技能树构建成功");
+                        }
+                        catch (System.Exception ex)
+                        {
+                            CMDebug.LogError($"[SkillTreeManager] 构建技能树时发生异常: {ex.Message}\n{ex.StackTrace}");
+                            _isTreeBuilt = false; // 重置状态
+                            _customTree = null;
                             yield break;
                         }
-
-                        // 4. 恢复已购买状态
-                        RestorePurchasedState();
-
-                        _isTreeBuilt = true;
-                        CMDebug.LogInfo("[SkillTreeManager] ✓ 技能树构建成功");
-                    }
-                    catch (System.Exception ex)
-                    {
-                        CMDebug.LogError($"[SkillTreeManager] 构建技能树时发生异常: {ex.Message}\n{ex.StackTrace}");
-                        _isTreeBuilt = false; // 重置状态
-                        _customTree = null;
-                        yield break;
                     }
                 }
                 else
                 {
-                    CMDebug.Log("[SkillTreeManager] 技能树已存在，跳过构建");
+                    CMDebug.Log("[SkillTreeManager] 技能树已存在且已注册，跳过构建");
                 }
 
                 // 每次进入场景都重新注册交互点
@@ -134,6 +154,56 @@ namespace CombatMaid.Core.SkillTreeSystem
             finally
             {
                 _isInitializing = false;
+            }
+        }
+
+        /// <summary>
+        /// 🔧 新增：重新注册技能树到 PerkTreeManager
+        /// </summary>
+        private void ReregisterTreeToPerkTreeManager()
+        {
+            if (_customTree == null)
+            {
+                CMDebug.LogError("[ReregisterTree] _customTree 为 null，无法重新注册");
+                return;
+            }
+
+            try
+            {
+                // 确保技能树对象激活
+                if (!_customTree.gameObject.activeSelf)
+                {
+                    _customTree.gameObject.SetActive(true);
+                    CMDebug.Log("[ReregisterTree] 重新激活技能树对象");
+                }
+
+                // 检查是否已在列表中
+                if (!PerkTreeManager.Instance.perkTrees.Contains(_customTree))
+                {
+                    PerkTreeManager.Instance.perkTrees.Add(_customTree);
+                    CMDebug.Log($"[ReregisterTree] ✓ 技能树已重新注册到 PerkTreeManager: {TREE_ID}");
+                }
+                else
+                {
+                    CMDebug.Log("[ReregisterTree] 技能树已在 PerkTreeManager.perkTrees 列表中");
+                }
+
+                // 验证注册结果
+                var registeredTree = PerkTreeManager.GetPerkTree(TREE_ID);
+                if (registeredTree != null)
+                {
+                    CMDebug.Log("[ReregisterTree] ✓ 验证成功：可以通过 GetPerkTree 找到技能树");
+                }
+                else
+                {
+                    CMDebug.LogWarning("[ReregisterTree] ⚠ 验证失败：GetPerkTree 仍返回 null");
+                }
+
+                _isTreeBuilt = true;
+            }
+            catch (System.Exception ex)
+            {
+                CMDebug.LogError($"[ReregisterTree] 重新注册失败: {ex.Message}\n{ex.StackTrace}");
             }
         }
 
@@ -199,7 +269,12 @@ namespace CombatMaid.Core.SkillTreeSystem
                 }
 
                 CMDebug.Log($"[BuildSkillTree] 技能树已创建: {_customTree.name}");
+                
+                // 🔧 修复：将技能树设置为 SkillTreeManager 的子对象，确保跟随 DontDestroyOnLoad
                 _customTree.transform.SetParent(this.transform);
+                
+                // 🔧 修复：确保技能树对象本身也设置 DontDestroyOnLoad（冗余保险）
+                DontDestroyOnLoad(_customTree.gameObject);
 
                 // 3. 转换配置为节点定义
                 var nodes = SkillTreeConfigLoader.ConvertToNodeDefs(_currentConfig);

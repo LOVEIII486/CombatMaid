@@ -7,8 +7,8 @@ using Duckov.PerkTrees.Behaviours;
 using Duckov.PerkTrees.Interactable;
 using Duckov.Economy;
 using NodeCanvas.Framework;
-using CombatMaid.Localization; // [引用] 模组本地化
-using SodaCraft.Localizations; // [引用] 游戏原生本地化
+using CombatMaid.Localization;
+using SodaCraft.Localizations;
 
 namespace CombatMaid.Core.SkillTreeSystem
 {
@@ -16,49 +16,67 @@ namespace CombatMaid.Core.SkillTreeSystem
     {
         /// <summary>
         /// 创建一个新的空技能树实例
-        /// 参数 treeNameKey: 本地化 Key (例如 "SkillTree_Maid_Name")
         /// </summary>
         public static PerkTree CreateEmptyTree(string treeId, string treeNameKey)
         {
             PerkTree template = PerkTreeManager.GetPerkTree("Skills");
-            if (template == null) return null;
+            if (template == null)
+            {
+                CMDebug.LogError("无法找到原版 'Skills' 技能树作为模板！");
+                return null;
+            }
 
+            // 1. 临时禁用原版树的所有子节点
+            for (int i = 0; i < template.transform.childCount; i++)
+            {
+                template.transform.GetChild(i).gameObject.SetActive(false);
+            }
+
+            // 2. 临时禁用原版树本身
+            bool wasTemplateActive = template.gameObject.activeSelf;
+            template.gameObject.SetActive(false);
+
+            // 3. 克隆原版技能树（此时是禁用状态）
             GameObject treeObj = Object.Instantiate(template.gameObject);
-            treeObj.name = $"CustomSkillTree_{treeId}"; // 这里是 GameObject 名，不需要本地化
-            treeObj.SetActive(false);
+            treeObj.name = $"CustomSkillTree_{treeId}";
 
-            foreach (Transform child in treeObj.transform) Object.Destroy(child.gameObject);
+            // 4. 立即恢复原版树的状态
+            template.gameObject.SetActive(wasTemplateActive);
+            for (int j = 0; j < template.transform.childCount; j++)
+            {
+                template.transform.GetChild(j).gameObject.SetActive(true);
+            }
 
+            // 5. 清除克隆体的所有子节点
+            var children = treeObj.transform.Cast<Transform>().ToList();
+            foreach (var child in children)
+            {
+                Object.DestroyImmediate(child.gameObject);
+            }
+
+            // 6. 重置 PerkTree 组件核心数据
             PerkTree perkTree = treeObj.GetComponent<PerkTree>();
             Traverse tTree = Traverse.Create(perkTree);
 
-            tTree.Field("perkTreeID").SetValue(treeId); // 内部 ID
+            tTree.Field("perkTreeID").SetValue(treeId); 
             tTree.Field("perks").SetValue(new List<Perk>());
 
-            // [新增] 注入技能树显示名称 (修复了之前 unused parameter 的问题)
+            // 7. 注入本地化名称
             if (!string.IsNullOrEmpty(treeNameKey))
             {
-                // 1. 获取翻译文本 (例如从 "SkillTree_Maid_Name" 获取 "女仆战术强化")
                 string nameText = CombatMaid.Localization.LocalizationManager.GetText(treeNameKey, "未命名技能树");
         
                 if (SodaCraft.Localizations.LocalizationManager.overrideTexts != null)
                 {
-                    // 2. [常规注入] 注入配置中指定的 Key (防守性编程)
                     SodaCraft.Localizations.LocalizationManager.overrideTexts[treeNameKey] = nameText;
-
-                    // 3. [关键修复] 注入游戏强制要求的 Key: PerkTree_{ID}
-                    // 这样当游戏 UI 请求 "PerkTree_MaidCombatSkills" 时，也能拿到正确的中文
                     string forcedKey = $"PerkTree_{treeId}";
                     SodaCraft.Localizations.LocalizationManager.overrideTexts[forcedKey] = nameText;
-            
-                    CMDebug.Log($"[SkillTreeSystem] 已注入强制标题 Key: {forcedKey} -> {nameText}");
+                    CMDebug.Log($"[SkillTreeSystem] 标题注入: {forcedKey} -> {nameText}");
                 }
-
-                // 4. 还是设置一下字段，以防万一
                 tTree.Field("displayName").SetValue(treeNameKey);
             }
 
-            // ... (清理图逻辑保持不变)
+            // 8. 清理图数据连接
             if (perkTree.RelationGraphOwner != null && perkTree.RelationGraphOwner.graph is PerkRelationGraph graph)
             {
                 graph.allNodes.Clear();
@@ -66,11 +84,13 @@ namespace CombatMaid.Core.SkillTreeSystem
                 graph.UpdateGraph();
             }
 
+            // 9. 注册到管理器
             if (!PerkTreeManager.Instance.perkTrees.Contains(perkTree))
             {
                 PerkTreeManager.Instance.perkTrees.Add(perkTree);
             }
 
+            // 10. 激活克隆体
             treeObj.SetActive(true);
             return perkTree;
         }
@@ -87,9 +107,7 @@ namespace CombatMaid.Core.SkillTreeSystem
             nodeObj.transform.SetParent(tree.transform);
             nodeObj.transform.localPosition = Vector3.zero;
 
-            // ============================================================
             // 2. 配置 Perk 基础属性
-            // ============================================================
             Perk perk = nodeObj.AddComponent<Perk>();
             perk.name = $"Perk_{def.ID}"; 
             
@@ -97,11 +115,10 @@ namespace CombatMaid.Core.SkillTreeSystem
             
             tPerk.Field("displayName").SetValue(def.DisplayName);
             string constructedDescKey = def.DisplayName + "_Desc";
-            
             string lookupKey = !string.IsNullOrEmpty(def.Description) ? def.Description : constructedDescKey;
             string finalDescText = CombatMaid.Localization.LocalizationManager.GetText(lookupKey, "暂无描述");
 
-            // 注入到游戏原生本地化字典中
+            // 注入描述
             if (SodaCraft.Localizations.LocalizationManager.overrideTexts != null)
             {
                 SodaCraft.Localizations.LocalizationManager.overrideTexts[constructedDescKey] = finalDescText;
@@ -120,8 +137,7 @@ namespace CombatMaid.Core.SkillTreeSystem
 
             if (def.CostItems != null && def.CostItems.Count > 0)
             {
-                req.cost.items = def.CostItems.Select(x => new Cost.ItemEntry { id = x.Key, amount = x.Value })
-                    .ToArray();
+                req.cost.items = def.CostItems.Select(x => new Cost.ItemEntry { id = x.Key, amount = x.Value }).ToArray();
             }
             else
             {
@@ -130,12 +146,10 @@ namespace CombatMaid.Core.SkillTreeSystem
 
             tPerk.Field("requirement").SetValue(req);
 
-            // ============================================================
-            // 3. Perk 配置完成后，才开始添加 Behaviour 组件
-            // ============================================================
-            
-            // 自动存档组件（所有节点必备）
+            // 3. 添加组件行为
+            // A. 自动存档组件
             nodeObj.AddComponent<PerkAutoSaveBehaviour>();
+            // B. 商店解锁自动绑定
             var unlockableItems = CombatMaid.Core.Items.Logic.MaidItemRegistry.GetItemsUnlockedByNode(def.ID);
             if (unlockableItems != null && unlockableItems.Count > 0)
             {
@@ -143,11 +157,10 @@ namespace CombatMaid.Core.SkillTreeSystem
                 {
                     var unlocker = nodeObj.AddComponent<PerkUnlockStockShop>();
                     unlocker.unlockItem = itemId;
-                    CMDebug.Log($"[SkillTreeBuilder] 节点 {def.ID} 绑定了解锁物品: {itemId}");
+                    CMDebug.Log($"[SkillTreeBuilder] 节点 {def.ID} 绑定解锁物品: {itemId}");
                 }
             }
-
-            // 玩家属性加成（如果有配置）
+            // C. 玩家属性加成
             if (def.PlayerStatModifiers != null && def.PlayerStatModifiers.Count > 0)
             {
                 var statsComp = nodeObj.AddComponent<ModifyPlayerCharacterStats>();
@@ -157,11 +170,9 @@ namespace CombatMaid.Core.SkillTreeSystem
                     entries.Add(new ModifyCharacterStatsBase.Entry
                         { key = kvp.Key, value = kvp.Value, percentage = false });
                 }
-
                 Traverse.Create(statsComp).Field("entries").SetValue(entries);
             }
-
-            // 女仆技能逻辑（如果有配置）
+            // D. 女仆技能授权
             if ((def.MaidStatModifiers != null && def.MaidStatModifiers.Count > 0) ||
                 !string.IsNullOrEmpty(def.MaidAbilityID))
             {
@@ -171,9 +182,7 @@ namespace CombatMaid.Core.SkillTreeSystem
                 maidBeh.UnlockAbilityID = def.MaidAbilityID;
             }
 
-            // ============================================================
-            // 4. 将节点注册到树的列表和图数据中
-            // ============================================================
+            // 4. 注册到数据结构
             Traverse.Create(tree).Field("perks").GetValue<List<Perk>>().Add(perk);
 
             if (tree.RelationGraphOwner.graph is PerkRelationGraph graph)
@@ -183,18 +192,10 @@ namespace CombatMaid.Core.SkillTreeSystem
                 graphNode.cachedPosition = def.Position;
                 graph.allNodes.Add(graphNode);
             }
-            
-            // 调试日志
-            CMDebug.Log($"[SkillTreeBuilder] 节点 {def.ID} 创建成功 (Key: {def.DisplayName})");
-
             return perk;
         }
 
-        /// <summary>
-        /// 重建图连接
-        /// </summary>
-        public static void RebuildGraphConnections(PerkTree tree, List<SkillNodeDef> allDefs,
-            Dictionary<string, Perk> createdPerks)
+        public static void RebuildGraphConnections(PerkTree tree, List<SkillNodeDef> allDefs, Dictionary<string, Perk> createdPerks)
         {
             if (tree.RelationGraphOwner.graph is PerkRelationGraph graph)
             {
@@ -211,58 +212,36 @@ namespace CombatMaid.Core.SkillTreeSystem
                         if (createdPerks.ContainsKey(preId))
                         {
                             var sourceNode = graph.GetRelatedNode(createdPerks[preId]);
-
                             if (sourceNode != null && sourceNode != targetNode)
                             {
                                 bool alreadyConnected = false;
                                 foreach (var conn in sourceNode.outConnections)
                                 {
-                                    if (conn.targetNode == targetNode)
-                                    {
-                                        alreadyConnected = true;
-                                        break;
-                                    }
+                                    if (conn.targetNode == targetNode) { alreadyConnected = true; break; }
                                 }
-
-                                if (!alreadyConnected)
-                                {
-                                    graph.ConnectNodes(sourceNode, targetNode);
-                                }
+                                if (!alreadyConnected) graph.ConnectNodes(sourceNode, targetNode);
                             }
                         }
                     }
                 }
-
                 graph.UpdateGraph();
             }
         }
 
-        /// <summary>
-        /// 在建筑上添加交互点 (统一修正版)
-        /// 参数 interactionKey: 本地化 Key
-        /// </summary>
         public static void RegisterInteraction(GameObject buildingObj, string treeId, string interactionKey, string defaultText = "交互")
         {
             var existingInvoker = buildingObj.GetComponentInChildren<PerkTreeUIInvoker>();
-            if (existingInvoker == null)
-            {
-                CMDebug.LogError("[SkillTreeSystem] 目标建筑缺少 PerkTreeUIInvoker");
-                return;
-            }
+            if (existingInvoker == null) return;
 
-            // [新增] 统一的本地化注入逻辑
             string finalInteractText = CombatMaid.Localization.LocalizationManager.GetText(interactionKey, defaultText);
-            
             if (SodaCraft.Localizations.LocalizationManager.overrideTexts != null)
             {
-                // 告诉游戏：当 UI 遇到 interactionKey 时，请显示 finalInteractText
                 SodaCraft.Localizations.LocalizationManager.overrideTexts[interactionKey] = finalInteractText;
             }
 
             GameObject interactObj = Object.Instantiate(existingInvoker.gameObject, existingInvoker.transform.parent);
-            interactObj.name = $"Interact_{treeId}"; // GameObject 名字，仅供调试，无需本地化
+            interactObj.name = $"Interact_{treeId}";
 
-            // ... (Transform 和 Collider 清理逻辑保持不变) ...
             interactObj.transform.localPosition = existingInvoker.transform.localPosition;
             interactObj.transform.localRotation = existingInvoker.transform.localRotation;
             interactObj.transform.localScale = existingInvoker.transform.localScale;
@@ -270,20 +249,17 @@ namespace CombatMaid.Core.SkillTreeSystem
             if (collider != null) Object.Destroy(collider);
 
             PerkTreeUIInvoker newInvoker = interactObj.GetComponent<PerkTreeUIInvoker>();
-            
-            // [关键] 这里赋值 Key，游戏 UI 会去 overrideTexts 里查这个 Key
             newInvoker.InteractName = interactionKey; 
             newInvoker.perkTreeID = treeId;
             newInvoker.MarkerActive = false;
 
-            // ... (Group 处理逻辑保持不变) ...
             var newInvokerGroupList = Traverse.Create(newInvoker).Field("otherInterablesInGroup").GetValue<List<InteractableBase>>();
             if (newInvokerGroupList != null) newInvokerGroupList.Clear();
             var mainGroupList = Traverse.Create(existingInvoker).Field("otherInterablesInGroup").GetValue<List<InteractableBase>>();
             if (mainGroupList != null) mainGroupList.Add(newInvoker);
             existingInvoker.GetInteractableList();
 
-            CMDebug.Log($"[SkillTreeSystem] 交互点已挂载。Key: {interactionKey}, 文本: {finalInteractText}");
+            CMDebug.Log($"[SkillTreeSystem] 交互点已挂载: {finalInteractText}");
         }
     }
 }
