@@ -378,6 +378,7 @@ namespace CombatMaid.Core.SkillTreeSystem
                 if (hasChanges)
                 {
                     SkillTreePersistence.Save(_saveData);
+                    CombatMaid.Core.Items.Logic.MaidItemRegistry.RefreshShopAvailability();
                 }
                 else
                 {
