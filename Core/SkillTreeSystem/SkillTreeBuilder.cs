@@ -110,7 +110,7 @@ namespace CombatMaid.Core.SkillTreeSystem
             // 玩家属性加成（如果有配置）
             if (def.PlayerStatModifiers != null && def.PlayerStatModifiers.Count > 0)
             {
-                var statsComp = nodeObj.AddComponent<SilentModifyCharacterStats>();
+                var statsComp = nodeObj.AddComponent<ModifyPlayerCharacterStats>();
                 var entries = new List<ModifyCharacterStatsBase.Entry>();
                 foreach (var kvp in def.PlayerStatModifiers)
                 {

@@ -23,22 +23,14 @@ namespace CombatMaid.Core.SkillTreeSystem
 
             if (File.Exists(path))
             {
-                try
+                byte[] bytes = File.ReadAllBytes(path);
+                Texture2D tex = new Texture2D(2, 2);
+                if (tex.LoadImage(bytes))
                 {
-                    byte[] bytes = File.ReadAllBytes(path);
-                    Texture2D tex = new Texture2D(2, 2);
-                    if (tex.LoadImage(bytes))
-                    {
-                        // 创建 Sprite (中心锚点)
-                        Sprite sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.one * 0.5f);
-                        sprite.name = fileName;
-                        _cache[fileName] = sprite;
-                        return sprite;
-                    }
-                }
-                catch (System.Exception ex)
-                {
-                    CMDebug.LogError($"[SkillIconLoader] 加载图片失败 {fileName}: {ex.Message}");
+                    Sprite sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.one * 0.5f);
+                    sprite.name = fileName;
+                    _cache[fileName] = sprite;
+                    return sprite;
                 }
             }
             else
@@ -52,7 +44,6 @@ namespace CombatMaid.Core.SkillTreeSystem
         private static Sprite GetDefaultIcon()
         {
             if (_defaultIcon != null) return _defaultIcon;
-            
             // 创建一个临时的白色方块作为默认图标
             Texture2D tex = new Texture2D(64, 64);
             _defaultIcon = Sprite.Create(tex, new Rect(0, 0, 64, 64), Vector2.one * 0.5f);

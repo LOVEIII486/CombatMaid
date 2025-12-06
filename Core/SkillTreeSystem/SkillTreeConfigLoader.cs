@@ -11,7 +11,7 @@ namespace CombatMaid.Core.SkillTreeSystem
     /// </summary>
     public static class SkillTreeConfigLoader
     {
-        private const string CONFIG_FOLDER = "Skills";
+        private const string CONFIG_FOLDER = "SkillTree";
         
         /// <summary>
         /// 从指定文件加载技能树配置

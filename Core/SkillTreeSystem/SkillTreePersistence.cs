@@ -12,25 +12,20 @@ namespace CombatMaid.Core.SkillTreeSystem
     [System.Serializable]
     public class SkillTreeSaveData
     {
-        // 已解锁/已购买的技能节点ID列表
         public List<string> UnlockedNodeIDs = new List<string>();
-        
-        // 如果未来有技能点系统，可以在这里加:
-        // public int AvailablePoints;
     }
 
     public static class SkillTreePersistence
     {
-        private const string SaveFileName = "SkillTreeData.json";
+        private const string SaveFileName = "MaidSkillTreeSave.json";
 
         /// <summary>
         /// 获取存档完整路径
         /// </summary>
         private static string GetSavePath()
         {
-            // 确保 ModBehaviour.Instance.ModRootPath 有效，否则回退到当前目录
             string root = ModBehaviour.Instance != null ? ModBehaviour.Instance.ModRootPath : ".";
-            string dir = Path.Combine(root, "Saves");
+            string dir = Path.Combine(root, "SkillTree/Saves");
             
             if (!Directory.Exists(dir))
             {
@@ -58,7 +53,7 @@ namespace CombatMaid.Core.SkillTreeSystem
             string path = GetSavePath();
             if (!File.Exists(path))
             {
-                return new SkillTreeSaveData(); // 返回新档
+                return new SkillTreeSaveData();
             }
 
             try

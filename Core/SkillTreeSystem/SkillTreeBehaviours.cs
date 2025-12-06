@@ -7,7 +7,7 @@ using UnityEngine;
 namespace CombatMaid.Core.SkillTreeSystem
 {
     /// <summary>
-    /// 自动存档组件（正确的继承方式）
+    /// 自动存档组件
     /// </summary>
     public class PerkAutoSaveBehaviour : PerkBehaviour
     {
@@ -28,16 +28,16 @@ namespace CombatMaid.Core.SkillTreeSystem
     }
 
     /// <summary>
-    /// 玩家属性静默修改器（继承原版基类）
+    /// 玩家属性修改器
     /// </summary>
-    public class SilentModifyCharacterStats : ModifyCharacterStatsBase
+    public class ModifyPlayerCharacterStats : ModifyCharacterStatsBase
     {
-        // 隐藏原版的描述文本，避免UI显示混乱
+        // 隐藏原版的描述文本
         public override string Description => string.Empty;
     }
 
     /// <summary>
-    /// 女仆技能授权组件（继承 PerkBehaviour）
+    /// 女仆技能授权组件
     /// </summary>
     public class MaidSkillGrantBehaviour : PerkBehaviour
     {

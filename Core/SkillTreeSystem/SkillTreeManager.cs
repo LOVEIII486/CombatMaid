@@ -12,15 +12,14 @@ namespace CombatMaid.Core.SkillTreeSystem
         public static SkillTreeManager Instance { get; private set; }
 
         private const string TREE_ID = "MaidCombatSkills";
-        private const string DEFAULT_CONFIG_FILE = "SkillTree_Combat.json"; // [新增] 默认配置文件名
+        private const string DEFAULT_CONFIG_FILE = "SkillTree_Combat.json";
         
         private bool _isTreeBuilt = false;
         private PerkTree _customTree;
         private bool _isInitializing = false;
         
-        private SkillTreeConfig _currentConfig; // [新增] 当前加载的配置
+        private SkillTreeConfig _currentConfig;
 
-        // 运行时状态缓存
         private SkillTreeSaveData _saveData;
         private Dictionary<string, Perk> _runtimePerks = new Dictionary<string, Perk>();
         private Dictionary<string, SkillNodeDef> _nodeDefsMap = new Dictionary<string, SkillNodeDef>();
@@ -33,7 +32,6 @@ namespace CombatMaid.Core.SkillTreeSystem
 
         private void Start()
         {
-            // [修复] 监听所有场景加载事件
             UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnAnySceneLoaded;
         }
 
@@ -43,10 +41,9 @@ namespace CombatMaid.Core.SkillTreeSystem
             SaveProgress();
         }
 
-        // [新增] 响应任何场景加载
+        // 响应任何场景加载
         private void OnAnySceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
         {
-            // 只在 Base 或 Base_SceneV2 场景时尝试注册
             if (scene.name == "Base" || scene.name == "Base_SceneV2")
             {
                 CMDebug.Log($"[SkillTreeManager] 检测到基地场景: {scene.name}");
@@ -56,7 +53,7 @@ namespace CombatMaid.Core.SkillTreeSystem
 
         private IEnumerator InitSkillTreeRoutine()
         {
-            // [保护] 防止协程重复执行
+            // 防止协程重复执行
             if (_isInitializing)
             {
                 CMDebug.Log("[SkillTreeManager] 初始化正在进行中，跳过");
@@ -78,7 +75,7 @@ namespace CombatMaid.Core.SkillTreeSystem
 
                 CMDebug.Log($"[SkillTreeManager] 找到建筑: {skillBuilding.name}");
 
-                // [修复] 状态一致性检查
+                // 状态一致性检查
                 if (!_isTreeBuilt || _customTree == null)
                 {
                     CMDebug.Log("[SkillTreeManager] 开始构建技能树（首次或修复损坏状态）");
@@ -118,7 +115,7 @@ namespace CombatMaid.Core.SkillTreeSystem
                     CMDebug.Log("[SkillTreeManager] 技能树已存在，跳过构建");
                 }
 
-                // [关键修复] 每次进入场景都重新注册交互点
+                // 每次进入场景都重新注册交互点
                 if (_customTree != null)
                 {
                     CMDebug.Log($"[SkillTreeManager] 准备注册交互点到建筑: {skillBuilding.name}");
@@ -241,9 +238,7 @@ namespace CombatMaid.Core.SkillTreeSystem
                 throw;
             }
         }
-
         
-        // [已移除] GetNodeDefinitions() - 现在从 JSON 加载
         
         public void ApplyPassiveEffectsToMaid(MaidController maid)
         {
@@ -288,16 +283,12 @@ namespace CombatMaid.Core.SkillTreeSystem
             {
                 if (_runtimePerks.TryGetValue(id, out Perk perk))
                 {
-                    // 使用反射强制设置 unlocked 状态
                     Traverse.Create(perk).Property("Unlocked").SetValue(true);
                     CMDebug.Log($"[RestorePurchasedState] 已恢复节点: {id}");
                 }
             }
         }
-
-        // ============================================================
-        // [核心修复] 使用公共属性而不是私有字段
-        // ============================================================
+        
         public void SaveProgress()
         {
             if (_saveData == null || _runtimePerks == null) return;
@@ -312,8 +303,7 @@ namespace CombatMaid.Core.SkillTreeSystem
                     Perk perk = kvp.Value;
                     
                     if (perk == null) continue;
-
-                    // [修复点] 使用 Perk.Unlocked 公共属性（首字母大写）
+                    
                     bool isUnlocked = perk.Unlocked;
 
                     if (isUnlocked && !_saveData.UnlockedNodeIDs.Contains(id))
