@@ -97,6 +97,8 @@
     "BasePresetKey": "Cname_Usec",
     "CustomModelID": "10004",
     "TacticalMode": "Assault",
-    "Skills": []
+    "Skills": [],
+    "//--- 存档状态追踪 ---": "",
+    "AppliedModifierKeys": []
   }
 }

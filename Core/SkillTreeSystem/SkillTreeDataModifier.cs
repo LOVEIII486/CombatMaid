@@ -67,22 +67,46 @@ namespace CombatMaid.Core.SkillTreeSystem
                 CMDebug.LogError($"[ModifyWineFoxData] 酒狐数据的 PresetConfig 为 null");
                 return;
             }
+        
+            // 确保 ExtraData 存在（兼容旧存档）
+            if (data.ExtraData == null) data.ExtraData = new MaidExtraInfo();
+            if (data.ExtraData.AppliedModifierKeys == null) data.ExtraData.AppliedModifierKeys = new List<string>();
 
-            // 应用所有修改器
-            bool modified = false;
-            foreach (var modifier in Modifiers)
+            bool anyChangesMade = false;
+            
+            for (int i = 0; i < Modifiers.Count; i++)
             {
+                var modifier = Modifiers[i];
+                
+                // [关键设计] 生成唯一 Key: "{NodeID}#{Index}"
+                // 这种格式既绑定了节点，也区分了同一节点下的多个修改项
+                string uniqueKey = $"{NodeID}#{i}";
+
+                // 3. 检查是否已应用
+                if (data.ExtraData.AppliedModifierKeys.Contains(uniqueKey))
+                {
+                    CMDebug.Log($"[ModifyWineFoxData] 跳过已应用修改: {uniqueKey}");
+                    continue;
+                }
+
+                // 4. 尝试应用
                 if (ApplyModifier(modifier, data))
                 {
-                    modified = true;
+                    // 5. 标记为已应用
+                    data.ExtraData.AppliedModifierKeys.Add(uniqueKey);
+                    anyChangesMade = true;
+                    CMDebug.Log($"[ModifyWineFoxData] 应用成功: {uniqueKey} ({modifier.Type})");
                 }
             }
 
-            // 如果有修改，保存数据
-            if (modified)
+            if (anyChangesMade)
             {
                 WineFoxDataManager.SaveData();
-                CMDebug.Log($"[ModifyWineFoxData] ✓ 节点 {NodeID} 已应用修改并保存");
+                CMDebug.Log($"[ModifyWineFoxData] ✓ 节点 {NodeID} 数据更新并已保存");
+            }
+            else
+            {
+                CMDebug.Log($"[ModifyWineFoxData] 节点 {NodeID} 无需更新（已全部应用）");
             }
         }
 

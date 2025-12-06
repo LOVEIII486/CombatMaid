@@ -376,6 +376,8 @@ namespace CombatMaid.Core
         [Header("Mod行为")] public string TacticalMode = "Standard";
 
         [Header("通用技能配置")] public List<MaidSkillConfig> Skills = new List<MaidSkillConfig>();
+        
+        [Header("存档状态")] public List<string> AppliedModifierKeys = new List<string>();
     }
 
     [System.Serializable]
