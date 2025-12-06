@@ -250,7 +250,7 @@ namespace CombatMaid.Core.Items.Logic
             switch (itemId)
             {
                 // === 契约类 ===
-                case 88888: // 贝拉契约
+                // case 88888: // 贝拉契约
                 case 88000: // 酒狐契约
                     return "maid_core_license"; // 需要核心授权
 

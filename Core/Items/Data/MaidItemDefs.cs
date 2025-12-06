@@ -11,34 +11,34 @@ namespace CombatMaid.Core.Items.Data
         {
             return new List<MaidItemInfo>
             {
-                new MaidItemInfo // 基础女仆契约
-                {
-                    itemId = 88888,
-                    spritePath = "MaidContract_icon_512.png",
-                    localizationKey = "Item_MaidContract",
-                    localizationDesc = "Item_MaidContract_Desc",
-                    value = 50000,
-                    maxStackCount = 1,
-                    weight = 0.01f,
-                    tags = new List<string> { "MaidItem" },
-                    usages = new UsageData
-                    {
-                        useTime = 1.0f,
-                        // useSound = "Paper", 
-                        behaviors = new List<UsageBehaviorData>() // 空行为，由 SimpleUseBehavior 接管
-                    },
-                    VisualReferenceId = 73, // 信件
-                    CustomComponentType = typeof(Component_MaidContract),
-                    CustomConstants = new Dictionary<string, object>
-                    {
-                        { "ConsumeOnUse", true }
-                    },
-                    ShopMerchantId = MerchantIds.Mud,
-                    ShopMaxStock = 5,
-                    ShopPriceFactor = 1.2f,
-                    ShopPossibility = 1f,
-                    ShopForceUnlock = false
-                },
+                // new MaidItemInfo // 基础女仆契约
+                // {
+                //     itemId = 88888,
+                //     spritePath = "MaidContract_icon_512.png",
+                //     localizationKey = "Item_MaidContract",
+                //     localizationDesc = "Item_MaidContract_Desc",
+                //     value = 50000,
+                //     maxStackCount = 1,
+                //     weight = 0.01f,
+                //     tags = new List<string> { "MaidItem" },
+                //     usages = new UsageData
+                //     {
+                //         useTime = 1.0f,
+                //         // useSound = "Paper", 
+                //         behaviors = new List<UsageBehaviorData>() // 空行为，由 SimpleUseBehavior 接管
+                //     },
+                //     VisualReferenceId = 73, // 信件
+                //     CustomComponentType = typeof(Component_MaidContract),
+                //     CustomConstants = new Dictionary<string, object>
+                //     {
+                //         { "ConsumeOnUse", true }
+                //     },
+                //     ShopMerchantId = MerchantIds.Mud,
+                //     ShopMaxStock = 5,
+                //     ShopPriceFactor = 1.2f,
+                //     ShopPossibility = 1f,
+                //     ShopForceUnlock = false
+                // },
                 new MaidItemInfo // 酒狐女仆契约
                 {
                     itemId = 88000,

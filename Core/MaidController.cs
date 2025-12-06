@@ -45,7 +45,7 @@ namespace CombatMaid.Core
         public float ForceFollowDistance = 15.0f;     // 超过此距离 -> 请求进入强制跟随状态
         public float HoldMaxDistance = 25.0f;         // 驻守模式下的最大宽容距离 (超过这个距离才会破防跟上)
         public float TeleportDistance = 30.0f;        // 超过此距离 -> 强制传送
-        public float TeleportTimeout = 8.0f;          // 强制跟随卡住超过此时间 -> 传送
+        public float TeleportTimeout = 5.0f;          // 强制跟随卡住超过此时间 -> 传送
         public float SafeDistanceToResumeCombat = 10.0f; // 回到此距离内 -> 恢复自主战斗状态
 
         // ==================== 状态属性 ====================
