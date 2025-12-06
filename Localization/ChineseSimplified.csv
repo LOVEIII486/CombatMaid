@@ -22,3 +22,5 @@ Perk_Maid_Grenade_Desc,解锁手雷投掷能力，并成为战场专家，大幅
 SkillTree_Maid_Name,女仆战术强化,1.0,SkillTree
 SkillTree_Maid_Desc,提升战斗女仆的各项能力,1.0,SkillTree
 Interaction_MaidSkill_Label,战斗女仆: 战术技能,1.0,Interactables
+Item_MaidContractWineFox,酒狐女仆契约,1.0,MaidItemName
+Item_MaidContractWineFox_Desc,召唤最强女仆-酒狐,1.0,MaidItemDescription

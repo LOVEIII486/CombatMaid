@@ -11,7 +11,7 @@ namespace CombatMaid.Core.Items.Data
         {
             return new List<MaidItemInfo>
             {
-                new MaidItemInfo // 女仆契约
+                new MaidItemInfo // 基础女仆契约
                 {
                     itemId = 88888,
                     spritePath = "MaidContract_icon_512.png",
@@ -35,6 +35,34 @@ namespace CombatMaid.Core.Items.Data
                     },
                     ShopMerchantId = MerchantIds.Mud,
                     ShopMaxStock = 5,
+                    ShopPriceFactor = 1.2f,
+                    ShopPossibility = 1f,
+                    ShopForceUnlock = true
+                },
+                new MaidItemInfo // 酒狐女仆契约
+                {
+                    itemId = 88000,
+                    spritePath = "MaidContract_WineFox.png",
+                    localizationKey = "Item_MaidContractWineFox",
+                    localizationDesc = "Item_MaidContractWineFox_Desc",
+                    value = 50000,
+                    maxStackCount = 1,
+                    weight = 0.01f,
+                    tags = new List<string> { "Maid" },
+                    usages = new UsageData
+                    {
+                        useTime = 1.0f,
+                        // useSound = "Paper", 
+                        behaviors = new List<UsageBehaviorData>()
+                    },
+                    VisualReferenceId = 73, // 信件
+                    CustomComponentType = typeof(Component_MaidContract_WineFox),
+                    CustomConstants = new Dictionary<string, object>
+                    {
+                        { "ConsumeOnUse", false }
+                    },
+                    ShopMerchantId = MerchantIds.Mud,
+                    ShopMaxStock = 2,
                     ShopPriceFactor = 1.2f,
                     ShopPossibility = 1f,
                     ShopForceUnlock = true
