@@ -18,7 +18,7 @@ namespace CombatMaid.Core.SkillTreeSystem
     }
 
     /// <summary>
-    /// 单个技能节点配置
+    /// 单个技能节点配置（新格式 - 已移除兼容）
     /// </summary>
     [Serializable]
     public class SkillNodeConfig
@@ -39,9 +39,28 @@ namespace CombatMaid.Core.SkillTreeSystem
         
         // 属性修改器
         public Dictionary<string, float> PlayerStatModifiers;  // 玩家属性修改
-        public Dictionary<string, float> MaidStatModifiers;    // 女仆属性修改
         
-        // 特殊能力
-        public string MaidAbilityID;              // 女仆解锁的特殊能力ID
+        // === 新格式：女仆修改器 ===
+        public List<MaidModifierConfig> MaidModifiers;  // 女仆修改器列表
+    }
+
+    /// <summary>
+    /// 女仆修改器配置（新格式）
+    /// </summary>
+    [Serializable]
+    public class MaidModifierConfig
+    {
+        public string Type;  // "AddAttribute", "MultiplyAttribute", "AddSkill", "Custom"
+        
+        // 用于属性修改
+        public string Attribute;
+        public float Value;
+        
+        // 用于技能添加
+        public string SkillID;
+        public Dictionary<string, object> SkillParams;
+        
+        // 用于自定义逻辑
+        public string CustomAction;
     }
 }

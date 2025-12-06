@@ -7,7 +7,7 @@ using UnityEngine;
 namespace CombatMaid.Core.SkillTreeSystem
 {
     /// <summary>
-    /// 技能树配置加载器
+    /// 技能树配置加载器（新格式 - 已移除兼容）
     /// </summary>
     public static class SkillTreeConfigLoader
     {
@@ -85,7 +85,7 @@ namespace CombatMaid.Core.SkillTreeSystem
         }
 
         /// <summary>
-        /// 将配置转换为 SkillNodeDef 列表
+        /// 将配置转换为 SkillNodeDef 列表（新格式）
         /// </summary>
         public static List<SkillNodeDef> ConvertToNodeDefs(SkillTreeConfig config)
         {
@@ -113,10 +113,9 @@ namespace CombatMaid.Core.SkillTreeSystem
                         
                         // 属性修改器
                         PlayerStatModifiers = nodeConfig.PlayerStatModifiers ?? new Dictionary<string, float>(),
-                        MaidStatModifiers = nodeConfig.MaidStatModifiers ?? new Dictionary<string, float>(),
                         
-                        // 特殊能力
-                        MaidAbilityID = nodeConfig.MaidAbilityID
+                        // === 新格式：直接转换修改器 ===
+                        MaidModifiers = ConvertToModifiers(nodeConfig)
                     };
 
                     defs.Add(def);
@@ -128,6 +127,72 @@ namespace CombatMaid.Core.SkillTreeSystem
             }
 
             return defs;
+        }
+
+        /// <summary>
+        /// 将配置转换为修改器列表（新格式 - 移除兼容逻辑）
+        /// </summary>
+        private static List<SkillTreeModifier> ConvertToModifiers(SkillNodeConfig config)
+        {
+            var modifiers = new List<SkillTreeModifier>();
+
+            // 直接使用新格式（MaidModifiers）
+            if (config.MaidModifiers != null && config.MaidModifiers.Count > 0)
+            {
+                foreach (var modConfig in config.MaidModifiers)
+                {
+                    var modifier = ConvertSingleModifier(modConfig);
+                    if (modifier != null)
+                    {
+                        modifiers.Add(modifier);
+                    }
+                }
+            }
+
+            return modifiers;
+        }
+
+        /// <summary>
+        /// 转换单个修改器配置
+        /// </summary>
+        private static SkillTreeModifier ConvertSingleModifier(MaidModifierConfig config)
+        {
+            var modifier = new SkillTreeModifier();
+
+            switch (config.Type?.ToLower())
+            {
+                case "addattribute":
+                case "add":
+                    modifier.Type = SkillTreeModifier.ModifierType.AddAttribute;
+                    modifier.AttributeKey = config.Attribute;
+                    modifier.AttributeValue = config.Value;
+                    break;
+
+                case "multiplyattribute":
+                case "multiply":
+                    modifier.Type = SkillTreeModifier.ModifierType.MultiplyAttribute;
+                    modifier.AttributeKey = config.Attribute;
+                    modifier.AttributeValue = config.Value;
+                    break;
+
+                case "addskill":
+                case "skill":
+                    modifier.Type = SkillTreeModifier.ModifierType.AddSkill;
+                    modifier.SkillID = config.SkillID;
+                    modifier.SkillParams = config.SkillParams ?? new Dictionary<string, object>();
+                    break;
+
+                case "custom":
+                    modifier.Type = SkillTreeModifier.ModifierType.CustomLogic;
+                    modifier.CustomActionID = config.CustomAction;
+                    break;
+
+                default:
+                    CMDebug.LogWarning($"[SkillTreeConfigLoader] 未知的修改器类型: {config.Type}");
+                    return null;
+            }
+
+            return modifier;
         }
 
         /// <summary>

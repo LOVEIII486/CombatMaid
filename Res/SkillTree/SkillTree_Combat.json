@@ -2,7 +2,7 @@
   "TreeID": "MaidTechTree",
   "TreeName": "SkillTree_MaidTech_Name",
   "Description": "SkillTree_MaidTech_Desc",
-  "Version": "1.0.0",
+  "Version": "2.0.0",
   "Nodes": [
     {
       "//": "--- 核心节点：女仆授权 ---",
@@ -15,8 +15,7 @@
       "Position": { "x": 0, "y": 0 },
       "PrerequisiteIDs": [],
       "PlayerStatModifiers": {},
-      "MaidStatModifiers": {},
-      "MaidAbilityID": ""
+      "MaidModifiers": []
     },
 
     {
@@ -30,14 +29,17 @@
       "Position": { "x": -150, "y": 150 },
       "PrerequisiteIDs": [ "maid_core_license" ],
       "PlayerStatModifiers": {},
-      "MaidStatModifiers": {
-        "MaxHealth": 50.0
-      },
-      "MaidAbilityID": ""
+      "MaidModifiers": [
+        {
+          "Type": "AddAttribute",
+          "Attribute": "Health",
+          "Value": 50.0
+        }
+      ]
     },
 
     {
-      "//": "--- 分支2：战斗类 (+10%伤) ---",
+      "//": "--- 分支2：战斗类 (+10%伤害) ---",
       "ID": "maid_combat_dmg_1",
       "DisplayName": "Perk_Maid_Combat",
       "Description": "Perk_Maid_Combat_Desc",
@@ -47,11 +49,13 @@
       "Position": { "x": -50, "y": 150 },
       "PrerequisiteIDs": [ "maid_core_license" ],
       "PlayerStatModifiers": {},
-      "MaidStatModifiers": {
-        "GunDamageMultiplier": 0.1,
-        "MeleeDamageMultiplier": 0.1
-      },
-      "MaidAbilityID": ""
+      "MaidModifiers": [
+        {
+          "Type": "MultiplyAttribute",
+          "Attribute": "DamageMultiplier",
+          "Value": 1.1
+        }
+      ]
     },
 
     {
@@ -65,8 +69,13 @@
       "Position": { "x": 50, "y": 150 },
       "PrerequisiteIDs": [ "maid_core_license" ],
       "PlayerStatModifiers": {},
-      "MaidStatModifiers": {},
-      "MaidAbilityID": "AutoHeal"
+      "MaidModifiers": [
+        {
+          "Type": "AddSkill",
+          "SkillID": "AutoHeal",
+          "SkillParams": {}
+        }
+      ]
     },
 
     {
@@ -80,8 +89,15 @@
       "Position": { "x": 50, "y": 300 },
       "PrerequisiteIDs": [ "maid_skill_autoheal" ],
       "PlayerStatModifiers": {},
-      "MaidStatModifiers": {},
-      "MaidAbilityID": "Grenade"
+      "MaidModifiers": [
+        {
+          "Type": "AddSkill",
+          "SkillID": "Grenade",
+          "SkillParams": {
+            "ItemID": 67
+          }
+        }
+      ]
     },
 
     {
@@ -95,8 +111,7 @@
       "Position": { "x": 150, "y": 150 },
       "PrerequisiteIDs": [ "maid_core_license" ],
       "PlayerStatModifiers": {},
-      "MaidStatModifiers": {},
-      "MaidAbilityID": ""
+      "MaidModifiers": []
     },
 
     {
@@ -110,8 +125,7 @@
       "Position": { "x": 150, "y": 300 },
       "PrerequisiteIDs": [ "maid_special_bottle_1" ],
       "PlayerStatModifiers": {},
-      "MaidStatModifiers": {},
-      "MaidAbilityID": ""
+      "MaidModifiers": []
     },
 
     {
@@ -125,8 +139,7 @@
       "Position": { "x": 150, "y": 450 },
       "PrerequisiteIDs": [ "maid_special_bottle_2" ],
       "PlayerStatModifiers": {},
-      "MaidStatModifiers": {},
-      "MaidAbilityID": ""
+      "MaidModifiers": []
     }
   ]
 }

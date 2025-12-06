@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace CombatMaid.Core.SkillTreeSystem
 {
+    /// <summary>
+    /// 技能节点定义（新格式 - 已移除兼容）
+    /// </summary>
     public class SkillNodeDef
     {
         public string ID;               
@@ -19,14 +22,12 @@ namespace CombatMaid.Core.SkillTreeSystem
         public int CostMoney = 0;
         public int RequiredLevel = 1;
         public Dictionary<int, int> CostItems = new Dictionary<int, int>(); 
-        public Dictionary<string, float> StatModifiers = new Dictionary<string, float>();
         public List<string> PrerequisiteIDs = new List<string>();
         
         // 玩家获得的属性
         public Dictionary<string, float> PlayerStatModifiers = new Dictionary<string, float>();
-        // 女仆获得的属性
-        public Dictionary<string, float> MaidStatModifiers = new Dictionary<string, float>();
-        // 女仆获得的特殊能力ID
-        public string MaidAbilityID;
+        
+        // === 新格式：女仆修改器列表 ===
+        public List<SkillTreeModifier> MaidModifiers = new List<SkillTreeModifier>();
     }
 }

@@ -208,15 +208,14 @@ namespace CombatMaid.Core.SkillTreeSystem
                 Traverse.Create(statsComp).Field("entries").SetValue(entries);
             }
             
-            // 🔧 D. 女仆数据修改器（新系统）
-            var modifiers = BuildModifiersFromDef(def);
-            if (modifiers.Count > 0)
+            // 🔧 D. 女仆数据修改器（新系统 - 直接使用 MaidModifiers）
+            if (def.MaidModifiers != null && def.MaidModifiers.Count > 0)
             {
                 var modifyBehaviour = nodeObj.AddComponent<ModifyWineFoxDataBehaviour>();
                 modifyBehaviour.NodeID = def.ID;
-                modifyBehaviour.Modifiers = modifiers;
+                modifyBehaviour.Modifiers = def.MaidModifiers;  // 直接赋值，无需转换
                 
-                CMDebug.Log($"[SkillTreeBuilder] 节点 {def.ID} 配置了 {modifiers.Count} 个修改器");
+                CMDebug.Log($"[SkillTreeBuilder] 节点 {def.ID} 配置了 {def.MaidModifiers.Count} 个修改器");
             }
 
             // 4. 注册到数据结构
@@ -230,48 +229,6 @@ namespace CombatMaid.Core.SkillTreeSystem
                 graph.allNodes.Add(graphNode);
             }
             return perk;
-        }
-
-        /// <summary>
-        /// 从节点定义构建修改器列表
-        /// </summary>
-        private static List<SkillTreeModifier> BuildModifiersFromDef(SkillNodeDef def)
-        {
-            var modifiers = new List<SkillTreeModifier>();
-
-            // 1. 女仆属性修改器
-            if (def.MaidStatModifiers != null)
-            {
-                foreach (var kvp in def.MaidStatModifiers)
-                {
-                    // 判断是加法还是乘法（根据字段名）
-                    bool isMultiplier = kvp.Key.Contains("Multiplier") || 
-                                       kvp.Key.Contains("Factor") ||
-                                       kvp.Key.EndsWith("Rate");
-
-                    modifiers.Add(new SkillTreeModifier
-                    {
-                        Type = isMultiplier 
-                            ? SkillTreeModifier.ModifierType.MultiplyAttribute 
-                            : SkillTreeModifier.ModifierType.AddAttribute,
-                        AttributeKey = kvp.Key,
-                        AttributeValue = kvp.Value
-                    });
-                }
-            }
-
-            // 2. 女仆技能解锁
-            if (!string.IsNullOrEmpty(def.MaidAbilityID))
-            {
-                modifiers.Add(new SkillTreeModifier
-                {
-                    Type = SkillTreeModifier.ModifierType.AddSkill,
-                    SkillID = def.MaidAbilityID,
-                    SkillParams = new Dictionary<string, object>() // 默认空参数
-                });
-            }
-
-            return modifiers;
         }
 
         public static void RebuildGraphConnections(PerkTree tree, List<SkillNodeDef> allDefs, Dictionary<string, Perk> createdPerks)
