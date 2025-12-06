@@ -102,6 +102,7 @@ namespace CombatMaid.Core.SkillTreeSystem
             if (anyChangesMade)
             {
                 WineFoxDataManager.SaveData();
+                MaidSpawner.Instance.RefreshWineFoxCache();
                 CMDebug.Log($"[ModifyWineFoxData] ✓ 节点 {NodeID} 数据更新并已保存");
             }
             else

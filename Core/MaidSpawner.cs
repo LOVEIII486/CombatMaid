@@ -8,6 +8,7 @@ using Duckov.Modding;
 using SodaCraft.Localizations;
 using ItemStatsSystem;
 using CombatMaid.Core.MaidConfigs;
+using CombatMaid.Core.WineFox;
 using Cysharp.Threading.Tasks;
 using Duckov.Scenes;
 
@@ -163,6 +164,48 @@ namespace CombatMaid.Core
                 CMDebug.LogError($"异步生成失败: {ex}");
             }
         }
+        
+        /// <summary>
+        /// 当技能树解锁导致属性变化时，调用此方法立即刷新缓存中的酒狐数据
+        /// </summary>
+        public void RefreshWineFoxCache()
+        {
+            if (!_isInitialized) return;
+
+            // 1. 获取最新数据
+            var currentData = WineFoxDataManager.CurrentData;
+            if (currentData == null || currentData.PresetConfig == null) return;
+
+            // 2. 构造缓存 Key (硬编码酒狐的 ProfileName)
+            // 注意：这里需要确保和 CreateFullCustomPreset 里的命名逻辑一致
+            // 假设原始 Key 是 "Cname_Usec" (BasePresetKey)，但我们通常不知道 Source 是哪个
+            // 我们可以遍历缓存找到它，或者构建标准 Key
+            
+            // 更稳妥的方式：直接遍历缓存找到包含 "RoyalMaid_WineFox" 的项
+            string targetKeyPart = "_CM_RoyalMaid_WineFox";
+            
+            CharacterRandomPreset targetPreset = null;
+            foreach (var kvp in _generatedPresetsCache)
+            {
+                if (kvp.Key.EndsWith(targetKeyPart))
+                {
+                    targetPreset = kvp.Value;
+                    break;
+                }
+            }
+
+            if (targetPreset != null)
+            {
+                // 3. 原地刷新数据
+                ApplyConfigToPreset(targetPreset, currentData.PresetConfig);
+                CMDebug.Log("[MaidSpawner] 缓存中的酒狐数据已热更新！");
+            }
+            else
+            {
+                // 如果缓存里还没有（还没生成过），那就无所谓，下次生成会自动读取最新的
+                CMDebug.Log("[MaidSpawner] 缓存中无酒狐实例，无需刷新。");
+            }
+        }
 
         // ==================== 预设配置逻辑 ====================
 
@@ -172,32 +215,42 @@ namespace CombatMaid.Core
         private CharacterRandomPreset CreateFullCustomPreset(CharacterRandomPreset source, MaidConfig config,
             string profileName)
         {
-            // 1. 生成基于 ProfileName 的固定后缀
             string uniqueSuffix = $"_CM_{profileName}";
             string finalKey = source.nameKey + uniqueSuffix;
 
-            // 2. 检查缓存
-            // 如果这个预设之前已经生成过，直接返回缓存的实例，不再 Instantiate
+            // [修改] 只要缓存有，就直接返回 (因为我们有了 Refresh 机制，缓存永远是最新的)
             if (_generatedPresetsCache.TryGetValue(finalKey, out var cachedPreset))
             {
-                return cachedPreset;
+                return cachedPreset; 
             }
 
-            // 3. 缓存未命中，开始新建
+            // 新建逻辑
             CharacterRandomPreset preset = Instantiate(source);
-            LogPresetDebugInfo("Cname_Usec");
-            
             preset.name = source.name + uniqueSuffix;
             preset.nameKey = finalKey;
             preset.team = Teams.player;
 
-            // 注册本地化名称
+            // 注册本地化 (仅需一次)
             string displayName = !string.IsNullOrEmpty(config.CustomName) ? config.CustomName : "战斗女仆";
             if (LocalizationManager.overrideTexts != null)
             {
                 LocalizationManager.overrideTexts[finalKey] = displayName;
             }
 
+            // 应用属性
+            ApplyConfigToPreset(preset, config);
+
+            // 加入缓存
+            _generatedPresetsCache.Add(finalKey, preset);
+
+            return preset;
+        }
+        
+        /// <summary>
+        /// 将配置应用到预设对象 (核心数值逻辑)
+        /// </summary>
+        private void ApplyConfigToPreset(CharacterRandomPreset preset, MaidConfig config)
+        {
             // === 1. 基础属性 ===
             preset.health = config.Health;
             preset.moveSpeedFactor = config.MoveSpeedFactor;
@@ -256,7 +309,7 @@ namespace CombatMaid.Core
             preset.skillSuccessChance = config.SkillSuccessChance;
             preset.skillCoolTimeRange = config.SkillCoolTimeRange;
 
-            // === 7. 抗性 (Element Factors) ===
+            // === 7. 抗性 ===
             preset.elementFactor_Physics = config.ResistPhysics;
             preset.elementFactor_Fire = config.ResistFire;
             preset.elementFactor_Poison = config.ResistPoison;
@@ -264,7 +317,7 @@ namespace CombatMaid.Core
             preset.elementFactor_Space = config.ResistSpace;
             preset.elementFactor_Ghost = config.ResistGhost;
 
-            // === 8. 掉落与物品 (Cash & Items) ===
+            // === 8. 掉落与物品 ===
             preset.hasCashChance = config.HasCashChance;
             preset.cashRange = config.CashRange;
             preset.wantItem = config.WantItem;
@@ -274,11 +327,6 @@ namespace CombatMaid.Core
             {
                 SetupInventory(preset, config.CustomItemIDs);
             }
-
-            // 4. 将新生成的预设加入缓存
-            _generatedPresetsCache.Add(finalKey, preset);
-
-            return preset;
         }
 
         private void SetupInventory(CharacterRandomPreset preset, List<int> itemIDs)
