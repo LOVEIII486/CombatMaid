@@ -16,35 +16,49 @@ namespace CombatMaid.Core.SkillTreeSystem
     {
         /// <summary>
         /// 创建一个新的空技能树实例
+        /// 参数 treeNameKey: 本地化 Key (例如 "SkillTree_Maid_Name")
         /// </summary>
-        public static PerkTree CreateEmptyTree(string treeId, string treeName)
+        public static PerkTree CreateEmptyTree(string treeId, string treeNameKey)
         {
-            // 1. 获取原版 "Skills" 树作为模板
             PerkTree template = PerkTreeManager.GetPerkTree("Skills");
-            if (template == null)
-            {
-                Debug.LogError("[SkillTreeSystem] 无法找到原版技能树模板！");
-                return null;
-            }
+            if (template == null) return null;
 
-            // 2. 实例化副本并清理子物体
             GameObject treeObj = Object.Instantiate(template.gameObject);
-            treeObj.name = $"CustomSkillTree_{treeId}";
+            treeObj.name = $"CustomSkillTree_{treeId}"; // 这里是 GameObject 名，不需要本地化
             treeObj.SetActive(false);
 
-            foreach (Transform child in treeObj.transform)
-            {
-                Object.Destroy(child.gameObject);
-            }
+            foreach (Transform child in treeObj.transform) Object.Destroy(child.gameObject);
 
-            // 3. 重置 PerkTree 组件数据
             PerkTree perkTree = treeObj.GetComponent<PerkTree>();
             Traverse tTree = Traverse.Create(perkTree);
 
-            tTree.Field("perkTreeID").SetValue(treeId);
+            tTree.Field("perkTreeID").SetValue(treeId); // 内部 ID
             tTree.Field("perks").SetValue(new List<Perk>());
 
-            // 4. 清理关系图
+            // [新增] 注入技能树显示名称 (修复了之前 unused parameter 的问题)
+            if (!string.IsNullOrEmpty(treeNameKey))
+            {
+                // 1. 获取翻译文本 (例如从 "SkillTree_Maid_Name" 获取 "女仆战术强化")
+                string nameText = CombatMaid.Localization.LocalizationManager.GetText(treeNameKey, "未命名技能树");
+        
+                if (SodaCraft.Localizations.LocalizationManager.overrideTexts != null)
+                {
+                    // 2. [常规注入] 注入配置中指定的 Key (防守性编程)
+                    SodaCraft.Localizations.LocalizationManager.overrideTexts[treeNameKey] = nameText;
+
+                    // 3. [关键修复] 注入游戏强制要求的 Key: PerkTree_{ID}
+                    // 这样当游戏 UI 请求 "PerkTree_MaidCombatSkills" 时，也能拿到正确的中文
+                    string forcedKey = $"PerkTree_{treeId}";
+                    SodaCraft.Localizations.LocalizationManager.overrideTexts[forcedKey] = nameText;
+            
+                    CMDebug.Log($"[SkillTreeSystem] 已注入强制标题 Key: {forcedKey} -> {nameText}");
+                }
+
+                // 4. 还是设置一下字段，以防万一
+                tTree.Field("displayName").SetValue(treeNameKey);
+            }
+
+            // ... (清理图逻辑保持不变)
             if (perkTree.RelationGraphOwner != null && perkTree.RelationGraphOwner.graph is PerkRelationGraph graph)
             {
                 graph.allNodes.Clear();
@@ -214,52 +228,52 @@ namespace CombatMaid.Core.SkillTreeSystem
         }
 
         /// <summary>
-        /// 在建筑上添加交互点
+        /// 在建筑上添加交互点 (统一修正版)
+        /// 参数 interactionKey: 本地化 Key
         /// </summary>
-        public static void RegisterInteraction(GameObject buildingObj, string treeId, string interactionLabel)
+        public static void RegisterInteraction(GameObject buildingObj, string treeId, string interactionKey, string defaultText = "交互")
         {
             var existingInvoker = buildingObj.GetComponentInChildren<PerkTreeUIInvoker>();
             if (existingInvoker == null)
             {
-                CMDebug.LogError("[SkillTreeSystem] 目标建筑没有 PerkTreeUIInvoker，无法挂载交互。");
+                CMDebug.LogError("[SkillTreeSystem] 目标建筑缺少 PerkTreeUIInvoker");
                 return;
             }
 
-            GameObject interactObj = Object.Instantiate(existingInvoker.gameObject, existingInvoker.transform.parent);
-            interactObj.name = $"Interact_{treeId}";
+            // [新增] 统一的本地化注入逻辑
+            string finalInteractText = CombatMaid.Localization.LocalizationManager.GetText(interactionKey, defaultText);
+            
+            if (SodaCraft.Localizations.LocalizationManager.overrideTexts != null)
+            {
+                // 告诉游戏：当 UI 遇到 interactionKey 时，请显示 finalInteractText
+                SodaCraft.Localizations.LocalizationManager.overrideTexts[interactionKey] = finalInteractText;
+            }
 
+            GameObject interactObj = Object.Instantiate(existingInvoker.gameObject, existingInvoker.transform.parent);
+            interactObj.name = $"Interact_{treeId}"; // GameObject 名字，仅供调试，无需本地化
+
+            // ... (Transform 和 Collider 清理逻辑保持不变) ...
             interactObj.transform.localPosition = existingInvoker.transform.localPosition;
             interactObj.transform.localRotation = existingInvoker.transform.localRotation;
             interactObj.transform.localScale = existingInvoker.transform.localScale;
-
             var collider = interactObj.GetComponent<Collider>();
-            if (collider != null)
-            {
-                Object.Destroy(collider);
-            }
+            if (collider != null) Object.Destroy(collider);
 
             PerkTreeUIInvoker newInvoker = interactObj.GetComponent<PerkTreeUIInvoker>();
-            newInvoker.InteractName = interactionLabel;
+            
+            // [关键] 这里赋值 Key，游戏 UI 会去 overrideTexts 里查这个 Key
+            newInvoker.InteractName = interactionKey; 
             newInvoker.perkTreeID = treeId;
             newInvoker.MarkerActive = false;
 
-            var newInvokerGroupList = Traverse.Create(newInvoker).Field("otherInterablesInGroup")
-                .GetValue<List<InteractableBase>>();
-            if (newInvokerGroupList != null)
-            {
-                newInvokerGroupList.Clear();
-            }
-
-            var mainGroupList = Traverse.Create(existingInvoker).Field("otherInterablesInGroup")
-                .GetValue<List<InteractableBase>>();
-            if (mainGroupList != null)
-            {
-                mainGroupList.Add(newInvoker);
-            }
-
+            // ... (Group 处理逻辑保持不变) ...
+            var newInvokerGroupList = Traverse.Create(newInvoker).Field("otherInterablesInGroup").GetValue<List<InteractableBase>>();
+            if (newInvokerGroupList != null) newInvokerGroupList.Clear();
+            var mainGroupList = Traverse.Create(existingInvoker).Field("otherInterablesInGroup").GetValue<List<InteractableBase>>();
+            if (mainGroupList != null) mainGroupList.Add(newInvoker);
             existingInvoker.GetInteractableList();
 
-            CMDebug.Log($"[SkillTreeSystem] 交互点已完美挂载: {interactionLabel}");
+            CMDebug.Log($"[SkillTreeSystem] 交互点已挂载。Key: {interactionKey}, 文本: {finalInteractText}");
         }
     }
 }

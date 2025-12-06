@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using CombatMaid.Localization;
 using UnityEngine;
 using Duckov.Scenes;
 using Duckov.PerkTrees;
@@ -12,6 +13,7 @@ namespace CombatMaid.Core.SkillTreeSystem
         public static SkillTreeManager Instance { get; private set; }
 
         private const string TREE_ID = "MaidCombatSkills";
+        private const string INTERACT_KEY = "Interaction_MaidSkill_Label";
         private const string DEFAULT_CONFIG_FILE = "SkillTree_Combat.json";
         
         private bool _isTreeBuilt = false;
@@ -119,8 +121,8 @@ namespace CombatMaid.Core.SkillTreeSystem
                 if (_customTree != null)
                 {
                     CMDebug.Log($"[SkillTreeManager] 准备注册交互点到建筑: {skillBuilding.name}");
-                    SkillTreeBuilder.RegisterInteraction(skillBuilding, TREE_ID, "战斗女仆模组: 战术技能");
-                    CMDebug.LogInfo("[SkillTreeManager] ✓ 交互点已重新注册");
+                    SkillTreeBuilder.RegisterInteraction(skillBuilding, TREE_ID, INTERACT_KEY, "战斗女仆: 战术技能");
+                    CMDebug.Log("[SkillTreeManager] ✓ 交互点已重新注册");
                 }
                 else
                 {
