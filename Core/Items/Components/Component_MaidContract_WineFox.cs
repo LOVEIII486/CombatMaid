@@ -11,7 +11,7 @@ namespace CombatMaid.Core.Items.Components
 
         // [全局CD] 静态变量，所有酒狐契约物品共享此计时器
         private static float _nextSummonTime = 0f;
-        private const float GlobalCooldown = 300f; // 5分钟冷却
+        private const float GlobalCooldown = 10f; // 5分钟冷却
 
         private void Awake()
         {
@@ -36,7 +36,6 @@ namespace CombatMaid.Core.Items.Components
             }
 
             // 2. [检查] 唯一性 (检查场上是否有挂载了同步组件的酒狐)
-            // FindObjectOfType 开销略大，但在物品使用频率极低的情况下完全可以接受
             if (FindObjectOfType<WineFoxDataSync>() != null)
             {
                 player.PopText("酒狐已在场，无法重复召唤！");
@@ -55,10 +54,6 @@ namespace CombatMaid.Core.Items.Components
                 
                 player.PopText("酒狐契约响应中...");
             }
-
-            // 4. [关于消耗]
-            // 这里 **不调用** item.DestroyTree()，物品就会保留在背包里。
-            // (前提是 ItemDef 配置中 ConsumeOnUse 必须为 false，见下方说明)
         }
 
         private void OnDestroy()

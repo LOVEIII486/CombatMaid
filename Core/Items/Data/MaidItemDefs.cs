@@ -20,7 +20,7 @@ namespace CombatMaid.Core.Items.Data
                     value = 50000,
                     maxStackCount = 1,
                     weight = 0.01f,
-                    tags = new List<string> { "Maid" },
+                    tags = new List<string> { "MaidItem" },
                     usages = new UsageData
                     {
                         useTime = 1.0f,
@@ -47,12 +47,16 @@ namespace CombatMaid.Core.Items.Data
                     localizationDesc = "Item_MaidContractWineFox_Desc",
                     value = 50000,
                     maxStackCount = 1,
+                    maxDurability = 100f,
                     weight = 0.01f,
-                    tags = new List<string> { "Maid" },
+                    tags = new List<string> { "MaidItem" },
                     usages = new UsageData
                     {
                         useTime = 1.0f,
-                        // useSound = "Paper", 
+                        useSound = "",
+                        actionSound = "",
+                        useDurability = true,
+                        durabilityUsage = 0,
                         behaviors = new List<UsageBehaviorData>()
                     },
                     VisualReferenceId = 73, // 信件
@@ -80,7 +84,7 @@ namespace CombatMaid.Core.Items.Data
                     maxDurability = 0f,
 
                     order = 0,
-                    tags = new List<string> { "Maid", "Consumable" },
+                    tags = new List<string> { "MaidItem", "Consumable" },
 
                     quality = 4,
                     displayQuality = DisplayQuality.Purple,
@@ -123,7 +127,7 @@ namespace CombatMaid.Core.Items.Data
                     maxDurability = 0f,
 
                     order = 1,
-                    tags = new List<string> { "Maid", "Consumable" },
+                    tags = new List<string> { "MaidItem", "Consumable" },
 
                     quality = 5,
                     displayQuality = DisplayQuality.Orange,
@@ -166,7 +170,7 @@ namespace CombatMaid.Core.Items.Data
                     maxDurability = 0f,
 
                     order = 2,
-                    tags = new List<string> { "Maid", "Consumable" },
+                    tags = new List<string> { "MaidItem", "Consumable" },
 
                     quality = 6,
                     displayQuality = DisplayQuality.Red,
