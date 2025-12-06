@@ -80,11 +80,18 @@
     "Description": "瓶中女仆·II型 —— 封存于魔法容器中的强袭契约女仆。相比I型，该型号注入了标准军用级的战斗记忆。在打碎契约瓶后，她能以极高的机动性迅速切入战场，利用火力压制并主动清除威胁。虽仍为一次性消耗品，但其战斗效能已足以媲美正规突击队员。",
     "BasePresetKey": "Cname_Speedy",
     "CustomModelID": "10004",
-    "EnableAutoHeal": true,
     "TacticalMode": "Assault",
-    "EnableGrenade": true,
-    "GrenadeItemID": 67,
-    "BuffSkillName": "",
-    "BuffSkillID": 0
+    "Skills": [
+      {
+        "SkillID": "AutoHeal",
+        "Params": {}
+      },
+      {
+        "SkillID": "Grenade",
+        "Params": {
+          "ItemID": 67
+        }
+      }
+    ]
   }
 }

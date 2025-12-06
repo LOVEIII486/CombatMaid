@@ -394,17 +394,26 @@ namespace CombatMaid.Core
     public class MaidExtraInfo
     {
         public string Description;
+        
+        [Header("生成基底")]
+        public string BasePresetKey = "Cname_Usec";
 
-        [Header("基底预设")] public string BasePresetKey = "Cname_Usec";
-
-        [Header("外观模型")] public string CustomModelID = "";
-
-        [Header("Mod行为")] public bool EnableAutoHeal = true;
+        [Header("外观模型")]
+        public string CustomModelID = ""; 
+        
+        [Header("Mod行为")]
         public string TacticalMode = "Standard";
-
-        [Header("技能配置")] public bool EnableGrenade = false;
-        public int GrenadeItemID = 67;
-        public string BuffSkillName = "";
-        public int BuffSkillID = 0;
+        
+        [Header("通用技能配置")]
+        public List<MaidSkillConfig> Skills = new List<MaidSkillConfig>();
+    }
+    
+    [System.Serializable]
+    public class MaidSkillConfig
+    {
+        public string SkillID; // 技能唯一标识符，例如 "Grenade", "AutoHeal", "Buff"
+        // 使用字典存储任意参数：Key=参数名, Value=值
+        // JSON 中写作: "Params": { "ItemID": 67, "Delay": 2.0 }
+        public Dictionary<string, object> Params = new Dictionary<string, object>();
     }
 }

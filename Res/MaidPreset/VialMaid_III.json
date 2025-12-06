@@ -80,11 +80,18 @@
     "Description": "瓶中女仆·III型 —— 封存于魔法容器中的皇家契约女仆。这是极其昂贵的高阶魔偶，被赋予了接近皇家近卫骑士的战斗性能。一旦打碎契约瓶，她将成为你最坚实的最后一道防线。无论是面对精英敌人还是重重包围，她都能凭借卓越的战斗技艺护送主人安全撤离。",
     "BasePresetKey": "Cname_Vida",
     "CustomModelID": "10004",
-    "EnableAutoHeal": true,
     "TacticalMode": "Protect",
-    "EnableGrenade": true,
-    "GrenadeItemID": 67,
-    "BuffSkillName": "",
-    "BuffSkillID": 0
+    "Skills": [
+      {
+        "SkillID": "AutoHeal",
+        "Params": {}
+      },
+      {
+        "SkillID": "Grenade",
+        "Params": {
+          "ItemID": 67
+        }
+      }
+    ]
   }
 }

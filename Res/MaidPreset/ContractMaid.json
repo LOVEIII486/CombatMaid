@@ -1,18 +1,16 @@
 ﻿{
-  "ProfileName": "VialMaid_I",
+  "ProfileName": "RoyalMaid_WineFox",
   "PresetConfig": {
-    "CustomName": "瓶中女仆·I型",
-    "IsBossIcon": false,
+    "CustomName": "皇家女仆·酒狐",
+    "IsBossIcon": true,
     "ShowName": true,
     "ShowHealthBar": true,
-
     "//--- 生命 ---": "",
-    "Health": 120.0,
-    "MoveSpeedFactor": 1.1,
+    "Health": 60.0,
+    "MoveSpeedFactor": 1.0,
     "HasSoul": true,
     "Exp": 0,
     "PushCharacter": true,
-
     "//--- 物品配置 ---": "",
     "CustomItemIDs": [],
     "WantItem": -1,
@@ -22,14 +20,12 @@
       "x": 0,
       "y": 0
     },
-
     "//--- 感知能力 ---": "",
     "SightDistance": 13.0,
     "SightAngle": 100.0,
     "HearingAbility": 1.0,
     "NightVisionAbility": 0.5,
     "ForgetTime": 8.0,
-
     "//--- 反应与射击 ---": "",
     "ReactionTime": 0.55,
     "NightReactionTimeFactor": 1.5,
@@ -44,7 +40,6 @@
     },
     "ShootCanMove": false,
     "DefaultWeaponOut": true,
-
     "//--- 移动与战术 ---": "",
     "PatrolRange": 8.0,
     "CombatMoveRange": 8.0,
@@ -54,13 +49,12 @@
     },
     "PatrolTurnSpeed": 600.0,
     "CombatTurnSpeed": 1200.0,
-    "CanDash": true,
+    "CanDash": false,
     "DashCoolTimeRange": {
       "x": 2.0,
       "y": 4.0
     },
     "CanTalk": true,
-
     "//--- 战斗数值修正 ---": "",
     "DamageMultiplier": 1.0,
     "BulletSpeedMultiplier": 1.0,
@@ -70,13 +64,11 @@
     "ScatterMultiIfOffScreen": 4.0,
     "GunCritRateGain": 0.0,
     "AiCombatFactor": 1.5,
-
     "//--- 索敌逻辑 ---": "",
     "SetActiveByPlayerDistance": true,
     "ForceTracePlayerDistance": 0.0,
     "MinTraceTargetChance": 0.1,
     "MaxTraceTargetChance": 0.8,
-
     "//--- 原生技能 ---": "",
     "HasSkill": false,
     "HasSkillChance": 1.0,
@@ -85,7 +77,6 @@
       "x": 1.0,
       "y": 1.0
     },
-
     "//--- 抗性  ---": "",
     "ResistPhysics": 1.0,
     "ResistFire": 1.0,
@@ -95,14 +86,20 @@
     "ResistGhost": 1.0
   },
   "ExtraData": {
-    "Description": "瓶中女仆·I型 —— 封存于魔法容器中的临时契约女仆。只需在危急时刻打碎契约瓶，即可短暂召唤出能协助主人撤离的应急护卫。其力量弱于正式战斗女仆，但足以在混乱中承担攻击、吸引火力并掩护主人脱离险境。属于一次性使用的短效支援女仆。",
+    "Description": "皇家女仆·酒狐 - 会不断升级的契约女仆",
     "BasePresetKey": "Cname_Usec",
     "CustomModelID": "10004",
-    "TacticalMode": "Support",
+    "TacticalMode": "Assault",
     "Skills": [
       {
         "SkillID": "AutoHeal",
         "Params": {}
+      },
+      {
+        "SkillID": "Grenade",
+        "Params": {
+          "ItemID": 67
+        }
       }
     ]
   }

@@ -80,7 +80,7 @@ namespace CombatMaid.Core
 
             // 3. 设置基础 AI 归属
             AI.leader = player;
-            AI.patrolRange = 25.0f; // 给予较大的巡逻范围，具体由状态机控制
+            AI.patrolRange = 25.0f;
             AI.patrolPosition = player.transform.position;
 
             // 4. 初始化技能系统
@@ -88,31 +88,22 @@ namespace CombatMaid.Core
             if (SkillSystem == null) SkillSystem = gameObject.AddComponent<MaidSkillComponent>();
             SkillSystem.Initialize(this);
             
+            // 默认固有技能：小队协同
             SkillSystem.AddSkill(new Skill_SquadCoordination());
             
-            if (profileData.ExtraData != null)
+            // ==================== 修改开始：使用通用配置加载技能 ====================
+            if (profileData.ExtraData != null && profileData.ExtraData.Skills != null)
             {
-                var extra = profileData.ExtraData;
-
-                // 1. 自动回血
-                if (extra.EnableAutoHeal)
+                foreach (var skillConfig in profileData.ExtraData.Skills)
                 {
-                    SkillSystem.AddSkill(new Skill_SelfHeal());
-                }
-
-                // 2. 投掷手雷
-                if (extra.EnableGrenade)
-                {
-                    int grenId = extra.GrenadeItemID > 0 ? extra.GrenadeItemID : 67;
-                    SkillSystem.AddSkill(new Skill_GrenadeThrower(grenId));
-                }
-
-                // 3. 施加 自定义 Buff
-                if (!string.IsNullOrEmpty(extra.BuffSkillName) && extra.BuffSkillID > 0)
-                {
-                    SkillSystem.AddSkill(new Skill_BuffPlayer(extra.BuffSkillName, extra.BuffSkillID));
+                    var skill = MaidSkillFactory.CreateSkill(skillConfig);
+                    if (skill != null)
+                    {
+                        SkillSystem.AddSkill(skill);
+                    }
                 }
             }
+            // ==================== 修改结束 ====================
     
             // 5. 初始化状态机
             InitializeStateMachine();

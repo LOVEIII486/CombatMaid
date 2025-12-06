@@ -104,11 +104,18 @@
     "Description": "皇家女仆·贝拉 - 战斗特化型配置",
     "BasePresetKey": "Cname_Usec",
     "CustomModelID": "10004",
-    "EnableAutoHeal": true,
     "TacticalMode": "Assault",
-    "EnableGrenade": true,
-    "GrenadeItemID": 67,
-    "BuffSkillName": "",
-    "BuffSkillID": 0
+    "Skills": [
+      {
+        "SkillID": "AutoHeal",
+        "Params": {}
+      },
+      {
+        "SkillID": "Grenade",
+        "Params": {
+          "ItemID": 67
+        }
+      }
+    ]
   }
 }
