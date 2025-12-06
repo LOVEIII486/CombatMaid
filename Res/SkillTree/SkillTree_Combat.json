@@ -1,80 +1,132 @@
 {
-  "TreeID": "MaidCombatSkills",
-  "TreeName": "SkillTree_Maid_Name",
-  "Description": "SkillTree_Maid_Desc",
+  "TreeID": "MaidTechTree",
+  "TreeName": "SkillTree_MaidTech_Name",
+  "Description": "SkillTree_MaidTech_Desc",
   "Version": "1.0.0",
-
   "Nodes": [
     {
-      "ID": "maid_basic_train",
-      "DisplayName": "Perk_Maid_Basic",
-      "Description": "Perk_Maid_Basic_Desc",
-      "IconFileName": "default_icon.png",
-      "CostMoney": 100,
+      "//": "--- 核心节点：女仆授权 ---",
+      "ID": "maid_core_license",
+      "DisplayName": "Perk_Maid_Core",
+      "Description": "Perk_Maid_Core_Desc",
+      "IconFileName": "icon_maid_core.png",
+      "CostMoney": 1000,
       "RequiredLevel": 1,
       "Position": { "x": 0, "y": 0 },
       "PrerequisiteIDs": [],
       "PlayerStatModifiers": {},
+      "MaidStatModifiers": {},
+      "MaidAbilityID": ""
+    },
+
+    {
+      "//": "--- 分支1：生存类 (+50血) ---",
+      "ID": "maid_survival_hp",
+      "DisplayName": "Perk_Maid_Survival",
+      "Description": "Perk_Maid_Survival_Desc",
+      "IconFileName": "icon_maid_hp.png",
+      "CostMoney": 500,
+      "RequiredLevel": 1,
+      "Position": { "x": -150, "y": 150 },
+      "PrerequisiteIDs": [ "maid_core_license" ],
+      "PlayerStatModifiers": {},
+      "MaidStatModifiers": {
+        "MaxHealth": 50.0
+      },
+      "MaidAbilityID": ""
+    },
+
+    {
+      "//": "--- 分支2：战斗类 (+10%伤) ---",
+      "ID": "maid_combat_dmg",
+      "DisplayName": "Perk_Maid_Combat",
+      "Description": "Perk_Maid_Combat_Desc",
+      "IconFileName": "icon_maid_dmg.png",
+      "CostMoney": 800,
+      "RequiredLevel": 1,
+      "Position": { "x": -50, "y": 150 },
+      "PrerequisiteIDs": [ "maid_core_license" ],
+      "PlayerStatModifiers": {},
       "MaidStatModifiers": {
         "GunDamageMultiplier": 0.1,
-        "WalkSpeed": 0.5,
-        "RunSpeed": 0.5
+        "MeleeDamageMultiplier": 0.1
       },
       "MaidAbilityID": ""
     },
 
     {
-      "ID": "maid_reload_master",
-      "DisplayName": "Perk_Maid_Reload",
-      "Description": "Perk_Maid_Reload_Desc",
-      "IconFileName": "default_icon.png",
-      "CostMoney": 500,
+      "//": "--- 分支3-1：技能类 (自动回血) ---",
+      "ID": "maid_skill_autoheal",
+      "DisplayName": "Perk_Maid_AutoHeal",
+      "Description": "Perk_Maid_AutoHeal_Desc",
+      "IconFileName": "icon_maid_heal.png",
+      "CostMoney": 1500,
       "RequiredLevel": 2,
-      "Position": { "x": -100, "y": 150 },
-      "PrerequisiteIDs": [ "maid_basic_train" ],
+      "Position": { "x": 50, "y": 150 },
+      "PrerequisiteIDs": [ "maid_core_license" ],
       "PlayerStatModifiers": {},
-      "MaidStatModifiers": {
-        "ReloadSpeedGain": 0.3
-      },
-      "MaidAbilityID": ""
+      "MaidStatModifiers": {},
+      "MaidAbilityID": "AutoHeal"
     },
 
     {
-      "ID": "maid_sharp_shooter",
-      "DisplayName": "Perk_Maid_Sniper",
-      "Description": "Perk_Maid_Sniper_Desc",
-      "IconFileName": "default_icon.png",
-      "CostMoney": 800,
-      "RequiredLevel": 2,
-      "Position": { "x": 100, "y": 150 },
-      "PrerequisiteIDs": [ "maid_basic_train" ],
-      "PlayerStatModifiers": {},
-      "MaidStatModifiers": {
-        "GunScatterMultiplier": -0.2,
-        "GunCritRateGain": 0.15,
-        "GunCritDamageGain": 0.25
-      },
-      "MaidAbilityID": ""
-    },
-
-    {
-      "ID": "maid_combat_expert",
+      "//": "--- 分支3-2：技能类 (投掷手雷) ---",
+      "ID": "maid_skill_grenade",
       "DisplayName": "Perk_Maid_Grenade",
       "Description": "Perk_Maid_Grenade_Desc",
-      "IconFileName": "default_icon.png",
-      "CostMoney": 2000,
-      "RequiredLevel": 5,
-      "Position": { "x": 0, "y": 300 },
-      "PrerequisiteIDs": [ "maid_reload_master", "maid_sharp_shooter" ],
+      "IconFileName": "icon_maid_grenade.png",
+      "CostMoney": 2500,
+      "RequiredLevel": 3,
+      "Position": { "x": 50, "y": 300 },
+      "PrerequisiteIDs": [ "maid_skill_autoheal" ],
       "PlayerStatModifiers": {},
-      "MaidStatModifiers": {
-        "GunDamageMultiplier": 0.25,
-        "RecoilControl": 0.3,
-        "AimTurnSpeed": 100,
-        "PatrolRange": 5,
-        "CombatMoveRange": 5
-      },
-      "MaidAbilityID": "GrenadeThrow"
+      "MaidStatModifiers": {},
+      "MaidAbilityID": "Grenade"
+    },
+
+    {
+      "//": "--- 分支4-1：特殊类 (瓶中女仆 Lv1) ---",
+      "ID": "maid_special_bottle_1",
+      "DisplayName": "Perk_Bottle_Lv1",
+      "Description": "Perk_Bottle_Lv1_Desc",
+      "IconFileName": "icon_bottle_1.png",
+      "CostMoney": 500,
+      "RequiredLevel": 1,
+      "Position": { "x": 150, "y": 150 },
+      "PrerequisiteIDs": [ "maid_core_license" ],
+      "PlayerStatModifiers": {},
+      "MaidStatModifiers": {},
+      "MaidAbilityID": ""
+    },
+
+    {
+      "//": "--- 分支4-2：特殊类 (瓶中女仆 Lv2) ---",
+      "ID": "maid_special_bottle_2",
+      "DisplayName": "Perk_Bottle_Lv2",
+      "Description": "Perk_Bottle_Lv2_Desc",
+      "IconFileName": "icon_bottle_2.png",
+      "CostMoney": 1500,
+      "RequiredLevel": 2,
+      "Position": { "x": 150, "y": 300 },
+      "PrerequisiteIDs": [ "maid_special_bottle_1" ],
+      "PlayerStatModifiers": {},
+      "MaidStatModifiers": {},
+      "MaidAbilityID": ""
+    },
+
+    {
+      "//": "--- 分支4-3：特殊类 (瓶中女仆 Lv3) ---",
+      "ID": "maid_special_bottle_3",
+      "DisplayName": "Perk_Bottle_Lv3",
+      "Description": "Perk_Bottle_Lv3_Desc",
+      "IconFileName": "icon_bottle_3.png",
+      "CostMoney": 3000,
+      "RequiredLevel": 3,
+      "Position": { "x": 150, "y": 450 },
+      "PrerequisiteIDs": [ "maid_special_bottle_2" ],
+      "PlayerStatModifiers": {},
+      "MaidStatModifiers": {},
+      "MaidAbilityID": ""
     }
   ]
 }

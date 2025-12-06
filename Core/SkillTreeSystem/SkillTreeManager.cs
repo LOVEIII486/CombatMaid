@@ -276,6 +276,42 @@ namespace CombatMaid.Core.SkillTreeSystem
                 }
             }
         }
+        
+        /// <summary>
+        /// 查询指定 ID 的技能节点是否已解锁
+        /// </summary>
+        public bool IsSkillUnlocked(string nodeID)
+        {
+            if (string.IsNullOrEmpty(nodeID)) return false;
+
+            // 1. 优先检查运行时 Perk 对象 (最准确，包含当前会话刚解锁但未保存的状态)
+            if (_runtimePerks != null && _runtimePerks.TryGetValue(nodeID, out Perk perk))
+            {
+                if (perk != null && perk.Unlocked) return true;
+            }
+
+            // 2. 回退检查存档数据
+            // (适用于技能树 UI 尚未构建，但数据已加载的情况，例如商店初始化时)
+            if (_saveData != null && _saveData.UnlockedNodeIDs != null)
+            {
+                if (_saveData.UnlockedNodeIDs.Contains(nodeID)) return true;
+            }
+            
+            // 3. 如果以上都无法确认（例如数据尚未初始化），尝试临时加载防止逻辑错误
+            // 注意：这取决于你的加载流程，如果 MaidItemRegistry 运行极早，可能需要这一步
+            if (_saveData == null)
+            {
+                var tempList = SkillTreePersistence.Load();
+                if (tempList != null && tempList.UnlockedNodeIDs.Contains(nodeID))
+                {
+                    // 顺便缓存一下，避免频繁 IO
+                    _saveData = tempList; 
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         private void RestorePurchasedState()
         {

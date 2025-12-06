@@ -203,13 +203,14 @@ namespace CombatMaid.Core
         /// [核心重载] 直接根据 Data 对象生成实体
         /// 所有的生成逻辑最终都汇总到这里
         /// </summary>
-        public void SpawnMaidAt(Vector3 targetPos, MaidProfileData profileData, System.Action<MaidController> onComplete = null)
+        public void SpawnMaidAt(Vector3 targetPos, MaidProfileData profileData,
+            System.Action<MaidController> onComplete = null)
         {
             if (profileData == null) return;
 
             var spawnConfig = profileData.PresetConfig;
             var extraData = profileData.ExtraData;
-            
+
             string baseKey = extraData != null && !string.IsNullOrEmpty(extraData.BasePresetKey)
                 ? extraData.BasePresetKey
                 : "Cname_Usec";
@@ -226,7 +227,7 @@ namespace CombatMaid.Core
                 {
                     // 1. 通用初始化
                     var controller = OnMaidSpawnedCallback(ai.CharacterMainControl, profileData);
-                    
+
                     // 2. 触发回调 (用于外部挂载额外组件)
                     onComplete?.Invoke(controller);
                 }
@@ -248,14 +249,14 @@ namespace CombatMaid.Core
             if (profileData.ExtraData != null && !string.IsNullOrEmpty(profileData.ExtraData.CustomModelID))
             {
                 StartCoroutine(CombatMaid.Core.CustomModel.CustomModelBridge.ApplyModelByIDAsync(
-                    character, 
+                    character,
                     profileData.ExtraData.CustomModelID
                 ));
             }
-    
+
             // 3. 注册到列表
             if (!_activeMaids.Contains(controller)) _activeMaids.Add(controller);
-    
+
             return controller;
         }
 
@@ -267,8 +268,8 @@ namespace CombatMaid.Core
                 SpawnMaidAt(profileName, mousePos);
             }
         }
-        
-        
+
+
         public void ApplyGlobalSkillEffect(CombatMaid.Core.SkillTreeSystem.MaidSkillGrantBehaviour effectData)
         {
             if (effectData == null) return;
@@ -282,61 +283,70 @@ namespace CombatMaid.Core
                 if (maid == null || maid.MaidCharacter == null) continue;
 
                 // 1. [核心过滤] 只对挂载了同步组件的“酒狐”生效
-                // 需确保引用命名空间: using CombatMaid.Core.WineFox;
                 var wineFoxSync = maid.GetComponent<CombatMaid.Core.WineFox.WineFoxDataSync>();
                 if (wineFoxSync == null) continue;
 
                 count++;
-                
+
                 // 2. 应用属性加成 (MaidStatModifiers)
                 if (effectData.MaidStatModifiers != null)
                 {
                     foreach (var kvp in effectData.MaidStatModifiers)
                     {
-                        // 调用你现有的属性修改工具
-                        // 假设技能树给的是直接数值加成 (isMultiplier = false)
-                        // 如果你的技能树设计是百分比(如 0.1 代表 10%)，请将 isMultiplier 改为 true
-                        CombatMaid.Core.AttributeModifiers.AttributeModifier.Modify(
+                        string statName = kvp.Key;
+                        float statDelta = kvp.Value; // JSON 中的值，如 0.1 或 100
+
+                        // [修改] 使用新的 ModifyByDelta 方法，它会自动判断是 +50 还是 +10%
+                        CombatMaid.Core.AttributeModifiers.AttributeModifier.ModifyByDelta(
                             maid.MaidCharacter,
-                            kvp.Key,
-                            kvp.Value,
-                            isMultiplier: false 
+                            statName,
+                            statDelta
                         );
-                        
-                        maid.MaidCharacter.PopText($"{kvp.Key} UP!");
+
+                        // 更加人性化的提示
+                        string sign = statDelta > 0 ? "+" : "";
+                        bool isPercent =
+                            CombatMaid.Core.AttributeModifiers.AttributeModifier.IsPercentageType(statName);
+                        string formatVal = isPercent ? $"{statDelta:P0}" : $"{statDelta}"; // 0.1 -> 10%
+
+                        // 只有当这是技能树第一次触发时才弹字，避免刷屏（可选）
+                        maid.MaidCharacter.PopText($"{statName} {sign}{formatVal}");
                     }
                 }
 
                 // 3. 应用新技能解锁 (UnlockAbilityID)
                 if (!string.IsNullOrEmpty(effectData.UnlockAbilityID))
                 {
-                    // 检查是否已经拥有该技能，防止重复添加
-                    // 这里假设 SkillSystem 有个 HasSkill 方法，或者我们直接加，Factory通常会处理
-                    // 构建一个临时的配置对象
-                    var skillConfig = new MaidSkillConfig 
-                    { 
-                        SkillID = effectData.UnlockAbilityID 
-                        // 如果技能树支持传参，可以在这里扩展
+                    // 检查是否已经拥有该技能
+                    // 假设 SkillSystem 列表里已经存了实例，我们需要遍历检查 ID
+                    // 这里为了性能，也可以让 AddSkill 内部去重
+                    var existing =
+                        maid.SkillSystem.GetComponent<CombatMaid.Core.MaidSkillSystem.MaidSkillComponent>(); // 获取组件引用
+                    // (注意：你需要给 MaidSkillComponent 加一个 HasSkill(string id) 方法，或者直接添加，这里简化处理)
+
+                    var skillConfig = new MaidSkillConfig
+                    {
+                        SkillID = effectData.UnlockAbilityID
                     };
 
-                    // 使用工厂创建技能
                     var newSkill = CombatMaid.Core.MaidSkillSystem.MaidSkillFactory.CreateSkill(skillConfig);
-                    
+
                     if (newSkill != null)
                     {
+                        // SkillSystem 应当在内部处理重复添加的问题
                         maid.SkillSystem.AddSkill(newSkill);
                         maid.MaidCharacter.PopText($"习得技能: {newSkill.SkillName}!");
                         CMDebug.Log($"酒狐 {maid.name} 实时习得了 {newSkill.SkillName}");
                     }
                 }
             }
-            
+
             if (count > 0)
             {
                 CMDebug.Log($"[SkillTree] 已实时强化 {count} 只酒狐实例。");
             }
         }
-        
+
         // ==================== 队伍控制 & 集火逻辑 ====================
 
         private void UpdateFocusTarget()
@@ -373,6 +383,7 @@ namespace CombatMaid.Core
                         FocusTarget = target;
                         CMDebug.Log($"[指令] 集火目标: {target.name}");
                     }
+
                     _focusExpireTimer = FocusDuration;
                 }
             }
@@ -410,7 +421,7 @@ namespace CombatMaid.Core
             for (int i = _activeMaids.Count - 1; i >= 0; i--)
             {
                 var maid = _activeMaids[i];
-                maid.ForceHeal(); 
+                maid.ForceHeal();
                 maid.MaidCharacter.PopText("手动治疗！");
             }
         }
@@ -426,6 +437,7 @@ namespace CombatMaid.Core
                     else if (maid.gameObject != null) Destroy(maid.gameObject);
                 }
             }
+
             _activeMaids.Clear();
             CMDebug.Log("女仆队伍已解散");
         }
@@ -446,17 +458,13 @@ namespace CombatMaid.Core
     {
         public string Description;
 
-        [Header("生成基底")] 
-        public string BasePresetKey = "Cname_Usec";
+        [Header("生成基底")] public string BasePresetKey = "Cname_Usec";
 
-        [Header("外观模型")] 
-        public string CustomModelID = "";
+        [Header("外观模型")] public string CustomModelID = "";
 
-        [Header("Mod行为")] 
-        public string TacticalMode = "Standard";
+        [Header("Mod行为")] public string TacticalMode = "Standard";
 
-        [Header("通用技能配置")] 
-        public List<MaidSkillConfig> Skills = new List<MaidSkillConfig>();
+        [Header("通用技能配置")] public List<MaidSkillConfig> Skills = new List<MaidSkillConfig>();
     }
 
     [System.Serializable]
