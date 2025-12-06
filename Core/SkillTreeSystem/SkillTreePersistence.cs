@@ -18,19 +18,24 @@ namespace CombatMaid.Core.SkillTreeSystem
     public static class SkillTreePersistence
     {
         private const string SaveFileName = "MaidSkillTreeSave.json";
+        private const string SaveFolderName = "CombatMaidSaves";
 
         /// <summary>
-        /// 获取存档完整路径
+        /// [修改] 获取存档完整路径：指向游戏根目录/CombatMaidSaves
         /// </summary>
         private static string GetSavePath()
         {
-            string root = ModBehaviour.Instance != null ? ModBehaviour.Instance.ModRootPath : ".";
-            string dir = Path.Combine(root, "SkillTree/Saves");
+            // 获取游戏根目录
+            string root = Directory.GetCurrentDirectory();
+            string dir = Path.Combine(root, SaveFolderName);
             
+            // 确保文件夹存在
             if (!Directory.Exists(dir))
             {
                 Directory.CreateDirectory(dir);
+                CMDebug.Log($"[Persistence] 创建存档目录: {dir}");
             }
+            
             return Path.Combine(dir, SaveFileName);
         }
 

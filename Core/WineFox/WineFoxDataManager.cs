@@ -3,6 +3,7 @@ using UnityEngine;
 using Newtonsoft.Json;
 using CombatMaid.Core.MaidConfigs;
 using System.Reflection;
+using Newtonsoft.Json.Serialization;
 
 namespace CombatMaid.Core.WineFox
 {
@@ -13,51 +14,67 @@ namespace CombatMaid.Core.WineFox
     {
         private const string SaveFileName = "WineFox_Data.json";
         private const string DefaultPresetName = "ContractMaid_WineFox.json";
+        private const string SaveFolderName = "CombatMaidSaves"; // 新的存档文件夹名
         
-        // 缓存当前的数据实例
         public static MaidProfileData CurrentData { get; private set; }
 
+        // 序列化设置 (保留之前的修复)
+        private static readonly JsonSerializerSettings _saveSettings = new JsonSerializerSettings
+        {
+            Formatting = Formatting.Indented,
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+            ContractResolver = new UnityStructResolver()
+        };
+
+        /// <summary>
+        /// [修改] 获取存档目录：指向游戏根目录/CombatMaidSaves
+        /// </summary>
         public static string GetSaveDir()
         {
-            // 获取 DLL 所在目录
-            string modDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            return Path.Combine(modDir, "Saves");
+            // Directory.GetCurrentDirectory() 通常就是游戏的 .exe 所在目录
+            string gameRoot = Directory.GetCurrentDirectory();
+            return Path.Combine(gameRoot, SaveFolderName);
         }
 
         /// <summary>
-        /// 加载或初始化数据
+        /// 获取 Mod 安装目录 (用于读取只读的默认预设)
         /// </summary>
+        private static string GetModDir()
+        {
+            return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        }
+
         public static MaidProfileData LoadOrInit()
         {
+            // 1. 尝试从【游戏根目录】加载玩家存档
             string saveDir = GetSaveDir();
             string savePath = Path.Combine(saveDir, SaveFileName);
 
-            // 1. 尝试加载存档
             if (File.Exists(savePath))
             {
                 try
                 {
                     string json = File.ReadAllText(savePath);
                     CurrentData = JsonConvert.DeserializeObject<MaidProfileData>(json);
-                    CMDebug.Log($"[WineFox] 成功加载存档数据");
+                    CMDebug.Log($"[WineFox] 成功加载存档: {savePath}");
                 }
                 catch (System.Exception ex)
                 {
-                    CMDebug.LogError($"[WineFox] 存档损坏，回退到默认: {ex.Message}");
+                    CMDebug.LogError($"[WineFox] 存档损坏: {ex.Message}");
                 }
             }
 
-            // 2. 如果没有存档或加载失败，读取默认预设
+            // 2. 如果无存档，从【Mod目录】读取默认预设
             if (CurrentData == null)
             {
-                string modDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                string modDir = GetModDir();
                 string defaultPath = Path.Combine(modDir, "MaidPreset", DefaultPresetName);
 
                 if (File.Exists(defaultPath))
                 {
                     string json = File.ReadAllText(defaultPath);
                     CurrentData = JsonConvert.DeserializeObject<MaidProfileData>(json);
-                    CMDebug.Log($"[WineFox] 已初始化默认数据");
+                    CMDebug.Log($"[WineFox] 已初始化默认数据 (源: {DefaultPresetName})");
                 }
                 else
                 {
@@ -66,19 +83,10 @@ namespace CombatMaid.Core.WineFox
                 }
             }
             
-            // 3. [关键] 应用技能树加成
-            // 注意：我们传入的是数据的深拷贝或在应用时确保不修改原始存档字段，
-            // 或者明确区分 "BaseStats" 和 "RuntimeStats"。
-            // 这里为了简单，直接修改 CurrentData 的内存值用于生成，
-            // 但在保存时你需要决定是否要保存这些加成（通常建议只保存等级/经验，属性动态计算）。
             ApplySkillTreeBonuses(CurrentData);
-
             return CurrentData;
         }
 
-        /// <summary>
-        /// 保存数据
-        /// </summary>
         public static void SaveData()
         {
             if (CurrentData == null) return;
@@ -90,11 +98,10 @@ namespace CombatMaid.Core.WineFox
 
                 string savePath = Path.Combine(saveDir, SaveFileName);
                 
-                // 序列化
-                string json = JsonConvert.SerializeObject(CurrentData, Formatting.Indented);
+                string json = JsonConvert.SerializeObject(CurrentData, _saveSettings);
                 File.WriteAllText(savePath, json);
                 
-                CMDebug.Log($"[WineFox] 数据已保存");
+                CMDebug.Log($"[WineFox] 数据已保存至: {savePath}");
             }
             catch (System.Exception ex)
             {
@@ -102,35 +109,24 @@ namespace CombatMaid.Core.WineFox
             }
         }
 
-        /// <summary>
-        /// [核心逻辑] 将技能树的加成应用到面板上
-        /// </summary>
         private static void ApplySkillTreeBonuses(MaidProfileData data)
         {
-            if (data == null || data.PresetConfig == null) return;
+            // 技能树加成逻辑...
+        }
 
-            // 假设你有一个 SkillTreeManager
-            // var bonuses = SkillTreeManager.Instance.GetGlobalBonuses(); 
-
-            // 示例：模拟应用技能树加成
-            // 1. 属性加成
-            // data.PresetConfig.Health *= (1 + bonuses.HealthPercent);
-            // data.PresetConfig.DamageMultiplier += bonuses.DamageAdd;
-
-            // 2. 技能注入
-            // 如果技能树解锁了 "高级治疗"，则注入到 Skills 列表
-            /*
-            if (SkillTreeManager.Instance.IsSkillUnlocked("AdvancedHeal"))
+        private class UnityStructResolver : DefaultContractResolver
+        {
+            protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
             {
-                bool hasSkill = data.ExtraData.Skills.Exists(s => s.SkillID == "AdvancedHeal");
-                if (!hasSkill)
+                JsonProperty property = base.CreateProperty(member, memberSerialization);
+                if (property.PropertyName == "normalized" || 
+                    property.PropertyName == "magnitude" || 
+                    property.PropertyName == "sqrMagnitude")
                 {
-                    data.ExtraData.Skills.Add(new MaidSkillConfig { SkillID = "AdvancedHeal" });
+                    property.Ignored = true;
                 }
+                return property;
             }
-            */
-            
-            CMDebug.Log("[WineFox] 已应用技能树加成（示例逻辑）");
         }
     }
 }
