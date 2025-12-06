@@ -26,30 +26,4 @@ namespace CombatMaid.Core.SkillTreeSystem
             }
         }
     }
-
-    /// <summary>
-    /// 玩家属性修改器
-    /// </summary>
-    public class ModifyPlayerCharacterStats : ModifyCharacterStatsBase
-    {
-        // 隐藏原版的描述文本
-        public override string Description => string.Empty;
-    }
-
-    /// <summary>
-    /// 女仆技能授权组件
-    /// </summary>
-    public class MaidSkillGrantBehaviour : PerkBehaviour
-    {
-        // 这些数据在 Builder 中注入
-        public string SkillID; 
-        public Dictionary<string, float> MaidStatModifiers;
-        public string UnlockAbilityID;
-
-        protected override void OnUnlocked()
-        {
-            if (MaidManager.Instance == null) return;
-            CMDebug.Log($"[MaidSkill] 技能 {SkillID} 解锁");
-        }
-    }
 }

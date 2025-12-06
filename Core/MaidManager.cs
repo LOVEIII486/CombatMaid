@@ -167,17 +167,14 @@ namespace CombatMaid.Core
             {
                 if (isWineFox && controller != null)
                 {
-                    // 1. 挂载数据同步组件
+                    // 挂载数据同步组件
                     var sync = controller.gameObject.AddComponent<WineFoxDataSync>();
                     sync.Initialize(controller, finalData);
 
-                    // 2. [核心修改] 生成时一次性应用技能树加成
-                    // 此时女仆刚出生，属性是干净的，应用加成绝对安全
-                    if (SkillTreeManager.Instance != null)
-                    {
-                        SkillTreeManager.Instance.ApplyPassiveEffectsToMaid(controller);
-                        CMDebug.Log($"[Spawn] 已为酒狐应用技能树加成");
-                    }
+                    // ❌ 已删除：技能树加成应用
+                    // 新系统中，技能树加成已经写入 WineFox_Data.json
+                    // 召唤时直接读取存档，无需重复应用
+                    CMDebug.Log($"[Spawn] 酒狐已从存档加载（属性包含技能树加成）");
                 }
             });
         }

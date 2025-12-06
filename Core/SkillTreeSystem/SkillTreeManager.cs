@@ -282,67 +282,9 @@ namespace CombatMaid.Core.SkillTreeSystem
             }
         }
 
-
-        public void ApplyPassiveEffectsToMaid(MaidController maid)
-        {
-            if (_saveData == null || maid == null) return;
-
-            CMDebug.Log($"[SkillTree] 正在为 {maid.name} 应用技能树加成...");
-
-            foreach (var kvp in _runtimePerks)
-            {
-                string id = kvp.Key;
-                Perk perk = kvp.Value;
-
-                // 检查是否解锁
-                bool isUnlocked = perk != null && perk.Unlocked;
-
-                if (isUnlocked && _nodeDefsMap.TryGetValue(id, out SkillNodeDef def))
-                {
-                    // 1. 应用属性加成 (Stat Modifiers)
-                    // Stat系统自带去重/堆叠处理，只要我们不修改存档里的BaseValue，这里重复Add是安全的(AddModifier是临时的)
-                    if (def.MaidStatModifiers != null)
-                    {
-                        foreach (var statKvp in def.MaidStatModifiers)
-                        {
-                            CombatMaid.Core.AttributeModifiers.AttributeModifier.ModifyByDelta(
-                                maid.MaidCharacter,
-                                statKvp.Key,
-                                statKvp.Value
-                            );
-                            
-                        }
-                    }
-
-                    // 2. 应用技能 (Abilities)
-                    if (!string.IsNullOrEmpty(def.MaidAbilityID))
-                    {
-                        string skillId = def.MaidAbilityID;
-                        var skillSystem = maid.SkillSystem;
-
-                        // [安全检查] 防止重复添加技能
-                        // 假设 SkillSystem 没有公开的 HasSkill 方法，我们通过反射或者遍历检查
-                        // 既然你在 MaidSkillComponent 里有 List<IMaidSkill> _skills
-                        // 我们最好在 MaidSkillComponent 加一个 HasSkill 方法，或者在这里做一个简单的判断
-
-                        // 为了简化，这里假设 Factory 创建技能是轻量级的
-                        // 我们构建配置，尝试添加
-                        var skillConfig = new MaidSkillConfig { SkillID = skillId };
-                        var newSkill = CombatMaid.Core.MaidSkillSystem.MaidSkillFactory.CreateSkill(skillConfig);
-
-                        if (newSkill != null)
-                        {
-                            // 你需要修改 MaidSkillComponent.AddSkill 内部增加 if(HasSkill) return; 
-                            // 或者在这里依赖 SkillSystem 自身的健壮性
-                            skillSystem.AddSkill(newSkill);
-                            CMDebug.Log($" -> 激活技能: {skillId}");
-                        }
-                    }
-                }
-            }
-            
-            maid.MaidCharacter.Health.SetHealth(maid.MaidCharacter.Health.MaxHealth);
-        }
+        // ❌ 已删除 ApplyPassiveEffectsToMaid 方法
+        // 新系统中，技能树加成直接写入酒狐存档，召唤时自动读取
+        // 无需在运行时遍历已解锁技能并应用修改器
 
         /// <summary>
         /// 查询指定 ID 的技能节点是否已解锁
