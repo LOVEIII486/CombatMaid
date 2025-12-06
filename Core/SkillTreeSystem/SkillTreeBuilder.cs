@@ -136,6 +136,16 @@ namespace CombatMaid.Core.SkillTreeSystem
             
             // 自动存档组件（所有节点必备）
             nodeObj.AddComponent<PerkAutoSaveBehaviour>();
+            var unlockableItems = CombatMaid.Core.Items.Logic.MaidItemRegistry.GetItemsUnlockedByNode(def.ID);
+            if (unlockableItems != null && unlockableItems.Count > 0)
+            {
+                foreach (var itemId in unlockableItems)
+                {
+                    var unlocker = nodeObj.AddComponent<PerkUnlockStockShop>();
+                    unlocker.unlockItem = itemId;
+                    CMDebug.Log($"[SkillTreeBuilder] 节点 {def.ID} 绑定了解锁物品: {itemId}");
+                }
+            }
 
             // 玩家属性加成（如果有配置）
             if (def.PlayerStatModifiers != null && def.PlayerStatModifiers.Count > 0)

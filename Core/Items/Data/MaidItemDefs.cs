@@ -37,7 +37,7 @@ namespace CombatMaid.Core.Items.Data
                     ShopMaxStock = 5,
                     ShopPriceFactor = 1.2f,
                     ShopPossibility = 1f,
-                    ShopForceUnlock = true
+                    ShopForceUnlock = false
                 },
                 new MaidItemInfo // 酒狐女仆契约
                 {
@@ -69,7 +69,7 @@ namespace CombatMaid.Core.Items.Data
                     ShopMaxStock = 2,
                     ShopPriceFactor = 1.2f,
                     ShopPossibility = 1f,
-                    ShopForceUnlock = true
+                    ShopForceUnlock = false
                 },
                 new MaidItemInfo// 瓶中女仆·I型
                 {
@@ -112,7 +112,7 @@ namespace CombatMaid.Core.Items.Data
                     ShopMaxStock = 6,
                     ShopPriceFactor = 10f,
                     ShopPossibility = 1.0f,
-                    ShopForceUnlock = true
+                    ShopForceUnlock = false
                 },
                 new MaidItemInfo// 瓶中女仆·II型
                 {
@@ -155,7 +155,7 @@ namespace CombatMaid.Core.Items.Data
                     ShopMaxStock = 3,
                     ShopPriceFactor = 10f,
                     ShopPossibility = 1f,
-                    ShopForceUnlock = true
+                    ShopForceUnlock = false
                 },
                 new MaidItemInfo // 瓶中女仆·III型
                 {
@@ -198,7 +198,7 @@ namespace CombatMaid.Core.Items.Data
                     ShopMaxStock = 1,
                     ShopPriceFactor = 10f,
                     ShopPossibility = 1f,
-                    ShopForceUnlock = true
+                    ShopForceUnlock = false
                 }
             };
         }

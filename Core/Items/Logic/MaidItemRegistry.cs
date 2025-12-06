@@ -21,7 +21,7 @@ namespace CombatMaid.Core.Items.Logic
 
         public static void Initialize(string modPath)
         {
-            CMDebug.Log($"开始初始化物品系统... {modPath}");
+            CMDebug.Log($"[MaidItemRegistry] 开始初始化物品系统... {modPath}");
 
             var items = MaidItemDefs.GetDefinitions();
             int successCount = 0;
@@ -35,11 +35,11 @@ namespace CombatMaid.Core.Items.Logic
                 }
                 catch (System.Exception ex)
                 {
-                    CMDebug.LogError($"物品 {info.itemId}: {ex.Message}");
+                    CMDebug.LogError($"[注册异常] 物品 {info.itemId}: {ex.Message}");
                 }
             }
 
-            CMDebug.Log($"初始化完成。成功注册 {successCount}/{items.Count} 个物品。");
+            CMDebug.Log($"[MaidItemRegistry] 初始化完成。成功注册 {successCount}/{items.Count} 个物品。");
         }
 
         public static void Cleanup()
@@ -78,15 +78,43 @@ namespace CombatMaid.Core.Items.Logic
                 ApplyExtendedLogic(registeredPrefab, info);
             }
 
-            // 5. 商店注入
-            TryInjectToShop(info);
+            // 5. 商店注入 (关键修改：直接注入，由参数控制锁定状态)
+            InjectToShopWithLockState(info);
+        }
+
+        /// <summary>
+        /// 将物品注入商店，并根据技能树要求决定初始锁定状态
+        /// </summary>
+        private static void InjectToShopWithLockState(MaidItemInfo info)
+        {
+            if (string.IsNullOrEmpty(info.ShopMerchantId)) return;
+
+            // 检查该物品是否需要技能树前置
+            string requiredNodeID = GetRequiredSkillNode(info.itemId);
+            bool hasRequirement = !string.IsNullOrEmpty(requiredNodeID);
+
+            // 逻辑核心：
+            // - 无前置要求 -> forceUnlock = true (默认解锁，直接可买)
+            // - 有前置要求 -> forceUnlock = false (初始锁定，不可见，等待 EconomyManager.Unlock 解锁)
+            // 注意：这里覆盖了 MaidItemInfo 中配置的 ShopForceUnlock 默认值
+            bool finalUnlockState = !hasRequirement;
+
+            ShopUtils.AddGoods(new ShopGoodsData
+            {
+                merchantProfileID = info.ShopMerchantId,
+                typeID = info.itemId,
+                maxStock = info.ShopMaxStock,
+                priceFactor = info.ShopPriceFactor,
+                possibility = info.ShopPossibility,
+                forceUnlock = finalUnlockState 
+            });
+
+            string statusLog = finalUnlockState ? "默认解锁" : $"初始锁定 (等待技能 {requiredNodeID} 解锁)";
+            // CMDebug.Log($"[商店] 注册 {info.itemId} -> {statusLog}");
         }
 
         // ==================== 内部功能模块 ====================
 
-        /// <summary>
-        /// 构建物品并处理图标
-        /// </summary>
         private static Item BuildItemWithIcon(string modPath, MaidItemInfo info)
         {
             var builder = ItemBuilder.New()
@@ -107,11 +135,10 @@ namespace CombatMaid.Core.Items.Logic
                 {
                     builder.Icon(sprite);
                     iconSet = true;
-                    CMDebug.LogWarning($"{info.itemId}: 自定义图标加载成功");
                 }
                 else
                 {
-                    CMDebug.LogWarning($"{info.itemId}: 图标文件未找到 -> {info.spritePath}");
+                    CMDebug.LogWarning($"[MaidItemRegistry] {info.itemId}: 图标文件未找到 -> {info.spritePath}");
                 }
             }
 
@@ -123,16 +150,12 @@ namespace CombatMaid.Core.Items.Logic
                 {
                     builder.Icon(refItem.Icon);
                     iconSet = true;
-                    CMDebug.LogWarning($"{info.itemId}: 已借用 ID {info.VisualReferenceId} 的图标");
                 }
             }
 
             return builder.Instantiate();
         }
 
-        /// <summary>
-        /// 应用模组的高级逻辑
-        /// </summary>
         private static void ApplyExtendedLogic(Item prefab, MaidItemInfo info)
         {
             // 1. 视觉克隆
@@ -146,6 +169,8 @@ namespace CombatMaid.Core.Items.Logic
             {
                 if (prefab.UsageUtilities.behaviors == null) 
                     prefab.UsageUtilities.behaviors = new List<UsageBehavior>();
+                
+                // 避免重复挂载
                 if (prefab.GetComponent<SimpleUseBehavior>() == null)
                 {
                     var behavior = prefab.gameObject.AddComponent<SimpleUseBehavior>();
@@ -159,7 +184,7 @@ namespace CombatMaid.Core.Items.Logic
                 if (typeof(MonoBehaviour).IsAssignableFrom(info.CustomComponentType))
                     prefab.gameObject.AddComponent(info.CustomComponentType);
                 else
-                    CMDebug.LogError($"{info.itemId} 的组件类型无效，必须继承 MonoBehaviour");
+                    CMDebug.LogError($"[MaidItemRegistry] {info.itemId} 的组件类型无效，必须继承 MonoBehaviour");
             }
 
             // 4. 注入常量
@@ -172,9 +197,6 @@ namespace CombatMaid.Core.Items.Logic
             }
         }
 
-        /// <summary>
-        /// 类型安全的常量添加
-        /// </summary>
         private static void AddConstantSafe(Item prefab, string key, object value)
         {
             switch (value)
@@ -184,14 +206,11 @@ namespace CombatMaid.Core.Items.Logic
                 case int i: prefab.Constants.Add(new CustomData(key, (float)i)); break;
                 case string s: prefab.Constants.Add(new CustomData(key, s)); break;
                 default:
-                    CMDebug.LogWarning($"不支持的常量类型: Key={key}, Type={value?.GetType()}");
+                    CMDebug.LogWarning($"[MaidItemRegistry] 不支持的常量类型: Key={key}, Type={value?.GetType()}");
                     break;
             }
         }
 
-        /// <summary>
-        /// 注册本地化文本
-        /// </summary>
         private static void RegisterLocalization(MaidItemInfo info)
         {
             var dict = SodaCraft.Localizations.LocalizationManager.overrideTexts;
@@ -202,80 +221,40 @@ namespace CombatMaid.Core.Items.Logic
             if (!string.IsNullOrEmpty(info.localizationDesc))
                 dict[info.localizationDesc] = LocalizationManager.GetText(info.localizationDesc, $"[{info.localizationDesc}]");
         }
-        
-        public static void RefreshShopAvailability()
+
+        // ==================== 技能树映射逻辑 ====================
+
+        /// <summary>
+        /// 获取指定技能节点ID解锁的所有物品ID列表
+        /// 供 SkillTreeBuilder 使用，用于给节点挂载 PerkUnlockStockShop 组件
+        /// </summary>
+        public static List<int> GetItemsUnlockedByNode(string nodeId)
         {
-            // 清理旧的商店数据 (如果 FML 支持的话，或者依靠游戏重载)
-            // 重新遍历定义，只针对商店部分进行注入
-            var items = MaidItemDefs.GetDefinitions();
-            foreach (var info in items)
+            var list = new List<int>();
+            foreach (var item in MaidItemDefs.GetDefinitions())
             {
-                // 重新尝试注入（TryInjectToShop 内部会再次检查 IsItemUnlocked）
-                TryInjectToShop(info);
+                // 如果该物品的前置节点正是传入的 nodeId，则加入列表
+                if (GetRequiredSkillNode(item.itemId) == nodeId)
+                {
+                    list.Add(item.itemId);
+                }
             }
-            CMDebug.Log("[MaidItemRegistry] 商店列表已根据技能树状态刷新。");
-        }
-
-        private static void TryInjectToShop(MaidItemInfo info)
-        {
-            if (string.IsNullOrEmpty(info.ShopMerchantId)) return;
-
-            // [新增] 核心拦截：检测技能树解锁状态
-            if (!IsItemUnlocked(info))
-            {
-                // 如果未解锁，仅在调试模式下打印，避免刷屏
-                // CMDebug.Log($"[商店] 物品 {info.itemId} 未解锁 (节点条件未满足)，跳过注册。");
-                return;
-            }
-
-            ShopUtils.AddGoods(new ShopGoodsData
-            {
-                merchantProfileID = info.ShopMerchantId,
-                typeID = info.itemId,
-                maxStock = info.ShopMaxStock,
-                priceFactor = info.ShopPriceFactor,
-                possibility = info.ShopPossibility,
-                forceUnlock = info.ShopForceUnlock
-            });
-            
-            CMDebug.Log($"[商店] 已上架物品 {info.itemId} (商人: {info.ShopMerchantId})");
-        }
-        
-        private static bool IsItemUnlocked(MaidItemInfo info)
-        {
-            // 1. 获取所需的技能节点 ID
-            string requiredNodeID = GetRequiredSkillNode(info.itemId);
-
-            // 2. 如果返回 null 或空，说明该物品没有门槛，默认解锁
-            if (string.IsNullOrEmpty(requiredNodeID)) return true;
-
-            // 3. 检查技能树管理器是否存在 (防止游戏刚启动时报错)
-            if (SkillTreeManager.Instance == null)
-            {
-                // 注意：如果 Initialize 在读档前运行，这里可能为空。
-                // 建议策略：如果没有加载存档，视为未解锁，防止未授权物品泄露
-                return false; 
-            }
-
-            // 4. 查询节点是否已点亮
-            return SkillTreeManager.Instance.IsSkillUnlocked(requiredNodeID);
+            return list;
         }
 
         /// <summary>
         /// 配置表：定义哪些物品需要哪些技能节点
-        /// 未来添加新物品只需修改这里
         /// </summary>
         private static string GetRequiredSkillNode(int itemId)
         {
             switch (itemId)
             {
                 // === 契约类 ===
-                case 88888: // 贝拉契约 (MaidItemDefs.ID_MAID_CONTRACT)
+                case 88888: // 贝拉契约
                 case 88000: // 酒狐契约
                     return "maid_core_license"; // 需要核心授权
 
-                // === 瓶中女仆类 (假设ID) ===
-                // 请替换为你实际定义的瓶中女仆物品 ID
+                // === 瓶中女仆类 ===
                 case 88001: return "maid_special_bottle_1"; // Lv1
                 case 88002: return "maid_special_bottle_2"; // Lv2
                 case 88003: return "maid_special_bottle_3"; // Lv3
