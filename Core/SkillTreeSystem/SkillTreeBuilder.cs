@@ -76,12 +76,45 @@ namespace CombatMaid.Core.SkillTreeSystem
                 tTree.Field("displayName").SetValue(treeNameKey);
             }
 
-            // 8. 清理图数据连接
-            if (perkTree.RelationGraphOwner != null && perkTree.RelationGraphOwner.graph is PerkRelationGraph graph)
+            // 🔧 核心修复：创建独立的 Graph 实例，避免与原版技能树共享
+            if (perkTree.RelationGraphOwner != null)
             {
-                graph.allNodes.Clear();
-                graph.GetGraphSource().connections.Clear();
-                graph.UpdateGraph();
+                var oldGraph = perkTree.RelationGraphOwner.graph;
+                
+                if (oldGraph != null)
+                {
+                    CMDebug.Log($"[SkillTreeBuilder] 原版 Graph 实例 ID: {oldGraph.GetInstanceID()}");
+                    
+                    // 创建一个全新的 Graph 实例
+                    var graphType = oldGraph.GetType();
+                    Graph newGraph = ScriptableObject.CreateInstance(graphType) as Graph;
+                    
+                    if (newGraph != null)
+                    {
+                        newGraph.name = $"MaidSkillGraph_{treeId}";
+                        
+                        // 使用反射替换 GraphOwner 的 _graph 字段
+                        var graphOwnerTraverse = Traverse.Create(perkTree.RelationGraphOwner);
+                        graphOwnerTraverse.Field("_graph").SetValue(newGraph);
+                        
+                        CMDebug.Log($"[SkillTreeBuilder] ✓ 已创建独立 Graph: {newGraph.GetInstanceID()}");
+                        
+                        // 如果是 PerkRelationGraph，初始化空数据
+                        if (newGraph is PerkRelationGraph perkGraph)
+                        {
+                            perkGraph.allNodes.Clear();
+                            perkGraph.UpdateGraph();
+                        }
+                    }
+                    else
+                    {
+                        CMDebug.LogError("[SkillTreeBuilder] ✗ 创建 Graph 实例失败！");
+                    }
+                }
+            }
+            else
+            {
+                CMDebug.LogWarning("[SkillTreeBuilder] RelationGraphOwner 为 null");
             }
 
             // 9. 注册到管理器
@@ -199,6 +232,37 @@ namespace CombatMaid.Core.SkillTreeSystem
         {
             if (tree.RelationGraphOwner.graph is PerkRelationGraph graph)
             {
+                // 🔧 添加调试日志和验证
+                CMDebug.Log($"[RebuildGraph] Graph 实例 ID: {graph.GetInstanceID()}");
+                CMDebug.Log($"[RebuildGraph] 当前 allNodes 数量: {graph.allNodes.Count}");
+                CMDebug.Log($"[RebuildGraph] 预期节点数量: {createdPerks.Count}");
+                
+                // 🔧 修复：如果节点数量不匹配，说明 Graph 被污染，需要重建
+                if (graph.allNodes.Count != createdPerks.Count)
+                {
+                    CMDebug.LogWarning($"[RebuildGraph] ⚠ 检测到节点数量不匹配，重建节点列表");
+                    
+                    // 清空并重新添加所有节点
+                    graph.allNodes.Clear();
+                    
+                    foreach (var def in allDefs)
+                    {
+                        if (createdPerks.TryGetValue(def.ID, out Perk perk))
+                        {
+                            PerkRelationNode graphNode = new PerkRelationNode();
+                            graphNode.relatedNode = perk;
+                            graphNode.cachedPosition = def.Position;
+                            graph.allNodes.Add(graphNode);
+                        }
+                    }
+                    
+                    CMDebug.Log($"[RebuildGraph] ✓ 节点列表已重建，当前数量: {graph.allNodes.Count}");
+                }
+                
+                // 清空旧连接
+                graph.GetGraphSource().connections.Clear();
+                
+                // 重建连接
                 foreach (var def in allDefs)
                 {
                     if (def.PrerequisiteIDs == null) continue;
@@ -224,7 +288,10 @@ namespace CombatMaid.Core.SkillTreeSystem
                         }
                     }
                 }
+                
                 graph.UpdateGraph();
+                
+                CMDebug.Log($"[RebuildGraph] ✓ 连接重建完成，共 {graph.GetGraphSource().connections.Count} 条连接");
             }
         }
 

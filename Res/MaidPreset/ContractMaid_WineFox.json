@@ -90,17 +90,6 @@
     "BasePresetKey": "Cname_Usec",
     "CustomModelID": "10004",
     "TacticalMode": "Assault",
-    "Skills": [
-      {
-        "SkillID": "AutoHeal",
-        "Params": {}
-      },
-      {
-        "SkillID": "Grenade",
-        "Params": {
-          "ItemID": 67
-        }
-      }
-    ]
+    "Skills": []
   }
 }

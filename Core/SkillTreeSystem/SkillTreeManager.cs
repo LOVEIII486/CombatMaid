@@ -78,64 +78,74 @@ namespace CombatMaid.Core.SkillTreeSystem
 
                 CMDebug.Log($"[SkillTreeManager] 找到建筑: {skillBuilding.name}");
 
-                // 🔧 修复：检查技能树是否还在 PerkTreeManager 的注册列表中
-                bool treeNeedsReregistration = false;
-                if (_customTree != null)
+                // 🔧 核心修复：检查技能树是否仍然有效，无效则重建
+                bool needsRebuild = false;
+                
+                if (_customTree == null)
                 {
-                    var registeredTree = PerkTreeManager.GetPerkTree(TREE_ID);
-                    if (registeredTree == null || registeredTree != _customTree)
-                    {
-                        CMDebug.LogWarning("[SkillTreeManager] 技能树对象存在但未在 PerkTreeManager 中注册，需要重新注册");
-                        treeNeedsReregistration = true;
-                    }
-                }
-
-                // 状态一致性检查
-                if (!_isTreeBuilt || _customTree == null || treeNeedsReregistration)
-                {
-                    if (treeNeedsReregistration)
-                    {
-                        CMDebug.Log("[SkillTreeManager] 重新注册现有技能树到 PerkTreeManager");
-                        ReregisterTreeToPerkTreeManager();
-                    }
-                    else
-                    {
-                        CMDebug.Log("[SkillTreeManager] 开始构建技能树（首次或修复损坏状态）");
-
-                        try
-                        {
-                            // 1. 加载存档
-                            _saveData = SkillTreePersistence.Load();
-
-                            // 2. 构建技能树
-                            BuildSkillTree();
-
-                            // 3. 验证构建结果
-                            if (_customTree == null)
-                            {
-                                CMDebug.LogError("[SkillTreeManager] ✗ BuildSkillTree 失败：_customTree 仍为 null");
-                                _isTreeBuilt = false; // 重置状态，下次重试
-                                yield break;
-                            }
-
-                            // 4. 恢复已购买状态
-                            RestorePurchasedState();
-
-                            _isTreeBuilt = true;
-                            CMDebug.LogInfo("[SkillTreeManager] ✓ 技能树构建成功");
-                        }
-                        catch (System.Exception ex)
-                        {
-                            CMDebug.LogError($"[SkillTreeManager] 构建技能树时发生异常: {ex.Message}\n{ex.StackTrace}");
-                            _isTreeBuilt = false; // 重置状态
-                            _customTree = null;
-                            yield break;
-                        }
-                    }
+                    needsRebuild = true;
+                    CMDebug.Log("[SkillTreeManager] 技能树对象为 null，需要重建");
                 }
                 else
                 {
-                    CMDebug.Log("[SkillTreeManager] 技能树已存在且已注册，跳过构建");
+                    // 检查技能树是否仍在 PerkTreeManager 中注册
+                    var registeredTree = PerkTreeManager.GetPerkTree(TREE_ID);
+                    if (registeredTree == null || registeredTree != _customTree)
+                    {
+                        needsRebuild = true;
+                        CMDebug.LogWarning("[SkillTreeManager] 技能树未在 PerkTreeManager 中注册或引用不一致，需要重建");
+                        
+                        // 销毁旧对象
+                        if (_customTree != null && _customTree.gameObject != null)
+                        {
+                            Destroy(_customTree.gameObject);
+                            _customTree = null;
+                        }
+                    }
+                    else
+                    {
+                        CMDebug.Log("[SkillTreeManager] 技能树状态正常，跳过重建");
+                    }
+                }
+
+                // 如果需要重建
+                if (needsRebuild)
+                {
+                    CMDebug.Log("[SkillTreeManager] 开始重建技能树");
+
+                    try
+                    {
+                        // 1. 清理旧数据
+                        _isTreeBuilt = false;
+                        _runtimePerks.Clear();
+                        _nodeDefsMap.Clear();
+
+                        // 2. 加载存档
+                        _saveData = SkillTreePersistence.Load();
+
+                        // 3. 构建技能树
+                        BuildSkillTree();
+
+                        // 4. 验证构建结果
+                        if (_customTree == null)
+                        {
+                            CMDebug.LogError("[SkillTreeManager] ✗ BuildSkillTree 失败：_customTree 仍为 null");
+                            yield break;
+                        }
+
+                        // 5. 恢复已购买状态
+                        RestorePurchasedState();
+
+                        _isTreeBuilt = true;
+                        CMDebug.LogInfo("[SkillTreeManager] ✓ 技能树重建成功");
+                    }
+                    catch (System.Exception ex)
+                    {
+                        CMDebug.LogError($"[SkillTreeManager] 重建技能树时发生异常: {ex.Message}\n{ex.StackTrace}");
+                        _isTreeBuilt = false;
+                        _customTree = null;
+                        yield break;
+                    }
                 }
 
                 // 每次进入场景都重新注册交互点
@@ -148,7 +158,6 @@ namespace CombatMaid.Core.SkillTreeSystem
                 else
                 {
                     CMDebug.LogError("[SkillTreeManager] ✗ _customTree 为 null，无法注册交互点！");
-                    CMDebug.LogError($"[SkillTreeManager] 状态异常：_isTreeBuilt={_isTreeBuilt}, _customTree={_customTree}");
                 }
             }
             finally
@@ -158,54 +167,9 @@ namespace CombatMaid.Core.SkillTreeSystem
         }
 
         /// <summary>
-        /// 🔧 新增：重新注册技能树到 PerkTreeManager
+        /// [已删除] ReregisterTreeToPerkTreeManager 方法（不再需要）
+        /// 改为直接重建技能树以确保状态完全一致
         /// </summary>
-        private void ReregisterTreeToPerkTreeManager()
-        {
-            if (_customTree == null)
-            {
-                CMDebug.LogError("[ReregisterTree] _customTree 为 null，无法重新注册");
-                return;
-            }
-
-            try
-            {
-                // 确保技能树对象激活
-                if (!_customTree.gameObject.activeSelf)
-                {
-                    _customTree.gameObject.SetActive(true);
-                    CMDebug.Log("[ReregisterTree] 重新激活技能树对象");
-                }
-
-                // 检查是否已在列表中
-                if (!PerkTreeManager.Instance.perkTrees.Contains(_customTree))
-                {
-                    PerkTreeManager.Instance.perkTrees.Add(_customTree);
-                    CMDebug.Log($"[ReregisterTree] ✓ 技能树已重新注册到 PerkTreeManager: {TREE_ID}");
-                }
-                else
-                {
-                    CMDebug.Log("[ReregisterTree] 技能树已在 PerkTreeManager.perkTrees 列表中");
-                }
-
-                // 验证注册结果
-                var registeredTree = PerkTreeManager.GetPerkTree(TREE_ID);
-                if (registeredTree != null)
-                {
-                    CMDebug.Log("[ReregisterTree] ✓ 验证成功：可以通过 GetPerkTree 找到技能树");
-                }
-                else
-                {
-                    CMDebug.LogWarning("[ReregisterTree] ⚠ 验证失败：GetPerkTree 仍返回 null");
-                }
-
-                _isTreeBuilt = true;
-            }
-            catch (System.Exception ex)
-            {
-                CMDebug.LogError($"[ReregisterTree] 重新注册失败: {ex.Message}\n{ex.StackTrace}");
-            }
-        }
 
         private GameObject FindSkillMachine()
         {
