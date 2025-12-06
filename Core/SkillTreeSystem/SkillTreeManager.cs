@@ -15,11 +15,11 @@ namespace CombatMaid.Core.SkillTreeSystem
         private const string TREE_ID = "MaidCombatSkills";
         private const string INTERACT_KEY = "Interaction_MaidSkill_Label";
         private const string DEFAULT_CONFIG_FILE = "SkillTree_Combat.json";
-        
+
         private bool _isTreeBuilt = false;
         private PerkTree _customTree;
         private bool _isInitializing = false;
-        
+
         private SkillTreeConfig _currentConfig;
 
         private SkillTreeSaveData _saveData;
@@ -44,7 +44,8 @@ namespace CombatMaid.Core.SkillTreeSystem
         }
 
         // 响应任何场景加载
-        private void OnAnySceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+        private void OnAnySceneLoaded(UnityEngine.SceneManagement.Scene scene,
+            UnityEngine.SceneManagement.LoadSceneMode mode)
         {
             if (scene.name == "Base" || scene.name == "Base_SceneV2")
             {
@@ -63,7 +64,7 @@ namespace CombatMaid.Core.SkillTreeSystem
             }
 
             _isInitializing = true;
-            
+
             try
             {
                 yield return new WaitForSeconds(0.5f); // 等待场景完全加载
@@ -81,7 +82,7 @@ namespace CombatMaid.Core.SkillTreeSystem
                 if (!_isTreeBuilt || _customTree == null)
                 {
                     CMDebug.Log("[SkillTreeManager] 开始构建技能树（首次或修复损坏状态）");
-                    
+
                     try
                     {
                         // 1. 加载存档
@@ -176,7 +177,7 @@ namespace CombatMaid.Core.SkillTreeSystem
                     }
 
                     _currentConfig = SkillTreeConfigLoader.LoadFromFile(modPath, DEFAULT_CONFIG_FILE);
-                    
+
                     if (_currentConfig == null)
                     {
                         CMDebug.LogError("[BuildSkillTree] 配置文件加载失败");
@@ -185,19 +186,20 @@ namespace CombatMaid.Core.SkillTreeSystem
                 }
 
                 // 2. 创建树
-                string treeName = !string.IsNullOrEmpty(_currentConfig.TreeName) 
-                    ? _currentConfig.TreeName 
+                string treeName = !string.IsNullOrEmpty(_currentConfig.TreeName)
+                    ? _currentConfig.TreeName
                     : "女仆战术";
-                    
+
                 _customTree = SkillTreeBuilder.CreateEmptyTree(TREE_ID, treeName);
-                
+
                 if (_customTree == null)
                 {
                     CMDebug.LogError("[BuildSkillTree] CreateEmptyTree 返回 null！");
                     return;
                 }
-                
+
                 CMDebug.Log($"[BuildSkillTree] 技能树已创建: {_customTree.name}");
+                _customTree.transform.SetParent(this.transform);
 
                 // 3. 转换配置为节点定义
                 var nodes = SkillTreeConfigLoader.ConvertToNodeDefs(_currentConfig);
@@ -212,8 +214,8 @@ namespace CombatMaid.Core.SkillTreeSystem
                     }
 
                     // 加载图标
-                    string iconName = !string.IsNullOrEmpty(nodeDef.IconFileName) 
-                        ? nodeDef.IconFileName 
+                    string iconName = !string.IsNullOrEmpty(nodeDef.IconFileName)
+                        ? nodeDef.IconFileName
                         : "default_icon.png";
                     nodeDef.Icon = SkillIconLoader.LoadIcon(iconName);
 
@@ -230,7 +232,7 @@ namespace CombatMaid.Core.SkillTreeSystem
 
                 // 5. 重建连接
                 SkillTreeBuilder.RebuildGraphConnections(_customTree, nodes, _runtimePerks);
-                
+
                 CMDebug.LogInfo($"[BuildSkillTree] ✓ 技能树构建完成，共 {_runtimePerks.Count} 个节点");
             }
             catch (System.Exception ex)
@@ -240,8 +242,8 @@ namespace CombatMaid.Core.SkillTreeSystem
                 throw;
             }
         }
-        
-        
+
+
         public void ApplyPassiveEffectsToMaid(MaidController maid)
         {
             if (_saveData == null || maid == null) return;
@@ -252,7 +254,7 @@ namespace CombatMaid.Core.SkillTreeSystem
             {
                 string id = kvp.Key;
                 Perk perk = kvp.Value;
-                
+
                 // 检查是否解锁
                 bool isUnlocked = perk != null && perk.Unlocked;
 
@@ -260,20 +262,21 @@ namespace CombatMaid.Core.SkillTreeSystem
                 {
                     // 1. 应用属性加成 (Stat Modifiers)
                     // Stat系统自带去重/堆叠处理，只要我们不修改存档里的BaseValue，这里重复Add是安全的(AddModifier是临时的)
-                    if (def.MaidStatModifiers != null) 
+                    if (def.MaidStatModifiers != null)
                     {
                         foreach (var statKvp in def.MaidStatModifiers)
                         {
                             CombatMaid.Core.AttributeModifiers.AttributeModifier.ModifyByDelta(
-                                maid.MaidCharacter, 
-                                statKvp.Key, 
+                                maid.MaidCharacter,
+                                statKvp.Key,
                                 statKvp.Value
                             );
+                            
                         }
                     }
 
                     // 2. 应用技能 (Abilities)
-                    if (!string.IsNullOrEmpty(def.MaidAbilityID)) 
+                    if (!string.IsNullOrEmpty(def.MaidAbilityID))
                     {
                         string skillId = def.MaidAbilityID;
                         var skillSystem = maid.SkillSystem;
@@ -282,7 +285,7 @@ namespace CombatMaid.Core.SkillTreeSystem
                         // 假设 SkillSystem 没有公开的 HasSkill 方法，我们通过反射或者遍历检查
                         // 既然你在 MaidSkillComponent 里有 List<IMaidSkill> _skills
                         // 我们最好在 MaidSkillComponent 加一个 HasSkill 方法，或者在这里做一个简单的判断
-                        
+
                         // 为了简化，这里假设 Factory 创建技能是轻量级的
                         // 我们构建配置，尝试添加
                         var skillConfig = new MaidSkillConfig { SkillID = skillId };
@@ -292,14 +295,16 @@ namespace CombatMaid.Core.SkillTreeSystem
                         {
                             // 你需要修改 MaidSkillComponent.AddSkill 内部增加 if(HasSkill) return; 
                             // 或者在这里依赖 SkillSystem 自身的健壮性
-                            skillSystem.AddSkill(newSkill); 
+                            skillSystem.AddSkill(newSkill);
                             CMDebug.Log($" -> 激活技能: {skillId}");
                         }
                     }
                 }
             }
+            
+            maid.MaidCharacter.Health.SetHealth(maid.MaidCharacter.Health.MaxHealth);
         }
-        
+
         /// <summary>
         /// 查询指定 ID 的技能节点是否已解锁
         /// </summary>
@@ -319,7 +324,7 @@ namespace CombatMaid.Core.SkillTreeSystem
             {
                 if (_saveData.UnlockedNodeIDs.Contains(nodeID)) return true;
             }
-            
+
             // 3. 如果以上都无法确认（例如数据尚未初始化），尝试临时加载防止逻辑错误
             // 注意：这取决于你的加载流程，如果 MaidItemRegistry 运行极早，可能需要这一步
             if (_saveData == null)
@@ -328,7 +333,7 @@ namespace CombatMaid.Core.SkillTreeSystem
                 if (tempList != null && tempList.UnlockedNodeIDs.Contains(nodeID))
                 {
                     // 顺便缓存一下，避免频繁 IO
-                    _saveData = tempList; 
+                    _saveData = tempList;
                     return true;
                 }
             }
@@ -349,7 +354,7 @@ namespace CombatMaid.Core.SkillTreeSystem
                 }
             }
         }
-        
+
         public void SaveProgress()
         {
             if (_saveData == null || _runtimePerks == null) return;
@@ -357,14 +362,14 @@ namespace CombatMaid.Core.SkillTreeSystem
             try
             {
                 bool hasChanges = false;
-                
+
                 foreach (var kvp in _runtimePerks)
                 {
                     string id = kvp.Key;
                     Perk perk = kvp.Value;
-                    
+
                     if (perk == null) continue;
-                    
+
                     bool isUnlocked = perk.Unlocked;
 
                     if (isUnlocked && !_saveData.UnlockedNodeIDs.Contains(id))

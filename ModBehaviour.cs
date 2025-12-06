@@ -122,7 +122,6 @@ namespace CombatMaid
             {
                 var go = new GameObject("CM_SkillTreeManager");
                 go.AddComponent<SkillTreeManager>();
-                go.AddComponent<SkillTreeDebugger>();       // 技能树调试器 (F10)
                 
                 DontDestroyOnLoad(go);
                 CMDebug.Log("技能树系统已初始化。");
