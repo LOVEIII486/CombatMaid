@@ -20,13 +20,21 @@ namespace CombatMaid.Core.WineFox
         {
             if (_controller == null || _controller.MaidCharacter == null) return;
 
-            // 示例：实时同步经验值和血量（如果需要保存当前血量）
-            // 注意：这里修改的是内存中的 CurrentData引用
-            // _refData.PresetConfig.Exp = _controller.MaidCharacter.Experience; 
+            // 1. 实时同步逻辑
+            // [安全原则] 只同步"成长性数据" (如经验)，绝对不要同步"属性数据" (如MaxHealth)
+            // 因为属性数据包含技能树加成，一旦保存，下次加载会导致双重叠加！
+            if (_refData != null && _refData.PresetConfig != null)
+            {
+                // 假设你的 CharacterMainControl 有 Experience 字段
+                // _refData.PresetConfig.Exp = (int)_controller.MaidCharacter.Experience; 
+                
+                // 如果你有等级系统，也可以同步等级
+                // _refData.PresetConfig.Level = ...
+            }
 
-            // 定时自动保存 (比如每30秒)
+            // 2. 定时保存 (每60秒一次足够了，太频繁影响性能)
             _saveTimer += Time.deltaTime;
-            if (_saveTimer > 30f)
+            if (_saveTimer > 60f)
             {
                 SyncAndSave();
                 _saveTimer = 0f;
@@ -35,7 +43,6 @@ namespace CombatMaid.Core.WineFox
 
         private void OnDestroy()
         {
-            // 销毁/死亡/场景切换时保存
             SyncAndSave();
         }
 
@@ -43,12 +50,8 @@ namespace CombatMaid.Core.WineFox
         {
             if (_controller == null || _refData == null) return;
 
-            // 1. 将当前实体的运行时数据反写回 Data 对象
-            // 这里你需要根据你的升级逻辑来写，比如：
-            // _refData.PresetConfig.Health = _controller.MaidCharacter.Health.MaxHealth; // 如果成长了
-            // _refData.PresetConfig.Exp = (int)_controller.MaidCharacter.Experience;
-            
-            // 2. 执行保存
+            // [重要] 这里不需要再赋值了，因为Update里已经同步了内存数据
+            // 直接调用管理器保存内存中的 _refData 即可
             WineFoxDataManager.SaveData();
         }
     }

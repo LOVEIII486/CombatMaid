@@ -49,9 +49,7 @@ namespace CombatMaid.Core.SkillTreeSystem
         protected override void OnUnlocked()
         {
             if (MaidManager.Instance == null) return;
-
-            CMDebug.Log($"[MaidSkill] 技能 {SkillID} 解锁，正在应用女仆强化...");
-            MaidManager.Instance.ApplyGlobalSkillEffect(this);
+            CMDebug.Log($"[MaidSkill] 技能 {SkillID} 解锁");
         }
     }
 }

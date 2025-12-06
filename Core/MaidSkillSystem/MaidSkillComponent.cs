@@ -26,6 +26,15 @@ namespace CombatMaid.Core.MaidSkillSystem
         public void AddSkill(IMaidSkill skill)
         {
             if (skill == null || !_isInitialized) return;
+
+            foreach (var existing in _skills)
+            {
+                if (existing.SkillName == skill.SkillName)
+                {
+                    CMDebug.LogWarning($"技能 {skill.SkillName} 已存在，跳过添加。");
+                    return;
+                }
+            }
             
             skill.Initialize(_controller);
             _skills.Add(skill);

@@ -6,6 +6,7 @@ using Duckov.Modding;
 using CombatMaid.Core.MaidConfigs;
 using CombatMaid.Core.WineFox;
 using CombatMaid.Core.AttributeModifiers;
+using CombatMaid.Core.SkillTreeSystem;
 using Newtonsoft.Json;
 
 namespace CombatMaid.Core
@@ -145,47 +146,38 @@ namespace CombatMaid.Core
         /// </summary>
         public void SpawnMaidAt(string profileName, Vector3 targetPos)
         {
-            if (MaidSpawner.Instance == null)
-            {
-                CMDebug.LogError("生成失败：MaidSpawner 未初始化！");
-                return;
-            }
+            if (MaidSpawner.Instance == null || LevelManager.Instance?.MainCharacter == null) return;
 
-            if (LevelManager.Instance?.MainCharacter == null) return;
-
-            // --- 数据源分流 ---
             MaidProfileData finalData = null;
             bool isWineFox = (profileName == "RoyalMaid_WineFox");
 
             if (isWineFox)
             {
-                // 分支A：酒狐 - 走持久化逻辑 (存档 + 技能树)
+                // 酒狐：从存档加载基础数据
                 finalData = WineFoxDataManager.LoadOrInit();
-                if (finalData == null)
-                {
-                    CMDebug.LogError($"生成失败：酒狐数据初始化严重错误！");
-                    return;
-                }
+                if (finalData == null) return;
             }
             else
             {
-                // 分支B：普通女仆 - 走内存字典
-                if (!_maidProfiles.TryGetValue(profileName, out finalData))
-                {
-                    CMDebug.LogError($"生成失败：找不到名为 '{profileName}' 的女仆配置！");
-                    return;
-                }
+                // 普通女仆：从内存配置加载
+                if (!_maidProfiles.TryGetValue(profileName, out finalData)) return;
             }
 
-            // --- 调用核心重载 ---
             SpawnMaidAt(targetPos, finalData, (controller) =>
             {
-                // 如果是酒狐，额外挂载同步组件
                 if (isWineFox && controller != null)
                 {
+                    // 1. 挂载数据同步组件
                     var sync = controller.gameObject.AddComponent<WineFoxDataSync>();
                     sync.Initialize(controller, finalData);
-                    CMDebug.Log("已挂载酒狐数据同步组件");
+
+                    // 2. [核心修改] 生成时一次性应用技能树加成
+                    // 此时女仆刚出生，属性是干净的，应用加成绝对安全
+                    if (SkillTreeManager.Instance != null)
+                    {
+                        SkillTreeManager.Instance.ApplyPassiveEffectsToMaid(controller);
+                        CMDebug.Log($"[Spawn] 已为酒狐应用技能树加成");
+                    }
                 }
             });
         }
@@ -266,84 +258,6 @@ namespace CombatMaid.Core
             if (mousePos != Vector3.zero)
             {
                 SpawnMaidAt(profileName, mousePos);
-            }
-        }
-
-
-        public void ApplyGlobalSkillEffect(CombatMaid.Core.SkillTreeSystem.MaidSkillGrantBehaviour effectData)
-        {
-            if (effectData == null) return;
-            if (_activeMaids.Count == 0) return;
-
-            CMDebug.Log($"[SkillTree] 收到强化通知，正在扫描场上的酒狐...");
-
-            int count = 0;
-            foreach (var maid in _activeMaids)
-            {
-                if (maid == null || maid.MaidCharacter == null) continue;
-
-                // 1. [核心过滤] 只对挂载了同步组件的“酒狐”生效
-                var wineFoxSync = maid.GetComponent<CombatMaid.Core.WineFox.WineFoxDataSync>();
-                if (wineFoxSync == null) continue;
-
-                count++;
-
-                // 2. 应用属性加成 (MaidStatModifiers)
-                if (effectData.MaidStatModifiers != null)
-                {
-                    foreach (var kvp in effectData.MaidStatModifiers)
-                    {
-                        string statName = kvp.Key;
-                        float statDelta = kvp.Value; // JSON 中的值，如 0.1 或 100
-
-                        // [修改] 使用新的 ModifyByDelta 方法，它会自动判断是 +50 还是 +10%
-                        CombatMaid.Core.AttributeModifiers.AttributeModifier.ModifyByDelta(
-                            maid.MaidCharacter,
-                            statName,
-                            statDelta
-                        );
-
-                        // 更加人性化的提示
-                        string sign = statDelta > 0 ? "+" : "";
-                        bool isPercent =
-                            CombatMaid.Core.AttributeModifiers.AttributeModifier.IsPercentageType(statName);
-                        string formatVal = isPercent ? $"{statDelta:P0}" : $"{statDelta}"; // 0.1 -> 10%
-
-                        // 只有当这是技能树第一次触发时才弹字，避免刷屏（可选）
-                        maid.MaidCharacter.PopText($"{statName} {sign}{formatVal}");
-                    }
-                }
-
-                // 3. 应用新技能解锁 (UnlockAbilityID)
-                if (!string.IsNullOrEmpty(effectData.UnlockAbilityID))
-                {
-                    // 检查是否已经拥有该技能
-                    // 假设 SkillSystem 列表里已经存了实例，我们需要遍历检查 ID
-                    // 这里为了性能，也可以让 AddSkill 内部去重
-                    var existing =
-                        maid.SkillSystem.GetComponent<CombatMaid.Core.MaidSkillSystem.MaidSkillComponent>(); // 获取组件引用
-                    // (注意：你需要给 MaidSkillComponent 加一个 HasSkill(string id) 方法，或者直接添加，这里简化处理)
-
-                    var skillConfig = new MaidSkillConfig
-                    {
-                        SkillID = effectData.UnlockAbilityID
-                    };
-
-                    var newSkill = CombatMaid.Core.MaidSkillSystem.MaidSkillFactory.CreateSkill(skillConfig);
-
-                    if (newSkill != null)
-                    {
-                        // SkillSystem 应当在内部处理重复添加的问题
-                        maid.SkillSystem.AddSkill(newSkill);
-                        maid.MaidCharacter.PopText($"习得技能: {newSkill.SkillName}!");
-                        CMDebug.Log($"酒狐 {maid.name} 实时习得了 {newSkill.SkillName}");
-                    }
-                }
-            }
-
-            if (count > 0)
-            {
-                CMDebug.Log($"[SkillTree] 已实时强化 {count} 只酒狐实例。");
             }
         }
 

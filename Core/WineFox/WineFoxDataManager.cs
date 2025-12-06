@@ -83,7 +83,6 @@ namespace CombatMaid.Core.WineFox
                 }
             }
             
-            ApplySkillTreeBonuses(CurrentData);
             return CurrentData;
         }
 
@@ -107,11 +106,6 @@ namespace CombatMaid.Core.WineFox
             {
                 CMDebug.LogError($"[WineFox] 保存失败: {ex.Message}");
             }
-        }
-
-        private static void ApplySkillTreeBonuses(MaidProfileData data)
-        {
-            // 技能树加成逻辑...
         }
 
         private class UnityStructResolver : DefaultContractResolver
