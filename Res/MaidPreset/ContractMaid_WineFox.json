@@ -12,7 +12,14 @@
     "Exp": 0,
     "PushCharacter": true,
     "//--- 物品配置 ---": "",
-    "CustomItemIDs": [],
+    "CustomItemIDs": [
+      254,
+      594,
+      15,
+      32,
+      36,
+      41
+    ],
     "WantItem": -1,
     "DropBoxOnDead": false,
     "HasCashChance": 0.0,
