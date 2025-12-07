@@ -11,6 +11,7 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
     {
         public override string SkillName => "SquadCoordination";
         public override float Cooldown => 0.5f; // 检测频率
+        public override bool RespectGlobalCooldown => false;
 
         protected override bool CheckTriggerCondition()
         {

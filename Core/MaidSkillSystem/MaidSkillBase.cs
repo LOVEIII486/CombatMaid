@@ -20,10 +20,15 @@ namespace CombatMaid.Core.MaidSkillSystem
 
         // 技能配置
         public abstract string SkillName { get; }
-        public virtual float Cooldown => 10.0f;     // 默认冷却
-        public virtual bool CanUseWhileMoving => true; // 是否允许移动时释放
+        public virtual float Cooldown => 10.0f;     
+        public virtual bool CanUseWhileMoving => true; 
+        
+        // 该技能是否受公共冷却影响？
+        public virtual bool RespectGlobalCooldown => true;
+        
+        // 该技能释放后触发的公共冷却时间 (默认1秒)
+        public virtual float TriggerGCDDuration => 1.0f;
 
-        // 运行时状态
         protected float _cooldownTimer = 0f;
 
         public virtual void Initialize(MaidController controller)
@@ -40,16 +45,29 @@ namespace CombatMaid.Core.MaidSkillSystem
             if (_cooldownTimer > 0)
             {
                 _cooldownTimer -= deltaTime;
-                return;
+                return; // 自身冷却未好，直接返回
+            }
+            
+            // 2. 检查公共冷却 (如果技能需要遵循GCD)
+            if (RespectGlobalCooldown && Controller.SkillSystem.IsGlobalCooldownActive)
+            {
+                return; // 系统忙碌，跳过
             }
 
-            // 2. 检查是否满足释放条件
+            // 3. 检查是否满足释放条件
             if (CheckTriggerCondition())
             {
-                // 3. 执行技能
+                // 4. 执行技能
                 if (TryExecute())
                 {
-                    _cooldownTimer = Cooldown; // 重置冷却
+                    _cooldownTimer = Cooldown; // 重置自身冷却
+                    
+                    // [新增] 触发系统的公共冷却
+                    if (RespectGlobalCooldown)
+                    {
+                        Controller.SkillSystem.TriggerGlobalCooldown(TriggerGCDDuration);
+                    }
+                    
                     OnSkillExecuted();
                 }
             }
@@ -57,14 +75,8 @@ namespace CombatMaid.Core.MaidSkillSystem
 
         public virtual void OnCleanup() { }
         
-        /// <summary>
-        /// 检查是否应该释放技能
-        /// </summary>
         protected abstract bool CheckTriggerCondition();
 
-        /// <summary>
-        /// 执行技能的具体逻辑
-        /// </summary>
         protected abstract bool TryExecute();
 
         protected virtual void OnSkillExecuted() 

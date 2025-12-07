@@ -8,6 +8,9 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
     {
         public override string SkillName => "SelfHeal";
         public override float Cooldown => 5.0f;
+        
+        public override bool RespectGlobalCooldown => true;
+        public override float TriggerGCDDuration => 1.5f;
 
         private const float HealthThreshold = 0.8f; // 80% 血以下触发
         private readonly HashSet<int> _medIds = new HashSet<int> { 10, 20, 17, 3, 15, 16 };
@@ -15,11 +18,17 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
         protected override bool CheckTriggerCondition()
         {
             if (Owner == null || Owner.Health == null) return false;
+            if (Controller.AI == null) return false;
 
-            // 只有血量低于阈值才自动触发
-            if (Owner.Health.CurrentHealth / Owner.Health.MaxHealth >= HealthThreshold) 
-                return false;
+            float hpPercent = Owner.Health.CurrentHealth / Owner.Health.MaxHealth;
+            if (hpPercent >= HealthThreshold) return false;
             
+            // 1. 紧急情况：血量低于 40%，无视状态直接吃药保命
+            if (hpPercent < 0.4f) return true;
+
+            // 2. 非紧急情况（40%~80%）：
+            if (Controller.AI.aimTarget!=null) return false;
+
             return true;
         }
 
@@ -58,6 +67,10 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
                 {
                     Owner.UseItem(item);
                     Owner.PopText($"使用药品: {item.DisplayName}");
+                    if (isForce)
+                    {
+                        Controller.SkillSystem.TriggerGlobalCooldown(TriggerGCDDuration);
+                    }
                     return true;
                 }
             }

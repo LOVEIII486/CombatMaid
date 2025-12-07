@@ -7,7 +7,10 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
     {
         public override string SkillName => "BuffPlayer";
         public override float Cooldown => 60.0f;
-
+        
+        public override bool RespectGlobalCooldown => true;
+        public override float TriggerGCDDuration => 0.5f;
+        
         private string _buffName; // 注册在 MaidBuffRegistry 里的名字
         private int _buffId;      // 注册在 MaidBuffFactory 里的ID
 

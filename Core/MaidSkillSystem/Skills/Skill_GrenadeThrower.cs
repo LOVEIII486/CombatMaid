@@ -7,6 +7,9 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
     {
         public override string SkillName => "GrenadeThrow";
         public override float Cooldown => 15.0f;
+        
+        public override bool RespectGlobalCooldown => true;
+        public override float TriggerGCDDuration => 1.0f;
 
         private int _grenadeItemId;
         private float _throwRange = 25.0f;

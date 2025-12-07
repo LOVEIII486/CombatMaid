@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using System.Linq; // [新增] 引用 Linq
+using System.Linq;
 
 namespace CombatMaid.Core.MaidSkillSystem
 {
@@ -12,7 +12,14 @@ namespace CombatMaid.Core.MaidSkillSystem
         private MaidController _controller;
         private List<IMaidSkill> _skills = new List<IMaidSkill>();
         private bool _isInitialized = false;
+        
+        private float _globalCooldownTimer = 0f;
+        
+        private const float DefaultGCD = 1.0f;
+
         public int SkillCount => _skills.Count;
+
+        public bool IsGlobalCooldownActive => _globalCooldownTimer > 0;
 
         public void Initialize(MaidController controller)
         {
@@ -20,9 +27,6 @@ namespace CombatMaid.Core.MaidSkillSystem
             _isInitialized = true;
         }
 
-        /// <summary>
-        /// 动态添加技能
-        /// </summary>
         public void AddSkill(IMaidSkill skill)
         {
             if (skill == null || !_isInitialized) return;
@@ -41,14 +45,8 @@ namespace CombatMaid.Core.MaidSkillSystem
             CMDebug.Log($"已装载技能: {skill.SkillName}");
         }
 
-        /// <summary>
-        /// [新增] 按类型查找技能实例
-        /// </summary>
-        /// <typeparam name="T">具体的技能类型 (如 Skill_SelfHeal)</typeparam>
-        /// <returns>找到的技能实例，没找到返回 null</returns>
         public T GetSkill<T>() where T : class, IMaidSkill
         {
-            // 遍历查找第一个匹配该类型的技能
             foreach (var skill in _skills)
             {
                 if (skill is T targetSkill)
@@ -59,12 +57,31 @@ namespace CombatMaid.Core.MaidSkillSystem
             return null;
         }
 
+        public void TriggerGlobalCooldown(float duration = -1f)
+        {
+            float time = duration > 0 ? duration : DefaultGCD;
+            
+            if (time > _globalCooldownTimer)
+            {
+                _globalCooldownTimer = time;
+            }
+        }
+
         private void Update()
         {
-            if (!_isInitialized || _skills.Count == 0) return;
+            if (!_isInitialized) return;
 
             float dt = Time.deltaTime;
-            // 倒序遍历以防移除安全
+
+            // 更新公共冷却
+            if (_globalCooldownTimer > 0)
+            {
+                _globalCooldownTimer -= dt;
+            }
+
+            if (_skills.Count == 0) return;
+
+            // 倒序遍历
             for (int i = _skills.Count - 1; i >= 0; i--)
             {
                 _skills[i].OnUpdate(dt);
