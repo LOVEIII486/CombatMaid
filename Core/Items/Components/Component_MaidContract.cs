@@ -22,9 +22,8 @@ namespace CombatMaid.Core.Items.Components
             var player = user as CharacterMainControl;
             if (player == null) return;
 
-            // 在玩家前方生成
             Vector3 spawnPos = player.transform.position + player.transform.forward * 1.5f;
-            MaidManager.Instance.SpawnMaidAt("RoyalMaid_Bella", spawnPos);
+            Core.MaidSpawner.Instance.SpawnMaidByProfile("RoyalMaid_Bella", spawnPos);
 
             player.PopText("契约成立！");
 

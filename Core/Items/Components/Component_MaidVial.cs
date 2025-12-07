@@ -28,11 +28,9 @@ namespace CombatMaid.Core.Items.Components
             
             if (MaidManager.Instance != null)
             {
-                MaidManager.Instance.SpawnMaidAt(targetProfile, spawnPos);
+                Core.MaidSpawner.Instance.SpawnMaidByProfile(targetProfile, spawnPos);
                 player.PopText($"瓶中女仆 [{targetProfile}] 已就绪！");
             }
-            
-            //item.DestroyTree();
         }
 
         private string GetProfileFromItem(Item item)

@@ -57,7 +57,7 @@ namespace CombatMaid.Core.Items.Components
             
             // 3. 召唤
             Vector3 spawnPos = player.transform.position + player.transform.forward * 1.5f;
-            MaidManager.Instance.SpawnWineFox(spawnPos);
+            Core.MaidSpawner.Instance.SpawnWineFox(spawnPos);
             
             // 4. 重置冷却
             _nextSummonTime = Time.time + GlobalCooldown;
