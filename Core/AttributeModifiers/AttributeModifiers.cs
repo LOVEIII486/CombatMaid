@@ -37,7 +37,7 @@ namespace CombatMaid.Core.AttributeModifiers
             }
 
             /// <summary>
-            /// 修改移动能力 (走、跑、加速度)
+            /// 修改移动能力，返回修改器列表以便后续撤销
             /// </summary>
             public static List<Modifier> ModifySpeed(CharacterMainControl character, float multiplier)
             {
@@ -50,6 +50,23 @@ namespace CombatMaid.Core.AttributeModifiers
                 modifiers.Add(StatModifier.AddModifier(character, StatModifier.Attributes.RunAcc, val, ModifierType.PercentageMultiply));
 
                 return modifiers;
+            }
+
+            /// <summary>
+            /// 专门用于移除由 ModifySpeed 产生的修改器列表
+            /// </summary>
+            public static void RevertSpeedModifiers(CharacterMainControl character, List<Modifier> modifiers)
+            {
+                if (character == null || modifiers == null || modifiers.Count == 0) return;
+
+                foreach (var mod in modifiers)
+                {
+                    StatModifier.RemoveModifier(character, StatModifier.Attributes.WalkSpeed, mod);
+                    StatModifier.RemoveModifier(character, StatModifier.Attributes.RunSpeed, mod);
+                    StatModifier.RemoveModifier(character, StatModifier.Attributes.WalkAcc, mod);
+                    StatModifier.RemoveModifier(character, StatModifier.Attributes.RunAcc, mod);
+                }
+                modifiers.Clear();
             }
 
             /// <summary>

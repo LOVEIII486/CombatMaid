@@ -127,6 +127,20 @@ namespace CombatMaid.Core
         /// </summary>
         public void ForceMoveTo(Vector3 position)
         {
+            // 检查当前是否已经是战术移动状态
+            if (StateMachine.CurrentState is State_TacticalMove tacticalState)
+            {
+                // 1. 更新目标点
+                tacticalState.TargetPosition = position;
+                // 2. 强制“重入”状态
+                // 重新触发 Enter() 里的 AI.MoveToPos 逻辑
+                // 从而打断当前的卡死状态，执行新的移动
+                tacticalState.Enter(); 
+                CMDebug.Log($"[MaidController] 刷新战术移动目标 -> {position}");
+                return;
+            }
+
+            // 如果是其他状态，走正常流程切换
             StateMachine.ChangeState<State_TacticalMove>(state => 
             {
                 state.TargetPosition = position;

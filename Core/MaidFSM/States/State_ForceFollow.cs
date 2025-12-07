@@ -32,9 +32,12 @@ namespace CombatMaid.Core.MaidFSM.States
             }
             
             // 3. 添加临时移速加成
-            ApplySpeedBuff();
+            AttributeModifier.Quick.RevertSpeedModifiers(Controller.MaidCharacter, _speedBuffs);
+            _speedBuffs = AttributeModifier.Quick.ModifySpeed(Controller.MaidCharacter, SpeedMultiplier);
+            
             Controller.MaidCharacter?.PopText("主人等等我！！！");
             _stuckTimer = 0f;
+            
             // 立即触发一次移动
             MoveToOwner();
         }
@@ -75,7 +78,7 @@ namespace CombatMaid.Core.MaidFSM.States
         // 状态退出时清理 Buff
         public override void Exit()
         {
-            RemoveSpeedBuff();
+            AttributeModifier.Quick.RevertSpeedModifiers(Controller.MaidCharacter, _speedBuffs);
             
             if (Controller.AI != null)
             {
@@ -99,34 +102,6 @@ namespace CombatMaid.Core.MaidFSM.States
                 Controller.AI.transform.position = Controller.MainOwner.transform.position;
             }
             Controller.MaidCharacter?.PopText("强制传送");
-        }
-        
-
-        private void ApplySpeedBuff()
-        {
-            RemoveSpeedBuff();
-
-            if (Controller.MaidCharacter != null)
-            {
-                _speedBuffs = AttributeModifier.Quick.ModifySpeed(Controller.MaidCharacter, SpeedMultiplier);
-                //CMDebug.Log($"[ForceFollow] 已应用加速 Buff (x{SpeedMultiplier})");
-            }
-        }
-
-        private void RemoveSpeedBuff()
-        {
-            if (_speedBuffs != null && _speedBuffs.Count > 0 && Controller.MaidCharacter != null)
-            {
-                foreach (var mod in _speedBuffs)
-                {
-                    StatModifier.RemoveModifier(Controller.MaidCharacter, StatModifier.Attributes.WalkSpeed, mod);
-                    StatModifier.RemoveModifier(Controller.MaidCharacter, StatModifier.Attributes.RunSpeed, mod);
-                    StatModifier.RemoveModifier(Controller.MaidCharacter, StatModifier.Attributes.WalkAcc, mod);
-                    StatModifier.RemoveModifier(Controller.MaidCharacter, StatModifier.Attributes.RunAcc, mod);
-                }
-                _speedBuffs.Clear();
-                //CMDebug.Log("[ForceFollow] 加速 Buff 已移除");
-            }
         }
     }
 }

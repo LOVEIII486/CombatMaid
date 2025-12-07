@@ -1,4 +1,7 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
+using CombatMaid.Core.AttributeModifiers;
+using ItemStatsSystem.Stats;
 
 namespace CombatMaid.Core.MaidFSM.States
 {
@@ -10,14 +13,18 @@ namespace CombatMaid.Core.MaidFSM.States
         public Vector3 TargetPosition { get; set; }
         
         private float _timeoutTimer;
-        private const float MaxDuration = 15.0f;
+        private const float MaxDuration = 10.0f;
+        
+        // 战术移动的移速倍率
+        private const float TacticalSpeedMultiplier = 1.5f;
+        private List<Modifier> _speedBuffs = new List<Modifier>();
 
         public override void Enter()
         {
             // 1. 暂停原生AI
             SetNativeBrainActive(false);
 
-            // 2. 清除瞄准锁定
+            // 2. 清除瞄准锁定并执行移动
             if (Controller.AI != null)
             {
                 Controller.AI.aimTarget = null;
@@ -26,6 +33,10 @@ namespace CombatMaid.Core.MaidFSM.States
                 
                 Controller.MaidCharacter?.PopText("战术机动...");
             }
+            
+            // 3. 应用战术移速加成
+            AttributeModifier.Quick.RevertSpeedModifiers(Controller.MaidCharacter, _speedBuffs);
+            _speedBuffs = AttributeModifier.Quick.ModifySpeed(Controller.MaidCharacter, TacticalSpeedMultiplier);
 
             _timeoutTimer = MaxDuration;
         }
@@ -36,9 +47,20 @@ namespace CombatMaid.Core.MaidFSM.States
 
             if (HasArrived() || _timeoutTimer <= 0)
             {
-                // 移动完成或超时，切回自主模式
                 HandleArrivalLogic();
                 Machine.ChangeState<State_Autonomous>();
+            }
+        }
+
+        /// <summary>
+        /// 退出状态清理 Buff
+        /// </summary>
+        public override void Exit()
+        {
+            AttributeModifier.Quick.RevertSpeedModifiers(Controller.MaidCharacter, _speedBuffs);
+            if (Controller.AI != null)
+            {
+                Controller.AI.StopMove();
             }
         }
 
