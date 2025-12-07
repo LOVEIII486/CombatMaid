@@ -2,6 +2,8 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using CombatMaid.Core;
+using CombatMaid.Core.WineFox;
 
 namespace CombatMaid.Settings
 {
@@ -22,7 +24,6 @@ namespace CombatMaid.Settings
         // 自定义女仆配置
         public const string Key_CustomMaidName = "CustomMaidName";
         public const string Key_CustomMaidModelID = "CustomMaidModelID";
-        public const string Key_CustomMaidItems = "CustomMaidItems";
         
         // ==================== 本地化 Key ====================
         
@@ -34,7 +35,6 @@ namespace CombatMaid.Settings
         // 自定义女仆配置项
         public const string LocalKey_CustomMaidName = "Settings_CustomMaidName";
         public const string LocalKey_CustomMaidModelID = "Settings_CustomMaidModelID";
-        public const string LocalKey_CustomMaidItems = "Settings_CustomMaidItems";
         public const string LocalKey_OpenSaveFolder = "Settings_OpenSaveFolder";
         public const string LocalKey_OpenSaveFolderButton = "Settings_OpenSaveFolderButton";
 
@@ -46,7 +46,6 @@ namespace CombatMaid.Settings
         
         private const string Default_CustomMaidName = "";
         private const string Default_CustomMaidModelID = "";
-        private const string Default_CustomMaidItems = "";
 
         // ==================== 静态变量 ====================
         
@@ -61,102 +60,168 @@ namespace CombatMaid.Settings
         // 自定义女仆配置
         public static string CustomMaidName { get; set; } = Default_CustomMaidName;
         public static string CustomMaidModelID { get; set; } = Default_CustomMaidModelID;
-        public static string CustomMaidItems { get; set; } = Default_CustomMaidItems;
 
-        // ==================== 辅助属性 ====================
+        // ==================== 独立更新函数 ====================
         
         /// <summary>
-        /// 获取自定义女仆的模型ID（整数）
+        /// 仅更新女仆名称
         /// </summary>
-        public static int GetCustomModelIDAsInt()
+        public static bool ApplyCustomMaidName(string newName)
         {
-            if (int.TryParse(CustomMaidModelID, out int id))
+            // 验证输入
+            if (string.IsNullOrWhiteSpace(newName))
             {
-                return id;
-            }
-            return 0; // 0 表示无效或不使用自定义模型
-        }
-        
-        /// <summary>
-        /// 获取自定义女仆的物品ID列表
-        /// </summary>
-        public static List<int> GetCustomItemIDs()
-        {
-            var result = new List<int>();
-            
-            if (string.IsNullOrWhiteSpace(CustomMaidItems))
-            {
-                return result;
-            }
-            
-            // 分割字符串，支持中英文逗号和空格
-            var parts = CustomMaidItems.Split(new[] { ',', '，', ' ' }, System.StringSplitOptions.RemoveEmptyEntries);
-            
-            foreach (var part in parts)
-            {
-                if (int.TryParse(part.Trim(), out int itemId))
-                {
-                    result.Add(itemId);
-                }
-                else
-                {
-                    CMDebug.LogWarning($"[Config] 无效的物品ID: {part}");
-                }
-            }
-            
-            return result;
-        }
-        
-        /// <summary>
-        /// 验证自定义女仆配置的完整性
-        /// </summary>
-        public static bool ValidateCustomMaidConfig(out string errorMsg)
-        {
-            errorMsg = "";
-            
-            // 1. 名称不能为空
-            if (string.IsNullOrWhiteSpace(CustomMaidName))
-            {
-                errorMsg = "女仆名称不能为空";
+                CMDebug.LogWarning("[Config] 女仆名称不能为空，跳过应用");
                 return false;
             }
-            
-            // 2. 如果填写了模型ID，必须是有效数字
-            if (!string.IsNullOrWhiteSpace(CustomMaidModelID))
+
+            // 加载存档
+            var data = LoadWineFoxData();
+            if (data == null) return false;
+
+            // 应用名称
+            string trimmedName = newName.Trim();
+            if (data.PresetConfig.CustomName == trimmedName)
             {
-                if (!int.TryParse(CustomMaidModelID, out int modelId))
+                CMDebug.Log("[Config] 名称无变化，跳过保存");
+                return false;
+            }
+
+            data.PresetConfig.CustomName = trimmedName;
+            
+            // 保存
+            return SaveWineFoxData(data, $"已更新女仆名称: {trimmedName}");
+        }
+        
+        /// <summary>
+        /// 仅更新模型ID
+        /// </summary>
+        public static bool ApplyCustomModelID(string newModelID)
+        {
+            // 验证输入
+            if (!string.IsNullOrWhiteSpace(newModelID))
+            {
+                if (!int.TryParse(newModelID, out int testId))
                 {
-                    errorMsg = "模型ID必须是有效的数字";
+                    CMDebug.LogWarning($"[Config] 无效的模型ID: {newModelID}，必须是纯数字");
                     return false;
                 }
                 
-                if (modelId < 0)
+                if (testId < 0)
                 {
-                    errorMsg = "模型ID不能为负数";
+                    CMDebug.LogWarning("[Config] 模型ID不能为负数");
                     return false;
                 }
             }
-            
-            // 3. 如果填写了物品列表，检查格式
-            if (!string.IsNullOrWhiteSpace(CustomMaidItems))
+
+            // 加载存档
+            var data = LoadWineFoxData();
+            if (data == null) return false;
+
+            if (data.ExtraData == null)
             {
-                var items = GetCustomItemIDs();
-                if (items.Count == 0)
-                {
-                    errorMsg = "物品ID格式错误，请使用逗号分隔的数字（例如: 254,258,300）";
-                    return false;
-                }
+                data.ExtraData = new MaidExtraInfo();
             }
+
+            // 应用模型ID
+            string targetModelID = string.IsNullOrWhiteSpace(newModelID) ? "" : newModelID.Trim();
             
-            return true;
+            if (data.ExtraData.CustomModelID == targetModelID)
+            {
+                CMDebug.Log("[Config] 模型ID无变化，跳过保存");
+                return false;
+            }
+
+            data.ExtraData.CustomModelID = targetModelID;
+            
+            // 保存
+            string logMsg = string.IsNullOrEmpty(targetModelID) 
+                ? "已清除自定义模型ID（使用默认模型）" 
+                : $"已更新模型ID: {targetModelID}";
+            
+            return SaveWineFoxData(data, logMsg);
         }
 
+        // ==================== 辅助函数 ====================
+        
+        /// <summary>
+        /// 加载酒狐存档
+        /// </summary>
+        private static MaidProfileData LoadWineFoxData()
+        {
+            var data = WineFoxDataManager.CurrentData ?? WineFoxDataManager.LoadOrInit();
+            
+            if (data == null)
+            {
+                CMDebug.LogWarning("[Config] 酒狐存档尚未生成，请先生成一次酒狐后再修改配置");
+                return null;
+            }
+
+            if (data.PresetConfig == null)
+            {
+                CMDebug.LogError("[Config] 酒狐存档数据异常：PresetConfig 为 null");
+                return null;
+            }
+
+            return data;
+        }
+        
+        /// <summary>
+        /// 保存酒狐存档
+        /// </summary>
+        private static bool SaveWineFoxData(MaidProfileData data, string logMessage)
+        {
+            try
+            {
+                WineFoxDataManager.SaveData();
+                // 刷新 Spawner 缓存
+                if (MaidSpawner.Instance != null)
+                {
+                    MaidSpawner.Instance.RefreshWineFoxCache();
+                }
+                
+                CMDebug.Log($"[Config] ✓ {logMessage}");
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                CMDebug.LogError($"[Config] 保存存档失败: {ex.Message}");
+                return false;
+            }
+        }
+        
+        /// <summary>
+        /// 从酒狐存档加载配置到 UI
+        /// </summary>
+        public static void LoadCustomConfigFromWineFox()
+        {
+            var data = WineFoxDataManager.CurrentData ?? WineFoxDataManager.LoadOrInit();
+            
+            if (data == null || data.PresetConfig == null)
+            {
+                CMDebug.LogWarning("[Config] 酒狐存档不存在，使用空白配置");
+                CustomMaidName = "";
+                CustomMaidModelID = "";
+                return;
+            }
+            CustomMaidName = data.PresetConfig.CustomName ?? "";
+            if (data.ExtraData != null && !string.IsNullOrEmpty(data.ExtraData.CustomModelID))
+            {
+                CustomMaidModelID = data.ExtraData.CustomModelID;
+            }
+            else
+            {
+                CustomMaidModelID = "";
+            }
+           
+            CMDebug.Log($"[Config] 已从存档加载配置: 名称={CustomMaidName}, 模型={CustomMaidModelID}");
+        }
+        
         /// <summary>
         /// 加载配置
         /// </summary>
         public static void Load()
         {
-            // 数值倍率
             if (ModSettingAPI.GetSavedValue(Key_HealthMultiplier, out float savedHp) && savedHp > 0) 
                 HealthMultiplier = savedHp;
             if (ModSettingAPI.GetSavedValue(Key_AttackMultiplier, out float savedAtk) && savedAtk > 0) 
@@ -164,18 +229,29 @@ namespace CombatMaid.Settings
             if (ModSettingAPI.GetSavedValue(Key_MoveSpeedMultiplier, out float savedSpeed) && savedSpeed > 0) 
                 MoveSpeedMultiplier = savedSpeed;
             
-            // 按键
             if (ModSettingAPI.GetSavedValue(Key_Bind_Move, out KeyCode k1)) KeyMove = k1;
             if (ModSettingAPI.GetSavedValue(Key_Bind_Heal, out KeyCode k2)) KeyHeal = k2;
             if (ModSettingAPI.GetSavedValue(Key_Bind_Hold, out KeyCode k3)) KeyHold = k3;
             
-            // 自定义女仆配置
-            if (ModSettingAPI.GetSavedValue(Key_CustomMaidName, out string name)) 
-                CustomMaidName = name;
-            if (ModSettingAPI.GetSavedValue(Key_CustomMaidModelID, out string modelId)) 
-                CustomMaidModelID = modelId;
-            if (ModSettingAPI.GetSavedValue(Key_CustomMaidItems, out string items)) 
-                CustomMaidItems = items;
+            bool hasModSettingValues = false;
+            
+            if (ModSettingAPI.GetSavedValue(Key_CustomMaidName, out string savedName))
+            {
+                CustomMaidName = savedName;
+                hasModSettingValues = true;
+            }
+            if (ModSettingAPI.GetSavedValue(Key_CustomMaidModelID, out string savedModelId))
+            {
+                CustomMaidModelID = savedModelId;
+                hasModSettingValues = true;
+            }
+            
+            if (!hasModSettingValues || 
+                (string.IsNullOrEmpty(CustomMaidName) && 
+                 string.IsNullOrEmpty(CustomMaidModelID)))
+            {
+                LoadCustomConfigFromWineFox();
+            }
         }
     }
 }

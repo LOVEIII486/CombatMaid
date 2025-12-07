@@ -48,6 +48,5 @@ Settings_CombatMaid_Keys,按键绑定设置,1.0,Groups
 Settings_CombatMaid_Customize,自定义女仆配置(请至少生成一次酒狐后再修改!),1.0,Groups
 Settings_CustomMaidName,自定义女仆名称,1.0,CustomMaid
 Settings_CustomMaidModelID,自定义模型ID(仅数字，留空使用默认),1.0,CustomMaid
-Settings_CustomMaidItems,"自定义物品ID(用英文逗号分隔，例如: 254,258,300)",1.0,CustomMaid
-Settings_OpenSaveFolder,女仆存档目录(Escape from Duckov\CombatMaidSaves),1.0,CustomMaid
+Settings_OpenSaveFolder,女仆存档目录(游戏根目录),1.0,CustomMaid
 Settings_OpenSaveFolderButton,打开女仆配置存档文件夹,1.0,CustomMaid
