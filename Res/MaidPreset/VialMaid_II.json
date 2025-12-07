@@ -87,7 +87,7 @@
         "Params": {}
       },
       {
-        "SkillID": "Grenade",
+        "SkillID": "GrenadeThrow",
         "Params": {
           "ItemID": 67
         }
