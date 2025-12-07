@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using CombatMaid.Localization;
 using CombatMaid.ModSettingsApi;
+using CombatMaid.Core.WineFox;
 using UnityEngine;
 
 namespace CombatMaid.Settings
@@ -12,25 +15,8 @@ namespace CombatMaid.Settings
             if (!ModSettingAPI.IsInit) return;
             ModSettingAPI.Clear();
 
-            // ==================== 1. 全局开关 ====================
-            
-            ModSettingAPI.AddToggle(
-                CombatMaidConfig.Key_EnableMaidMode, 
-                LocalizationManager.GetText("Setting_EnableMaidMode"), 
-                CombatMaidConfig.EnableMaidMode, 
-                (value) => CombatMaidConfig.EnableMaidMode = value
-            );
-            
-            ModSettingAPI.AddToggle(
-                CombatMaidConfig.Key_DebugMode, 
-                "调试模式 (Debug Mode)",
-                CombatMaidConfig.DebugMode, 
-                (value) => CombatMaidConfig.DebugMode = value
-            );
+            // ==================== 1. 属性倍率 ====================
 
-            // ==================== 2. 属性倍率 ====================
-
-            // 血量倍率
             ModSettingAPI.AddSlider(
                 CombatMaidConfig.Key_HealthMultiplier,
                 LocalizationManager.GetText("Setting_HealthMultiplier"),
@@ -40,7 +26,6 @@ namespace CombatMaid.Settings
                 1, 5
             );
 
-            // 攻击倍率
             ModSettingAPI.AddSlider(
                 CombatMaidConfig.Key_AttackMultiplier,
                 LocalizationManager.GetText("Setting_AttackMultiplier"),
@@ -50,7 +35,6 @@ namespace CombatMaid.Settings
                 1, 5
             );
 
-            // 移动速度
             ModSettingAPI.AddSlider(
                 CombatMaidConfig.Key_MoveSpeedMultiplier,
                 LocalizationManager.GetText("Setting_MoveSpeedMultiplier"),
@@ -60,7 +44,7 @@ namespace CombatMaid.Settings
                 1, 5
             );
 
-            // ==================== 3. 按键绑定 ====================
+            // ==================== 2. 按键绑定 ====================
 
             ModSettingAPI.AddKeybinding(
                 CombatMaidConfig.Key_Bind_Move,
@@ -77,35 +61,87 @@ namespace CombatMaid.Settings
                 LocalizationManager.GetText("Setting_Key_Hold"),
                 CombatMaidConfig.KeyHold, KeyCode.F, (v) => CombatMaidConfig.KeyHold = v);
 
-            // ==================== 4. 注册分组 ====================
+            // ==================== 3. 自定义女仆配置 ====================
             
-            // Group 1: 核心设置
-            ModSettingAPI.AddGroup(
-                "CombatMaid_MainGroup",
-                LocalizationManager.GetText("Settings_CombatMaid_Group"),
-                new List<string> { 
-                    CombatMaidConfig.Key_EnableMaidMode, 
-                    CombatMaidConfig.Key_DebugMode 
-                },
-                0.7f, true, true
+            ModSettingAPI.AddInput(
+                CombatMaidConfig.Key_CustomMaidName,
+                LocalizationManager.GetText(CombatMaidConfig.LocalKey_CustomMaidName),
+                CombatMaidConfig.CustomMaidName,
+                20,
+                (value) => {
+                    CombatMaidConfig.CustomMaidName = value;
+                    CMDebug.Log($"女仆名称已更新: {value}");
+                }
+            );
+            
+            ModSettingAPI.AddInput(
+                CombatMaidConfig.Key_CustomMaidModelID,
+                LocalizationManager.GetText(CombatMaidConfig.LocalKey_CustomMaidModelID),
+                CombatMaidConfig.CustomMaidModelID,
+                10,
+                (value) => {
+                    CombatMaidConfig.CustomMaidModelID = value;
+                    
+                    if (!string.IsNullOrWhiteSpace(value))
+                    {
+                        if (int.TryParse(value, out int id))
+                        {
+                            CMDebug.Log($"模型ID已更新: {id}");
+                        }
+                        else
+                        {
+                            CMDebug.LogWarning($"无效的模型ID: {value}，请输入纯数字");
+                        }
+                    }
+                }
+            );
+            
+            ModSettingAPI.AddInput(
+                CombatMaidConfig.Key_CustomMaidItems,
+                LocalizationManager.GetText(CombatMaidConfig.LocalKey_CustomMaidItems),
+                CombatMaidConfig.CustomMaidItems,
+                100,
+                (value) => {
+                    CombatMaidConfig.CustomMaidItems = value;
+                    
+                    if (!string.IsNullOrWhiteSpace(value))
+                    {
+                        var items = CombatMaidConfig.GetCustomItemIDs();
+                        if (items.Count > 0)
+                        {
+                            CMDebug.Log($"物品列表已更新: {string.Join(", ", items)}");
+                        }
+                        else
+                        {
+                            CMDebug.LogWarning($"物品ID格式错误: {value}");
+                        }
+                    }
+                }
+            );
+            
+            ModSettingAPI.AddButton(
+                "OpenSaveFolder",
+                LocalizationManager.GetText(CombatMaidConfig.LocalKey_OpenSaveFolder),
+                LocalizationManager.GetText(CombatMaidConfig.LocalKey_OpenSaveFolderButton),
+                OpenSaveFolderAction
             );
 
-            // Group 2: 属性设置
+            // ==================== 4. 注册分组 ====================
+            
             ModSettingAPI.AddGroup(
                 "CombatMaid_StatsGroup",
-                LocalizationManager.GetText("Settings_CombatMaid_Stats"),
+                LocalizationManager.GetText(CombatMaidConfig.LocalKey_Group_Stats),
                 new List<string> { 
                     CombatMaidConfig.Key_HealthMultiplier, 
                     CombatMaidConfig.Key_AttackMultiplier, 
                     CombatMaidConfig.Key_MoveSpeedMultiplier 
                 },
-                0.7f, false, false
+                0.7f, true, true
             );
 
-            // Group 3: 按键设置
             ModSettingAPI.AddGroup(
                 "CombatMaid_KeysGroup",
-                LocalizationManager.GetText("Settings_CombatMaid_Keys"),
+                LocalizationManager.GetText(CombatMaidConfig.LocalKey_Group_Keys),
                 new List<string> { 
                     CombatMaidConfig.Key_Bind_Move, 
                     CombatMaidConfig.Key_Bind_Heal, 
@@ -113,6 +149,70 @@ namespace CombatMaid.Settings
                 },
                 0.7f, false, false
             );
+            
+            ModSettingAPI.AddGroup(
+                "CombatMaid_CustomGroup",
+                LocalizationManager.GetText(CombatMaidConfig.LocalKey_Group_Customize),
+                new List<string> { 
+                    CombatMaidConfig.Key_CustomMaidName,
+                    CombatMaidConfig.Key_CustomMaidModelID,
+                    CombatMaidConfig.Key_CustomMaidItems,
+                    "OpenSaveFolder"
+                },
+                0.7f, false, false
+            );
+        }
+
+        private static void OpenSaveFolderAction()
+        {
+            try
+            {
+                string saveDir = WineFoxDataManager.GetSaveDir();
+                
+                if (!Directory.Exists(saveDir))
+                {
+                    Directory.CreateDirectory(saveDir);
+                    CMDebug.Log($"创建存档目录: {saveDir}");
+                }
+                
+                OpenFolder(saveDir);
+                
+                CMDebug.Log($"已打开存档目录: {saveDir}");
+            }
+            catch (System.Exception ex)
+            {
+                CMDebug.LogError($"打开存档目录失败: {ex.Message}");
+            }
+        }
+
+        private static void OpenFolder(string path)
+        {
+            try
+            {
+                if (Application.platform == RuntimePlatform.WindowsPlayer || 
+                    Application.platform == RuntimePlatform.WindowsEditor)
+                {
+                    Process.Start("explorer.exe", path);
+                }
+                else if (Application.platform == RuntimePlatform.OSXPlayer || 
+                         Application.platform == RuntimePlatform.OSXEditor)
+                {
+                    Process.Start("open", path);
+                }
+                else if (Application.platform == RuntimePlatform.LinuxPlayer || 
+                         Application.platform == RuntimePlatform.LinuxEditor)
+                {
+                    Process.Start("xdg-open", path);
+                }
+                else
+                {
+                    CMDebug.LogWarning($"不支持的平台: {Application.platform}");
+                }
+            }
+            catch (System.Exception ex)
+            {
+                CMDebug.LogError($"打开文件夹失败: {ex.Message}");
+            }
         }
     }
 }
