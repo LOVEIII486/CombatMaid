@@ -2,7 +2,7 @@
   "TreeID": "MaidTechTree",
   "TreeName": "SkillTree_MaidTech_Name",
   "Description": "SkillTree_MaidTech_Desc",
-  "Version": "2.0.0",
+  "Version": "2.2.0",
   "Nodes": [
     {
       "//": "--- 核心节点：女仆授权 ---",
@@ -12,62 +12,196 @@
       "IconFileName": "default_icon.png",
       "CostMoney": 1000,
       "RequiredLevel": 1,
-      "Position": { "x": 0, "y": 0 },
+      "Position": {
+        "x": 0,
+        "y": 0
+      },
       "PrerequisiteIDs": [],
       "PlayerStatModifiers": {},
-      "MaidModifiers": []
+      "MaidStatModifiers": {}
     },
-
     {
-      "//": "--- 分支1：生存类 (+50血) ---",
-      "ID": "maid_survival_hp_1",
-      "DisplayName": "Perk_Maid_Survival",
-      "Description": "Perk_Maid_Survival_Desc",
-      "IconFileName": "default_icon.png",
-      "CostMoney": 500,
-      "RequiredLevel": 1,
-      "Position": { "x": -150, "y": 150 },
-      "PrerequisiteIDs": [ "maid_core_license" ],
-      "PlayerStatModifiers": {},
-      "MaidModifiers": [
-        {
-          "Type": "AddAttribute",
-          "Attribute": "Health",
-          "Value": 50.0
-        }
-      ]
-    },
-
-    {
-      "//": "--- 分支2：战斗类 (+10%伤害) ---",
-      "ID": "maid_combat_dmg_1",
-      "DisplayName": "Perk_Maid_Combat",
-      "Description": "Perk_Maid_Combat_Desc",
+      "//": "========== 分支1：生存契约 (最左侧 x: -180) ==========",
+      "ID": "maid_survival_winefox_bless_1",
+      "DisplayName": "Perk_WineFox_Blessing_I",
+      "Description": "Perk_WineFox_Blessing_I_Desc",
       "IconFileName": "default_icon.png",
       "CostMoney": 800,
       "RequiredLevel": 1,
-      "Position": { "x": -50, "y": 150 },
-      "PrerequisiteIDs": [ "maid_core_license" ],
+      "Position": {
+        "x": -180,
+        "y": 150
+      },
+      "PrerequisiteIDs": [
+        "maid_core_license"
+      ],
       "PlayerStatModifiers": {},
-      "MaidModifiers": [
-        {
-          "Type": "MultiplyAttribute",
-          "Attribute": "DamageMultiplier",
-          "Value": 1.1
-        }
-      ]
+      "MaidStatModifiers": {
+        "MaxHealth": 40.0
+      }
     },
-
     {
-      "//": "--- 分支3-1：技能类 (自动回血) ---",
+      "ID": "maid_survival_soul_container_2",
+      "DisplayName": "Perk_Soul_Container_Reinforce",
+      "Description": "Perk_Soul_Container_Reinforce_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 1500,
+      "RequiredLevel": 2,
+      "Position": {
+        "x": -180,
+        "y": 300
+      },
+      "PrerequisiteIDs": [
+        "maid_survival_winefox_bless_1"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidStatModifiers": {
+        "MaxHealth": 60.0,
+        "ElementFactor_Physics": -0.1
+      }
+    },
+    {
+      "ID": "maid_survival_royal_guardian_3",
+      "DisplayName": "Perk_Royal_Guardian_Attire",
+      "Description": "Perk_Royal_Guardian_Attire_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 2400,
+      "RequiredLevel": 3,
+      "Position": {
+        "x": -180,
+        "y": 450
+      },
+      "PrerequisiteIDs": [
+        "maid_survival_soul_container_2"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidStatModifiers": {
+        "MaxHealth": 70.0,
+        "ElementFactor_Fire": -0.15,
+        "ElementFactor_Poison": -0.15
+      }
+    },
+    {
+      "ID": "maid_survival_high_contract_4",
+      "DisplayName": "Perk_High_Order_Contract_Body",
+      "Description": "Perk_High_Order_Contract_Body_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 3600,
+      "RequiredLevel": 4,
+      "Position": {
+        "x": -180,
+        "y": 600
+      },
+      "PrerequisiteIDs": [
+        "maid_survival_royal_guardian_3"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidStatModifiers": {
+        "MaxHealth": 40.0,
+        "ElementFactor_Physics": -0.1,
+        "ElementFactor_Fire": -0.1,
+        "ElementFactor_Poison": -0.1,
+        "ElementFactor_Electricity": -0.1,
+        "ElementFactor_Space": -0.1,
+        "ElementFactor_Ghost": -0.1
+      }
+    },
+    {
+      "//": "========== 分支2：战斗契约 (中左侧 x: -60) ==========",
+      "ID": "maid_combat_royal_gunnery_1",
+      "DisplayName": "Perk_Royal_Maid_Basic_Gunnery",
+      "Description": "Perk_Royal_Maid_Basic_Gunnery_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 900,
+      "RequiredLevel": 1,
+      "Position": {
+        "x": -60,
+        "y": 150
+      },
+      "PrerequisiteIDs": [
+        "maid_core_license"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidStatModifiers": {
+        "GunDamageMultiplier": 0.08
+      }
+    },
+    {
+      "ID": "maid_combat_magic_ballistic_2",
+      "DisplayName": "Perk_Magic_Ballistic_Correction",
+      "Description": "Perk_Magic_Ballistic_Correction_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 1600,
+      "RequiredLevel": 2,
+      "Position": {
+        "x": -60,
+        "y": 300
+      },
+      "PrerequisiteIDs": [
+        "maid_combat_royal_gunnery_1"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidStatModifiers": {
+        "GunDamageMultiplier": 0.1,
+        "BulletSpeedMultiplier": 0.1
+      }
+    },
+    {
+      "ID": "maid_combat_winefox_whisper_3",
+      "DisplayName": "Perk_WineFox_Keen_Whisper",
+      "Description": "Perk_WineFox_Keen_Whisper_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 2600,
+      "RequiredLevel": 3,
+      "Position": {
+        "x": -60,
+        "y": 450
+      },
+      "PrerequisiteIDs": [
+        "maid_combat_magic_ballistic_2"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidStatModifiers": {
+        "GunCritRateGain": 0.1,
+        "ViewDistance": 6.0
+      }
+    },
+    {
+      "ID": "maid_combat_guard_reflex_4",
+      "DisplayName": "Perk_Guard_Combat_Reflex",
+      "Description": "Perk_Guard_Combat_Reflex_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 3800,
+      "RequiredLevel": 4,
+      "Position": {
+        "x": -60,
+        "y": 600
+      },
+      "PrerequisiteIDs": [
+        "maid_combat_winefox_whisper_3"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidStatModifiers": {
+        "GunDamageMultiplier": 0.08,
+        "ReactionTime": -0.2,
+        "GunScatterMultiplier": -0.25
+      }
+    },
+    {
+      "//": "========== 分支3：主动技能系 (中右侧 x: 60) ==========",
       "ID": "maid_skill_autoheal",
       "DisplayName": "Perk_Maid_AutoHeal",
       "Description": "Perk_Maid_AutoHeal_Desc",
       "IconFileName": "default_icon.png",
       "CostMoney": 1500,
       "RequiredLevel": 2,
-      "Position": { "x": 50, "y": 150 },
-      "PrerequisiteIDs": [ "maid_core_license" ],
+      "Position": {
+        "x": 60,
+        "y": 150
+      },
+      "PrerequisiteIDs": [
+        "maid_core_license"
+      ],
       "PlayerStatModifiers": {},
       "MaidModifiers": [
         {
@@ -77,17 +211,20 @@
         }
       ]
     },
-
     {
-      "//": "--- 分支3-2：技能类 (投掷手雷) ---",
       "ID": "maid_skill_grenade",
       "DisplayName": "Perk_Maid_Grenade",
       "Description": "Perk_Maid_Grenade_Desc",
       "IconFileName": "default_icon.png",
       "CostMoney": 2500,
       "RequiredLevel": 3,
-      "Position": { "x": 50, "y": 300 },
-      "PrerequisiteIDs": [ "maid_skill_autoheal" ],
+      "Position": {
+        "x": 60,
+        "y": 300
+      },
+      "PrerequisiteIDs": [
+        "maid_skill_autoheal"
+      ],
       "PlayerStatModifiers": {},
       "MaidModifiers": [
         {
@@ -99,45 +236,60 @@
         }
       ]
     },
-
     {
-      "//": "--- 分支4-1：特殊类 (瓶中女仆 Lv1) ---",
+      "//": "========== 分支4：瓶中女仆系 (最右侧 x: 180) ==========",
       "ID": "maid_special_bottle_1",
       "DisplayName": "Perk_Bottle_Lv1",
       "Description": "Perk_Bottle_Lv1_Desc",
       "IconFileName": "default_icon.png",
-      "CostMoney": 500,
+      "CostMoney": 3000,
+      "CostItems": {
+        "73": 1,
+        "308": 5,
+        "30": 1
+      },
       "RequiredLevel": 1,
-      "Position": { "x": 150, "y": 150 },
-      "PrerequisiteIDs": [ "maid_core_license" ],
+      "Position": {
+        "x": 180,
+        "y": 150
+      },
+      "PrerequisiteIDs": [
+        "maid_core_license"
+      ],
       "PlayerStatModifiers": {},
       "MaidModifiers": []
     },
-
     {
-      "//": "--- 分支4-2：特殊类 (瓶中女仆 Lv2) ---",
       "ID": "maid_special_bottle_2",
       "DisplayName": "Perk_Bottle_Lv2",
       "Description": "Perk_Bottle_Lv2_Desc",
       "IconFileName": "default_icon.png",
       "CostMoney": 1500,
       "RequiredLevel": 2,
-      "Position": { "x": 150, "y": 300 },
-      "PrerequisiteIDs": [ "maid_special_bottle_1" ],
+      "Position": {
+        "x": 180,
+        "y": 300
+      },
+      "PrerequisiteIDs": [
+        "maid_special_bottle_1"
+      ],
       "PlayerStatModifiers": {},
       "MaidModifiers": []
     },
-
     {
-      "//": "--- 分支4-3：特殊类 (瓶中女仆 Lv3) ---",
       "ID": "maid_special_bottle_3",
       "DisplayName": "Perk_Bottle_Lv3",
       "Description": "Perk_Bottle_Lv3_Desc",
       "IconFileName": "default_icon.png",
       "CostMoney": 3000,
       "RequiredLevel": 3,
-      "Position": { "x": 150, "y": 450 },
-      "PrerequisiteIDs": [ "maid_special_bottle_2" ],
+      "Position": {
+        "x": 180,
+        "y": 450
+      },
+      "PrerequisiteIDs": [
+        "maid_special_bottle_2"
+      ],
       "PlayerStatModifiers": {},
       "MaidModifiers": []
     }

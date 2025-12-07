@@ -60,7 +60,6 @@ namespace CombatMaid.Core.AttributeModifiers
         }
 
         // ========== 标准属性名称定义 ==========
-        // 用这个类来避免手写字符串出错
         public static class StandardAttributes
         {
             // Stat 基础
@@ -82,6 +81,7 @@ namespace CombatMaid.Core.AttributeModifiers
             public const string CombatMoveRange = AIFieldModifier.Fields.CombatMoveRange;
             public const string ForgetTime = AIFieldModifier.Fields.ForgetTime;
             public const string CanDash = AIFieldModifier.Fields.CanDash;
+            public const string ReactionTime = AIFieldModifier.Fields.ReactionTime; // 新增
         }
         
         private static readonly HashSet<string> PercentageAttributes = new HashSet<string>
@@ -96,7 +96,10 @@ namespace CombatMaid.Core.AttributeModifiers
             "GunCritRateGain", "MeleeCritRateGain", "GunCritDamageGain", "MeleeCritDamageGain",
             // 元素抗性系数
             "ElementFactor_Physics", "ElementFactor_Fire", "ElementFactor_Poison",
-            "ElementFactor_Electricity", "ElementFactor_Space", "ElementFactor_Ghost"
+            "ElementFactor_Electricity", "ElementFactor_Space", "ElementFactor_Ghost",
+            
+            // [新增] AI 属性倍率支持
+            AIFieldModifier.Fields.ReactionTime // 允许对反应时间使用百分比修正 (e.g. -0.2 => x0.8)
         };
 
         // ========== 核心分发逻辑 =========
@@ -141,29 +144,18 @@ namespace CombatMaid.Core.AttributeModifiers
             if (StatModifier.CanModify(attributeName))
             {
                 var type = isPercent ? ModifierType.PercentageMultiply : ModifierType.Add;
-                
-                // 注意：这里直接使用传入的 deltaValue
-                // 如果是百分比类型，StatModifier 通常期望 0.1 代表增加 10% (取决于具体实现，如果是 AddPercentage 类型)
-                // 或者如果是 PercentageMultiply 类型，通常期望传入 1.1。
-                // *根据 Duckov 框架惯例*：PercentageMultiply 的 Modifier 也是存增量的 (value)，
-                // 计算时是 Base * (1 + sum(modifiers))。所以直接传 0.1 是安全的。
-                
                 return StatModifier.AddModifier(character, attributeName, deltaValue, type);
             }
 
             // 3. 尝试 AI 字段修改
             if (AIFieldModifier.CanModify(attributeName))
             {
-                // 对于 AI 字段，我们需要区分：
-                // 如果是百分比属性（如速度因子），我们要执行乘法逻辑 (current * (1 + delta))
-                // 如果是数值属性（如距离），我们要执行加法逻辑 (current + delta)
-                // 但 AIFieldModifier.ModifyImmediate 目前的实现是 multiply=true 时直接乘 value。
-                // 所以如果 delta 是 0.1，我们需要传 1.1 进去。
-                
+                // 如果是百分比属性，执行乘法逻辑 (current * (1 + delta))
+                // 例如 delta = -0.2 (减少20%), final = 0.8
                 float finalAIValue = deltaValue;
                 if (isPercent)
                 {
-                    finalAIValue = 1.0f + deltaValue; // 0.1 -> 1.1倍
+                    finalAIValue = 1.0f + deltaValue; 
                 }
                 
                 AIFieldModifier.ModifyImmediate(character, attributeName, finalAIValue, multiply: isPercent);

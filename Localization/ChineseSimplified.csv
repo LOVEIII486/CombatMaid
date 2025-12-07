@@ -1,4 +1,5 @@
 key,value,version,sheet
+key,value,version,sheet
 Settings_CombatMaid_Group,战斗女仆设置,1.0,Groups
 Setting_EnableMaidMode,开启女仆模式,1.0,GeneralSettings
 Setting_AttackMultiplier,攻击倍率,1.0,GeneralSettings
@@ -18,17 +19,19 @@ SkillTree_MaidTech_Desc,研发先进的女仆作战技术，解锁特殊契约�
 Interaction_MaidSkill_Label,战斗女仆: 战术技能,1.0,Interaction
 Perk_Maid_Core,女仆授权协议,1.0,Perks
 Perk_Maid_Core_Desc,获得招募战斗女仆的官方许可。解锁商店中的[女仆契约]与[酒狐契约]购买权限。,1.0,Perks
-Perk_Maid_Survival,强化义体骨架 I,1.0,Perks
-Perk_Maid_Survival_Desc,采用高强度合金加固女仆的躯干。所有女仆的最大生命值 +50。,1.0,Perks
-Perk_Maid_Combat,战术火控系统 I,1.0,Perks
-Perk_Maid_Combat_Desc,升级女仆的火控芯片，优化射击算法。所有女仆造成的伤害提高 10%。,1.0,Perks
-Perk_Maid_AutoHeal,自动修复模块,1.0,Perks
-Perk_Maid_AutoHeal_Desc,解锁[自动回血]技能。当生命值较低且背包内有医疗物品时，女仆将自动使用药物治疗。,1.0,Perks
-Perk_Maid_Grenade,投掷物演算核心,1.0,Perks
-Perk_Maid_Grenade_Desc,解锁[投掷手雷]技能。允许女仆在战斗中智能识别时机并投掷手雷（需背包内持有手雷）。,1.0,Perks
-Perk_Bottle_Lv1,瓶中女仆技术 - 试作型,1.0,Perks
-Perk_Bottle_Lv1_Desc,解锁商店中[瓶中女仆 Lv1]的购买权限。一种廉价、便携的一次性支援单位。,1.0,Perks
-Perk_Bottle_Lv2,瓶中女仆技术 - 强袭型,1.0,Perks
-Perk_Bottle_Lv2_Desc,解锁商店中[瓶中女仆 Lv2]的购买权限。拥有更强的火力配置和生存能力。,1.0,Perks
-Perk_Bottle_Lv3,瓶中女仆技术 - 皇家卫队,1.0,Perks
-Perk_Bottle_Lv3_Desc,解锁商店中[瓶中女仆 Lv3]的购买权限。最高规格的便携支援单位，足以应对高强度战斗。,1.0,Perks
+Perk_WineFox_Blessing_I,酒狐的微醺祝福,1.0,Perks
+Perk_WineFox_Blessing_I_Desc,酒狐的微弱魔力渗入契约，使女仆体内的生命流动更加稳定。所有女仆生命上限+40。,1.0,Perks
+Perk_Soul_Container_Reinforce,灵魂容器加固,1.0,Perks
+Perk_Soul_Container_Reinforce_Desc,强化契约容器的稳定性，使其更难被外力破坏。所有女仆生命上限+60，物理抗性+10%。,1.0,Perks
+Perk_Royal_Guardian_Attire,皇家女仆的守护礼装,1.0,Perks
+Perk_Royal_Guardian_Attire_Desc,穿上象征皇家近侍的防护灵装。所有女仆生命上限+70，对火焰和剧毒的抗性+15%。,1.0,Perks
+Perk_High_Order_Contract_Body,高阶契约躯壳,1.0,Perks
+Perk_High_Order_Contract_Body_Desc,重塑接近「瓶装战偶」强度的肉体。所有女仆生命上限+40，全属性抗性+10%。,1.0,Perks
+Perk_Royal_Maid_Basic_Gunnery,皇家女仆基础枪术,1.0,Perks
+Perk_Royal_Maid_Basic_Gunnery_Desc,所有皇家女仆必修的基础战斗课程。所有女仆造成的伤害提高8%。,1.0,Perks
+Perk_Magic_Ballistic_Correction,魔力弹道修正,1.0,Perks
+Perk_Magic_Ballistic_Correction_Desc,在子弹上附着微量魔力以修正飞行轨迹。所有女仆造成的伤害提高10%，子弹飞行速度+10%。,1.0,Perks
+Perk_WineFox_Keen_Whisper,酒狐的敏锐低语,1.0,Perks
+Perk_WineFox_Keen_Whisper_Desc,酒狐在战斗中会指引女仆攻击敌人的弱点。所有女仆暴击率+10%，视野距离+6米。,1.0,Perks
+Perk_Guard_Combat_Reflex,近卫级战斗反射,1.0,Perks
+Perk_Guard_Combat_Reflex_Desc,神经反应速度已达到皇家近卫级别。所有女仆造成的伤害提高8%，反应时间加快20%，射击精度提高25%。,1.0,Perks
