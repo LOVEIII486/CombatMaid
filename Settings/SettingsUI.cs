@@ -7,113 +7,112 @@ namespace CombatMaid.Settings
 {
     public static class SettingsUI
     {
-        private const string LogTag = "[CombatMaid.SettingsUI]";
-        
-        // 引用 Config 中的 Key 常量，避免手写字符串出错
-        
         public static void Register()
         {
-            if (!ModSettingAPI.IsInit)
-            {
-                CMDebug.LogError($"{LogTag} ModSettingAPI 未初始化");
-                return;
-            }
-
+            if (!ModSettingAPI.IsInit) return;
             ModSettingAPI.Clear();
 
-            // ==================== 1. 常规设置 ====================
+            // ==================== 1. 全局开关 ====================
             
             ModSettingAPI.AddToggle(
-                "EnableMaidMode", // 这里直接用字符串或 Config 中的常量均可
+                CombatMaidConfig.Key_EnableMaidMode, 
                 LocalizationManager.GetText("Setting_EnableMaidMode"), 
                 CombatMaidConfig.EnableMaidMode, 
-                (value) => 
-                {
-                    CombatMaidConfig.EnableMaidMode = value;
-                    CMDebug.Log($"{LogTag} [实时同步] 女仆模式: {value}");
-                }
-            );
-            
-            ModSettingAPI.AddSlider(
-                "AttackMultiplier",
-                LocalizationManager.GetText("Setting_AttackMultiplier"),
-                CombatMaidConfig.AttackMultiplier,
-                new Vector2(0.1f, 5.0f),
-                (value) => CombatMaidConfig.AttackMultiplier = value,
-                1, 5
-            );
-
-            ModSettingAPI.AddSlider(
-                "MoveSpeed",
-                LocalizationManager.GetText("Setting_MoveSpeed"),
-                CombatMaidConfig.MoveSpeed,
-                1, 20,
-                (value) => CombatMaidConfig.MoveSpeed = value
+                (value) => CombatMaidConfig.EnableMaidMode = value
             );
             
             ModSettingAPI.AddToggle(
-                "DebugMode", 
+                CombatMaidConfig.Key_DebugMode, 
                 "调试模式 (Debug Mode)",
                 CombatMaidConfig.DebugMode, 
                 (value) => CombatMaidConfig.DebugMode = value
             );
 
-            // ==================== 2. 按键绑定 ====================
+            // ==================== 2. 属性倍率 ====================
 
-            // G: 战术移动
+            // 血量倍率
+            ModSettingAPI.AddSlider(
+                CombatMaidConfig.Key_HealthMultiplier,
+                LocalizationManager.GetText("Setting_HealthMultiplier"),
+                CombatMaidConfig.HealthMultiplier,
+                new Vector2(0.1f, 10.0f),
+                (value) => CombatMaidConfig.HealthMultiplier = value,
+                1, 5
+            );
+
+            // 攻击倍率
+            ModSettingAPI.AddSlider(
+                CombatMaidConfig.Key_AttackMultiplier,
+                LocalizationManager.GetText("Setting_AttackMultiplier"),
+                CombatMaidConfig.AttackMultiplier,
+                new Vector2(0.1f, 10.0f),
+                (value) => CombatMaidConfig.AttackMultiplier = value,
+                1, 5
+            );
+
+            // 移动速度
+            ModSettingAPI.AddSlider(
+                CombatMaidConfig.Key_MoveSpeedMultiplier,
+                LocalizationManager.GetText("Setting_MoveSpeedMultiplier"),
+                CombatMaidConfig.MoveSpeedMultiplier,
+                new Vector2(0.1f, 10.0f),
+                (value) => CombatMaidConfig.MoveSpeedMultiplier = value,
+                1, 5
+            );
+
+            // ==================== 3. 按键绑定 ====================
+
             ModSettingAPI.AddKeybinding(
                 CombatMaidConfig.Key_Bind_Move,
-                LocalizationManager.GetText("Setting_Key_Move", "指令: 战术移动"),
-                CombatMaidConfig.KeyMove,
-                KeyCode.G, // 默认值
-                (val) => CombatMaidConfig.KeyMove = val
-            );
+                LocalizationManager.GetText("Setting_Key_Move"),
+                CombatMaidConfig.KeyMove, KeyCode.G, (v) => CombatMaidConfig.KeyMove = v);
 
-            // H: 强制治疗
             ModSettingAPI.AddKeybinding(
                 CombatMaidConfig.Key_Bind_Heal,
-                LocalizationManager.GetText("Setting_Key_Heal", "指令: 强制治疗"),
-                CombatMaidConfig.KeyHeal,
-                KeyCode.H,
-                (val) => CombatMaidConfig.KeyHeal = val
-            );
+                LocalizationManager.GetText("Setting_Key_Heal"),
+                CombatMaidConfig.KeyHeal, KeyCode.H, (v) => CombatMaidConfig.KeyHeal = v);
 
-            // F: 驻守切换
             ModSettingAPI.AddKeybinding(
                 CombatMaidConfig.Key_Bind_Hold,
-                LocalizationManager.GetText("Setting_Key_Hold", "指令: 驻守/跟随"),
-                CombatMaidConfig.KeyHold,
-                KeyCode.F,
-                (val) => CombatMaidConfig.KeyHold = val
-            );
+                LocalizationManager.GetText("Setting_Key_Hold"),
+                CombatMaidConfig.KeyHold, KeyCode.F, (v) => CombatMaidConfig.KeyHold = v);
 
-            // ==================== 3. 创建分组 ====================
+            // ==================== 4. 注册分组 ====================
             
-            // 主分组
+            // Group 1: 核心设置
             ModSettingAPI.AddGroup(
                 "CombatMaid_MainGroup",
                 LocalizationManager.GetText("Settings_CombatMaid_Group"),
-                new List<string> { "EnableMaidMode", "AttackMultiplier", "MoveSpeed", "DebugMode" },
-                0.7f,
-                true,
-                false
+                new List<string> { 
+                    CombatMaidConfig.Key_EnableMaidMode, 
+                    CombatMaidConfig.Key_DebugMode 
+                },
+                0.7f, true, true
             );
 
-            // 按键分组
+            // Group 2: 属性设置
+            ModSettingAPI.AddGroup(
+                "CombatMaid_StatsGroup",
+                LocalizationManager.GetText("Settings_CombatMaid_Stats"),
+                new List<string> { 
+                    CombatMaidConfig.Key_HealthMultiplier, 
+                    CombatMaidConfig.Key_AttackMultiplier, 
+                    CombatMaidConfig.Key_MoveSpeedMultiplier 
+                },
+                0.7f, false, false
+            );
+
+            // Group 3: 按键设置
             ModSettingAPI.AddGroup(
                 "CombatMaid_KeysGroup",
-                LocalizationManager.GetText("Settings_CombatMaid_Keys", "按键设置"),
+                LocalizationManager.GetText("Settings_CombatMaid_Keys"),
                 new List<string> { 
                     CombatMaidConfig.Key_Bind_Move, 
                     CombatMaidConfig.Key_Bind_Heal, 
                     CombatMaidConfig.Key_Bind_Hold 
                 },
-                0.7f,
-                false,
-                false
+                0.7f, false, false
             );
-            
-            CMDebug.Log($"{LogTag} 设置菜单已注册");
         }
     }
 }
