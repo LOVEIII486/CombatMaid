@@ -45,7 +45,7 @@ namespace CombatMaid.Core.Items.Data
                     spritePath = "MaidContract_WineFox.png",
                     localizationKey = "Item_MaidContractWineFox",
                     localizationDesc = "Item_MaidContractWineFox_Desc",
-                    value = 50000,
+                    value = 10000,
                     maxStackCount = 1,
                     maxDurability = 100f,
                     weight = 0.01f,
@@ -78,7 +78,7 @@ namespace CombatMaid.Core.Items.Data
                     localizationDesc = "Item_VialMaid_I_Desc",
                     spritePath = "VialMaid_I.png",
 
-                    value = 2000,
+                    value = 1000,
                     weight = 1f,
                     maxStackCount = 3,
                     maxDurability = 0f,
@@ -121,7 +121,7 @@ namespace CombatMaid.Core.Items.Data
                     localizationDesc = "Item_VialMaid_II_Desc",
                     spritePath = "VialMaid_II.png",
 
-                    value = 6000,
+                    value = 3000,
                     weight = 1.2f,
                     maxStackCount = 3,
                     maxDurability = 0f,
@@ -164,7 +164,7 @@ namespace CombatMaid.Core.Items.Data
                     localizationDesc = "Item_VialMaid_III_Desc",
                     spritePath = "VialMaid_III.png",
 
-                    value = 15000,
+                    value = 7000,
                     weight = 1.5f,
                     maxStackCount = 2,
                     maxDurability = 0f,
