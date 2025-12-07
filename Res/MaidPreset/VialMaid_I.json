@@ -101,7 +101,7 @@
     "TacticalMode": "Support",
     "Skills": [
       {
-        "SkillID": "AutoHeal",
+        "SkillID": "SelfHeal",
         "Params": {}
       }
     ]

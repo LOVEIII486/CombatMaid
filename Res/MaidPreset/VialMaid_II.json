@@ -83,7 +83,7 @@
     "TacticalMode": "Assault",
     "Skills": [
       {
-        "SkillID": "AutoHeal",
+        "SkillID": "SelfHeal",
         "Params": {}
       },
       {
