@@ -4,7 +4,7 @@ Settings_CombatMaid_Group,战斗女仆设置,1.0,Groups
 Setting_EnableMaidMode,开启女仆模式,1.0,GeneralSettings
 Setting_AttackMultiplier,攻击倍率,1.0,GeneralSettings
 Setting_MoveSpeed,移动速度,1.0,GeneralSettings
-Item_MaidContract,标准女仆契约,1.0,MaidItemName
+Item_MaidContract,标准女仆契约（测试物品）,1.0,MaidItemName
 Item_MaidContract_Desc,召唤皇家女仆-贝拉,1.0,MaidItemDescription
 Item_VialMaid_I,瓶中女仆·I型,1.0,MaidItemName
 Item_VialMaid_I_Desc,封存于魔法容器中的临时契约女仆。只需在危急时刻打碎契约瓶，即可短暂召唤出能协助主人撤离的应急女仆。属于一次性使用的短效支援女仆。,1.0,MaidItemDescription
@@ -13,25 +13,28 @@ Item_VialMaid_II_Desc,封存于强化容器中的强袭契约女仆。比I型更
 Item_VialMaid_III,瓶中女仆·III型,1.0,MaidItemName
 Item_VialMaid_III_Desc,封存于皇家秘银容器中的特级契约女仆。拥有极高的战斗性能。极其昂贵，但在面对绝境时，她就是你最坚实的最后一道防线。,1.0,MaidItemDescription
 Item_MaidContractWineFox,酒狐女仆契约,1.0,MaidItemName
-Item_MaidContractWineFox_Desc,召唤最强女仆-酒狐,1.0,MaidItemDescription
-SkillTree_MaidTech_Name,女仆战术科技,1.0,SkillTree
-SkillTree_MaidTech_Desc,研发先进的女仆作战技术，解锁特殊契约与强化能力。,1.0,SkillTree
-Interaction_MaidSkill_Label,战斗女仆: 战术技能,1.0,Interaction
-Perk_Maid_Core,女仆授权协议,1.0,Perks
-Perk_Maid_Core_Desc,获得招募战斗女仆的官方许可。解锁商店中的[女仆契约]与[酒狐契约]购买权限。,1.0,Perks
-Perk_WineFox_Blessing_I,酒狐的微醺祝福,1.0,Perks
-Perk_WineFox_Blessing_I_Desc,酒狐的微弱魔力渗入契约，使女仆体内的生命流动更加稳定。所有女仆生命上限+40。,1.0,Perks
-Perk_Soul_Container_Reinforce,灵魂容器加固,1.0,Perks
-Perk_Soul_Container_Reinforce_Desc,强化契约容器的稳定性，使其更难被外力破坏。所有女仆生命上限+60，物理抗性+10%。,1.0,Perks
-Perk_Royal_Guardian_Attire,皇家女仆的守护礼装,1.0,Perks
-Perk_Royal_Guardian_Attire_Desc,穿上象征皇家近侍的防护灵装。所有女仆生命上限+70，对火焰和剧毒的抗性+15%。,1.0,Perks
-Perk_High_Order_Contract_Body,高阶契约躯壳,1.0,Perks
-Perk_High_Order_Contract_Body_Desc,重塑接近「瓶装战偶」强度的肉体。所有女仆生命上限+40，全属性抗性+10%。,1.0,Perks
-Perk_Royal_Maid_Basic_Gunnery,皇家女仆基础枪术,1.0,Perks
-Perk_Royal_Maid_Basic_Gunnery_Desc,所有皇家女仆必修的基础战斗课程。所有女仆造成的伤害提高8%。,1.0,Perks
-Perk_Magic_Ballistic_Correction,魔力弹道修正,1.0,Perks
-Perk_Magic_Ballistic_Correction_Desc,在子弹上附着微量魔力以修正飞行轨迹。所有女仆造成的伤害提高10%，子弹飞行速度+10%。,1.0,Perks
-Perk_WineFox_Keen_Whisper,酒狐的敏锐低语,1.0,Perks
-Perk_WineFox_Keen_Whisper_Desc,酒狐在战斗中会指引女仆攻击敌人的弱点。所有女仆暴击率+10%，视野距离+6米。,1.0,Perks
-Perk_Guard_Combat_Reflex,近卫级战斗反射,1.0,Perks
-Perk_Guard_Combat_Reflex_Desc,神经反应速度已达到皇家近卫级别。所有女仆造成的伤害提高8%，反应时间加快20%，射击精度提高25%。,1.0,Perks
+Item_MaidContractWineFox_Desc,召唤成长型女仆-酒狐,1.0,MaidItemDescription
+Perk_Maid_Core,酒狐女仆契约,2.2.2,Perks
+Perk_Maid_Core_Desc,获得召唤酒狐女仆的能力。解锁泥巴商店中的[酒狐契约]购买权限。,2.2.2,Perks
+Perk_WineFox_Health_1,强化契约躯体 I,2.2.2,Perks
+Perk_WineFox_Health_1_Desc,通过契约强化提升酒狐的生命力。最大生命值 +20。,2.2.2,Perks
+Perk_WineFox_Health_2,强化契约躯体 II,2.2.2,Perks
+Perk_WineFox_Health_2_Desc,进一步强化酒狐的契约之躯。最大生命值 +20。,2.2.2,Perks
+Perk_WineFox_Health_3,强化契约躯体 III,2.2.2,Perks
+Perk_WineFox_Health_3_Desc,将酒狐的生命力提升至新高度。最大生命值 +40。,2.2.2,Perks
+Perk_WineFox_Dmg_1,战斗契约强化 I,2.2.2,Perks
+Perk_WineFox_Dmg_1_Desc,提升酒狐的战斗能力。全局伤害倍率 +10%。,2.2.2,Perks
+Perk_WineFox_Dmg_2,战斗契约强化 II,2.2.2,Perks
+Perk_WineFox_Dmg_2_Desc,进一步解放酒狐的战斗潜能。全局伤害倍率 +10%。,2.2.2,Perks
+Perk_WineFox_Dmg_3,战斗契约强化 III,2.2.2,Perks
+Perk_WineFox_Dmg_3_Desc,将酒狐的战斗力推向极致。全局伤害倍率 +10%。,2.2.2,Perks
+Perk_Maid_AutoHeal,自动恢复,2.2.2,Perks
+Perk_Maid_AutoHeal_Desc,赋予女仆自动使用医疗物品的能力。,2.2.2,Perks
+Perk_Maid_Grenade,手雷技能,2.2.2,Perks
+Perk_Maid_Grenade_Desc,赋予女仆投掷手雷的能力。,2.2.2,Perks
+Perk_Bottle_Lv1,瓶中女仆 I 型,2.2.2,Perks
+Perk_Bottle_Lv1_Desc,解锁最低阶瓶中女仆的临时契约召唤。该单位为独立个体，不继承酒狐女仆的任何属性加成。,2.2.2,Perks
+Perk_Bottle_Lv2,瓶中女仆 II 型,2.2.2,Perks
+Perk_Bottle_Lv2_Desc,解锁中阶强化版本的瓶中女仆，具备更高战斗能力，但依然不继承酒狐女仆的成长属性。,2.2.2,Perks
+Perk_Bottle_Lv3,瓶中女仆 III 型,2.2.2,Perks
+Perk_Bottle_Lv3_Desc,解锁最高阶封存战偶级瓶中女仆，具备接近皇家近卫的战斗能力，但不继承任何酒狐女仆的成长属性。,2.2.2,Perks
