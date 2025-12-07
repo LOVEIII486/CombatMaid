@@ -155,7 +155,7 @@
       ]
     },
     {
-      "//": "--- 分支2扩展：武器升级 (替换 254 -> 258) ---",
+      "//": "--- 分支2扩展：武器升级 ---",
       "ID": "maid_weapon_upgrade_1",
       "DisplayName": "Perk_Weapon_Upgrade_1",
       "Description": "Perk_Weapon_Upgrade_1_Desc",
@@ -165,7 +165,7 @@
         "258": 1
       },
       "RequiredLevel": 8,
-      "Position": { "x": 0, "y": 300 },
+      "Position": { "x": 0, "y": 400 },
       "PrerequisiteIDs": [ "maid_combat_dmg_2" ],
       "PlayerStatModifiers": {},
       "MaidModifiers": [
@@ -223,7 +223,7 @@
       "MaidModifiers": [
         {
           "Type": "AddSkill",
-          "SkillID": "AutoHeal",
+          "SkillID": "SelfHeal",
           "SkillParams": {}
         }
       ]
@@ -249,7 +249,7 @@
       "MaidModifiers": [
         {
           "Type": "AddSkill",
-          "SkillID": "Grenade",
+          "SkillID": "GrenadeThrow",
           "SkillParams": {
             "ItemID": 67
           }

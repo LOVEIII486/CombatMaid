@@ -65,13 +65,13 @@ namespace CombatMaid.Core
         private void HandleDebugInput()
         {
             // F5 测试生成默认的贝拉
-            if (Input.GetKeyDown(KeyCode.F5)) SpawnSpecificMaid("RoyalMaid_Bella");
+            // if (Input.GetKeyDown(KeyCode.F5)) SpawnSpecificMaid("RoyalMaid_Bella");
 
             // F6 清除
             if (Input.GetKeyDown(KeyCode.F6)) DespawnTeam();
 
             // F8 重载配置
-            if (Input.GetKeyDown(KeyCode.F8)) LoadAllPresets();
+            //if (Input.GetKeyDown(KeyCode.F8)) LoadAllPresets();
 
             // G 移动指令
             if (Input.GetKeyDown(KeyCode.G)) CommandMoveTeamToMouse();
@@ -80,14 +80,14 @@ namespace CombatMaid.Core
             if (Input.GetKeyDown(KeyCode.H)) CommandForceHealTeam();
 
             // F9 调试输出
-            if (Input.GetKeyDown(KeyCode.F9))
-            {
-                if (MaidSpawner.Instance != null)
-                {
-                    MaidSpawner.Instance.DebugListAllKeys();
-                    MaidSpawner.Instance.DebugExportReferenceStats();
-                }
-            }
+            // if (Input.GetKeyDown(KeyCode.F9))
+            // {
+            //     if (MaidSpawner.Instance != null)
+            //     {
+            //         MaidSpawner.Instance.DebugListAllKeys();
+            //         MaidSpawner.Instance.DebugExportReferenceStats();
+            //     }
+            // }
         }
 
         // ==================== JSON 加载逻辑 (普通女仆) ====================

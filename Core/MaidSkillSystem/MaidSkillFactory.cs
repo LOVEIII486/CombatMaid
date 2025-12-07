@@ -18,10 +18,10 @@ namespace CombatMaid.Core.MaidSkillSystem
             {
                 switch (config.SkillID)
                 {
-                    case "AutoHeal":
+                    case "SelfHeal":
                         return new Skill_SelfHeal();
 
-                    case "Grenade":
+                    case "GrenadeThrow":
                         // 解析参数：获取 ItemID，默认为 67
                         int grenadeId = GetParam(config.Params, "ItemID", 67);
                         return new Skill_GrenadeThrower(grenadeId);

@@ -28,9 +28,9 @@
       "y": 0
     },
     "//--- 感知能力 ---": "",
-    "SightDistance": 13.0,
+    "SightDistance": 14.0,
     "SightAngle": 100.0,
-    "HearingAbility": 1.0,
+    "HearingAbility": 1.1,
     "NightVisionAbility": 0.5,
     "ForgetTime": 8.0,
     "//--- 反应与射击 ---": "",
