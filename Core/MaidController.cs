@@ -1,10 +1,14 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Duckov.Modding;
 using CombatMaid.Core.MaidFSM;
 using CombatMaid.Core.MaidFSM.States;
 using CombatMaid.Core.MaidSkillSystem;
 using CombatMaid.Core.MaidSkillSystem.Skills;
+using Duckov.Scenes;
+using ItemStatsSystem;
+using UnityEngine.SceneManagement;
 
 namespace CombatMaid.Core
 {
@@ -16,6 +20,8 @@ namespace CombatMaid.Core
         private static readonly Dictionary<AICharacterController, MaidController> _maidRegistry 
             = new Dictionary<AICharacterController, MaidController>();
 
+        public List<Item> LootHistory { get; private set; } = new List<Item>();
+            
         public static MaidController GetMaid(AICharacterController ai)
         {
             if (ai == null) return null;
@@ -195,6 +201,82 @@ namespace CombatMaid.Core
             {
                 StateMachine.ChangeState<State_Scavenge>();
             }
+        }
+        
+        
+        /// <summary>
+        /// 吐出物品 (K键)
+        /// </summary>
+        public void CommandDumpLoot()
+        {
+            // 1. 基础检查
+            if (MaidCharacter?.CharacterItem?.Inventory == null) return;
+
+            // 2. 筛选出有效且在背包中的物品
+            var validItems = LootHistory
+                .Where(item => item != null && IsItemInInventory(item))
+                .ToList();
+
+            // 3. 如果没有东西，直接清理历史并退出
+            if (validItems.Count == 0)
+            {
+                MaidCharacter.PopText("主人我身上没有东西了。。。");
+                LootHistory.Clear();
+                return;
+            }
+
+            // 4. 生成容器
+            var container = SpawnDropContainer(validItems.Count);
+            if (container == null || container.Inventory == null)
+            {
+                CMDebug.LogError("战利品箱生成失败！");
+                return;
+            }
+
+            // 5. 批量转移物品
+            int transferCount = 0;
+            foreach (var item in validItems)
+            {
+                if (container.Inventory.AddAndMerge(item, 0))
+                {
+                    transferCount++;
+                }
+            }
+            LootHistory.Clear();
+        }
+
+        /// <summary>
+        /// 生成一个临时战利品箱
+        /// </summary>
+        private InteractableLootbox SpawnDropContainer(int requiredCapacity)
+        {
+            var prefab = MaidCharacter.deadLootBoxPrefab;
+            if (prefab == null) return null;
+            Vector3 spawnPos = MaidCharacter.transform.position + MaidCharacter.transform.up * 1.0f + MaidCharacter.transform.forward * 0.5f;
+            var boxInstance = Instantiate(prefab, spawnPos, MaidCharacter.transform.rotation);
+            MultiSceneCore.MoveToActiveWithScene(boxInstance.gameObject, SceneManager.GetActiveScene().buildIndex);
+            var rb = boxInstance.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.isKinematic = false; 
+                Vector3 throwForce = MaidCharacter.transform.forward * 3.0f + Vector3.up * 2.0f;
+                rb.velocity = throwForce;
+                rb.angularVelocity = Random.insideUnitSphere * 5f;
+            }
+            if (boxInstance.Inventory != null)
+            {
+                int safeCapacity = Mathf.Max(20, requiredCapacity + 10);
+                boxInstance.Inventory.SetCapacity(safeCapacity);
+            }
+            return boxInstance;
+        }
+
+        /// <summary>
+        /// 辅助检查：物品是否在背包内
+        /// </summary>
+        private bool IsItemInInventory(Item item)
+        {
+            return MaidCharacter.CharacterItem.Inventory.Contains(item);
         }
         
         /// <summary>

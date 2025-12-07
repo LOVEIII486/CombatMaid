@@ -59,7 +59,7 @@ namespace CombatMaid.Settings
             ModSettingAPI.AddKeybinding(
                 CombatMaidConfig.Key_Bind_Hold,
                 LocalizationManager.GetText("Setting_Key_Hold"),
-                CombatMaidConfig.KeyHold, KeyCode.F, (v) => CombatMaidConfig.KeyHold = v);
+                CombatMaidConfig.KeyHold, KeyCode.J, (v) => CombatMaidConfig.KeyHold = v);
 
             // ==================== 3. 自定义女仆配置 ====================
 

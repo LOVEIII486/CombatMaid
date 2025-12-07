@@ -1,241 +1,266 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using ItemStatsSystem; // 引用物品系统
+using ItemStatsSystem; // 物品系统
+using Duckov.ItemUsage; // 物品交互
 
 namespace CombatMaid.Core.MaidFSM.States
 {
     /// <summary>
-    /// 搜刮模式：扫描周围物品 -> 移动 -> 拾取
+    /// 智能搜刮状态
+    /// 特性：基于位置的动态优先级、主人距离牵引、战利品统计
     /// </summary>
     public class State_Scavenge : MaidStateBase
     {
-        private const float SearchRadius = 8.0f; // 搜索范围（
-        private const float PickupRadius = 3.0f;  // 实际执行拾取的距离
-        
-        private readonly List<Collider> _targets = new List<Collider>();
+        // ================= 参数配置 =================
+        // 搜刮感知半径：AI 能看到多远的物品（以AI为圆心）
+        private const float SearchRadius = 8.0f;       
+        // 主人牵引半径：物品距离主人超过此距离则忽略（防止AI为了捡东西跑出屏幕）
+        private const float OwnerTetherRadius = 12.0f; 
+        // 交互距离：靠近到多少米开始拾取
+        private const float InteractionThreshold = 3f; 
+
+        // ================= 运行时状态 =================
+        // 扫描缓存
+        private List<Collider> _scannedObjects = new List<Collider>();
+        // 当前锁定的物资
         private Collider _currentTarget;
-        private float _scanTimer = 0f;
-        private int _stuckCheck = 0; // 简单的防卡死计数
+        
+        // ================= 核心数据 =================
+        // [关键] 记录AI搜刮到的物品，供后续“吐出”功能使用
+        public List<Item> LootHistory { get; private set; } = new List<Item>();
 
         public override void Enter()
         {
-            // 1. 暂时接管大脑
             SetNativeBrainActive(false);
+            HaltMovement();
             
-            // 2. 停止当前移动
-            if (Controller.AI != null)
-            {
-                Controller.AI.StopMove();
-                Controller.AI.aimTarget = null; // 停止瞄准，专心捡垃圾
-            }
-
-            Controller.MaidCharacter?.PopText("开始搜刮...");
+            _currentTarget = null;
+            _scannedObjects.Clear();
+            // 注意：不清空 LootHistory，这样可以在多次搜刮间累积战利品记录
+            // 如果需要每次进状态清空，请取消下一行的注释
+            // LootHistory.Clear();
             
-            // 3. 立即执行一次扫描
-            ScanForLoot();
+            Controller.MaidCharacter?.PopText("开始搜刮物资...");
         }
 
         public override void Update()
         {
-            // 安全检查
             if (Controller.MainOwner == null) return;
+
+            // --- 阶段1: 状态中断检测 (优先级最高) ---
             
-            // A. 如果距离主人太远，强制结束搜刮（防丢）
-            float distToOwner = Vector3.Distance(Controller.transform.position, Controller.MainOwner.transform.position);
-            if (distToOwner > Controller.HoldMaxDistance) // 复用驻守距离配置
+            // 1. 距离保护：离主人太远强制归队
+            if (IsOwnerTooFar())
             {
-                Controller.MaidCharacter?.PopText("距离过远-归队");
-                Machine.ChangeState<State_Autonomous>();
+                ExitState("距离过远-归队");
                 return;
             }
 
-            // B. 敌人检测（如果有敌人，优先战斗）
-            // 注意：这里需要你决定是否允许战斗打断搜刮。
-            // 如果希望她“贪婪”一点，可以把这个判断去掉。
-            if (Controller.AI != null && Controller.AI.searchedEnemy != null && !Controller.AI.searchedEnemy.health.IsDead)
+            // 2. 威胁检测：发现敌人优先战斗
+            if (IsUnderThreat())
             {
-                Controller.MaidCharacter?.PopText("发现敌人！");
-                Machine.ChangeState<State_Autonomous>();
+                ExitState("发现威胁！停止搜刮");
                 return;
             }
 
-            // C. 搜刮逻辑循环
-            if (_currentTarget == null)
+            // 3. 满包检测：背包满了提示并退出
+            if (IsBagFull())
             {
-                // 没有目标，尝试从列表中取一个
-                if (_targets.Count > 0)
-                {
-                    _currentTarget = GetNearestTarget();
-                }
-                else
-                {
-                    // 列表空了，重新扫描或退出
-                    _scanTimer += Time.deltaTime;
-                    if (_scanTimer > 1.0f) 
-                    {
-                        ScanForLoot();
-                        _scanTimer = 0f;
-                        
-                        // 扫描完还是没东西，那就结束状态
-                        if (_targets.Count == 0)
-                        {
-                            Controller.MaidCharacter?.PopText("搜刮完毕");
-                            Machine.ChangeState<State_Autonomous>();
-                        }
-                    }
-                }
+                ExitState("背包已满，搜刮结束");
+                return;
+            }
+
+            // --- 阶段2: 搜刮行为执行 ---
+
+            if (_currentTarget == null || _currentTarget.gameObject == null)
+            {
+                // 没有目标时，根据当前位置重新寻找最近的
+                AcquireNextTarget();
             }
             else
             {
-                ProcessCurrentTarget();
+                // 有目标时，执行移动和交互
+                MoveToAndInteract(_currentTarget);
             }
         }
 
-        private void ProcessCurrentTarget()
+        // ================= 核心逻辑方法 =================
+
+        private void AcquireNextTarget()
         {
-            if (_currentTarget == null || _currentTarget.gameObject == null)
+            // 核心修改：每次寻找都重新扫描环境
+            // 确保永远选择离 AI 当前位置最近的物品，而不是沿用旧列表
+            ScanEnvironment();
+
+            _currentTarget = GetClosestValidTarget();
+
+            if (_currentTarget == null)
             {
-                _currentTarget = null;
-                return;
+                // 扫描后依然没有有效目标，说明周围（在牵引范围内）已经空了
+                ExitState("附近无物资");
             }
+        }
 
-            float dist = Vector3.Distance(Controller.transform.position, _currentTarget.transform.position);
+        private void MoveToAndInteract(Collider target)
+        {
+            float dist = Vector3.Distance(Controller.transform.position, target.transform.position);
 
-            if (dist <= PickupRadius)
+            if (dist <= InteractionThreshold)
             {
-                // 到达距离，尝试拾取
-                bool success = TryPickupSingle(_currentTarget);
+                // 到达交互距离，停止移动
+                Controller.AI?.StopMove();
                 
-                // 无论成功失败，都移除该目标，防止死循环
-                _targets.Remove(_currentTarget);
+                // 执行拾取
+                ProcessLoot(target);
+                
+                // 无论成功与否，处理完当前目标后置空，触发下一次重新扫描
                 _currentTarget = null;
-                
-                if (success) Controller.AI.StopMove();
             }
             else
             {
                 // 移动向目标
-                if (Controller.AI != null)
-                {
-                    Controller.AI.MoveToPos(_currentTarget.transform.position);
-                }
-                
-                // 简单的防卡死：如果一直走不到，可能卡住了
-                // 实际项目中建议用 timer 判断位置是否变化
+                Controller.AI?.MoveToPos(target.transform.position);
             }
         }
 
-        // === 核心逻辑：基于你提供的反编译代码优化 ===
-        private void ScanForLoot()
+        private void ProcessLoot(Collider target)
         {
-            _targets.Clear();
-            // 使用 OverlapSphere 而不是 NonAlloc，方便管理列表
+            if (target == null) return;
+
+            // 情况A: 箱子 (InteractableLootbox)
+            if (target.TryGetComponent<InteractableLootbox>(out var box))
+            {
+                if (box.Inventory != null && box.Inventory.Content != null)
+                {
+                    // 复制列表防止遍历时修改集合导致报错
+                    var itemsInBox = new List<Item>(box.Inventory.Content);
+                    foreach (var item in itemsInBox)
+                    {
+                        if (TryPickItem(item))
+                        {
+                            if (IsBagFull()) return; // 如果拿满，立即停止处理箱子
+                        }
+                    }
+                }
+            }
+            // 情况B: 地面物品 (InteractablePickup)
+            else if (target.TryGetComponent<InteractablePickup>(out var pickup))
+            {
+                if (pickup.ItemAgent != null && pickup.ItemAgent.Item != null)
+                {
+                    TryPickItem(pickup.ItemAgent.Item);
+                }
+            }
+        }
+
+        private bool TryPickItem(Item item)
+        {
+            if (item == null || item.GetTotalRawValue() < 0) return false;
+
+            var maid = Controller.MaidCharacter;
+            bool success = maid.PickupItem(item);
+
+            if (success)
+            {
+                // 写入 Controller
+                Controller.LootHistory.Add(item);
+            }
+
+            return success;
+        }
+
+        // ================= 扫描与筛选 =================
+
+        private void ScanEnvironment()
+        {
+            _scannedObjects.Clear();
+            
+            // 以 AI 为圆心进行扫描
             Collider[] hits = Physics.OverlapSphere(Controller.transform.position, SearchRadius);
             
             foreach (var hit in hits)
             {
-                if (IsValidLoot(hit))
+                if (IsValidLootTarget(hit))
                 {
-                    _targets.Add(hit);
+                    _scannedObjects.Add(hit);
                 }
             }
-            
-            CMDebug.Log($"扫描到 {_targets.Count} 个可搜刮物体");
         }
-        
-        private Collider GetNearestTarget()
+
+        private bool IsValidLootTarget(Collider col)
+        {
+            if (col == null) return false;
+
+            // 规则1: 必须在主人附近的牵引范围内
+            // 这是防止 AI 跑出屏幕的关键检查
+            float distToOwner = Vector3.Distance(col.transform.position, Controller.MainOwner.transform.position);
+            if (distToOwner > OwnerTetherRadius) return false;
+
+            // 规则2: 必须是有效的箱子或物品
+            bool isBox = col.TryGetComponent<InteractableLootbox>(out var box) && 
+                         box.Inventory != null && box.Inventory.Content.Count > 0;
+            
+            bool isItem = col.TryGetComponent<InteractablePickup>(out var pickup) && 
+                          pickup.ItemAgent != null && pickup.ItemAgent.Item != null;
+
+            return isBox || isItem;
+        }
+
+        private Collider GetClosestValidTarget()
         {
             Collider best = null;
             float minDst = float.MaxValue;
             Vector3 myPos = Controller.transform.position;
 
-            for (int i = _targets.Count - 1; i >= 0; i--)
+            foreach (var target in _scannedObjects)
             {
-                var t = _targets[i];
-                if (t == null) 
-                {
-                    _targets.RemoveAt(i);
-                    continue;
-                }
+                if (target == null) continue;
 
-                float d = Vector3.Distance(myPos, t.transform.position);
+                float d = Vector3.Distance(myPos, target.transform.position);
                 if (d < minDst)
                 {
                     minDst = d;
-                    best = t;
+                    best = target;
                 }
             }
             return best;
         }
 
-        private bool IsValidLoot(Collider col)
+        // ================= 辅助检查方法 =================
+
+        private bool IsBagFull()
         {
-            // 检查箱子
-            var box = col.GetComponent<InteractableLootbox>();
-            if (box != null && box.Inventory != null && box.Inventory.Content.Count > 0) return true;
-
-            // 检查地上物品
-            var pickup = col.GetComponent<InteractablePickup>();
-            if (pickup != null && pickup.ItemAgent != null && pickup.ItemAgent.Item != null) return true;
-
-            return false;
+            if (Controller.AI == null) return true;
+            // GetFirstEmptyPosition(0) 返回 -1 表示主背包没有空位
+            return Controller.AI.CharacterMainControl.CharacterItem.Inventory.GetFirstEmptyPosition(0) < 0;
         }
 
-        // 复用并净化了你的参考代码逻辑
-        private bool TryPickupSingle(Collider col)
+        private bool IsOwnerTooFar()
         {
-            if (col == null) return false;
-            
+            float d = Vector3.Distance(Controller.transform.position, Controller.MainOwner.transform.position);
+            return d > Controller.HoldMaxDistance;
+        }
+
+        private bool IsUnderThreat()
+        {
             var ai = Controller.AI;
-            if (ai == null) return false;
-
-            try
-            {
-                // 1. 处理箱子
-                var box = col.GetComponent<InteractableLootbox>();
-                if (box != null)
-                {
-                    // 简单的全部拿走逻辑
-                    var items = new List<Item>(box.Inventory.Content);
-                    bool pickedAny = false;
-                    foreach (var item in items)
-                    {
-                        if (item.GetTotalRawValue() >= 0 && CanPick(ai))
-                        {
-                            if (ai.CharacterMainControl.PickupItem(item)) pickedAny = true;
-                        }
-                    }
-                    return pickedAny;
-                }
-
-                // 2. 处理地上物品
-                var pickup = col.GetComponent<InteractablePickup>();
-                if (pickup != null && pickup.ItemAgent != null)
-                {
-                    var item = pickup.ItemAgent.Item;
-                    if (item != null && item.GetTotalRawValue() >= 0 && CanPick(ai))
-                    {
-                        return ai.CharacterMainControl.PickupItem(item);
-                    }
-                }
-            }
-            catch 
-            {
-                // 忽略错误
-            }
-            return false;
+            // 只有当敌人存在且活着时才算威胁
+            return ai != null && ai.searchedEnemy != null && !ai.searchedEnemy.health.IsDead;
         }
 
-        private bool CanPick(AICharacterController ai)
+        private void HaltMovement()
         {
-            // 检查背包是否有空位 (0 表示主背包)
-            bool canPick = ai.CharacterMainControl.CharacterItem.Inventory.GetFirstEmptyPosition(0) >= 0;
-            if (!canPick)
+            if (Controller.AI != null)
             {
-                ai.CharacterMainControl.PopText("背包满了！");
+                Controller.AI.StopMove();
+                Controller.AI.aimTarget = null;
             }
-            
-            return canPick;
+        }
+
+        private void ExitState(string reason)
+        {
+            Controller.MaidCharacter?.PopText(reason);
+            Machine.ChangeState<State_Autonomous>();
         }
     }
 }

@@ -141,6 +141,11 @@ namespace CombatMaid.Core
             {
                 CommandToggleScavenge();
             }
+            
+            if (Input.GetKeyDown(KeyCode.K))
+            {
+                CommandDropItems();
+            }
         }
 
         private void UpdateFocusTarget()
@@ -238,6 +243,17 @@ namespace CombatMaid.Core
             foreach (var maid in _activeMaids)
             {
                 if (maid != null) maid.CommandScavenge();
+            }
+        }
+        
+        private void CommandDropItems()
+        {
+            foreach (var maid in _activeMaids)
+            {
+                if (maid != null)
+                {
+                    maid.CommandDumpLoot();
+                }
             }
         }
 
