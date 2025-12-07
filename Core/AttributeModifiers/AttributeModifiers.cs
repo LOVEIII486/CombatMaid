@@ -39,13 +39,17 @@ namespace CombatMaid.Core.AttributeModifiers
             /// <summary>
             /// 修改移动能力 (走、跑、加速度)
             /// </summary>
-            public static void ModifySpeed(CharacterMainControl character, float multiplier)
+            public static List<Modifier> ModifySpeed(CharacterMainControl character, float multiplier)
             {
+                var modifiers = new List<Modifier>();
                 float val = multiplier - 1f;
-                StatModifier.AddModifier(character, StatModifier.Attributes.WalkSpeed, val, ModifierType.PercentageMultiply);
-                StatModifier.AddModifier(character, StatModifier.Attributes.RunSpeed, val, ModifierType.PercentageMultiply);
-                StatModifier.AddModifier(character, StatModifier.Attributes.WalkAcc, val, ModifierType.PercentageMultiply);
-                StatModifier.AddModifier(character, StatModifier.Attributes.RunAcc, val, ModifierType.PercentageMultiply);
+
+                modifiers.Add(StatModifier.AddModifier(character, StatModifier.Attributes.WalkSpeed, val, ModifierType.PercentageMultiply));
+                modifiers.Add(StatModifier.AddModifier(character, StatModifier.Attributes.RunSpeed, val, ModifierType.PercentageMultiply));
+                modifiers.Add(StatModifier.AddModifier(character, StatModifier.Attributes.WalkAcc, val, ModifierType.PercentageMultiply));
+                modifiers.Add(StatModifier.AddModifier(character, StatModifier.Attributes.RunAcc, val, ModifierType.PercentageMultiply));
+
+                return modifiers;
             }
 
             /// <summary>

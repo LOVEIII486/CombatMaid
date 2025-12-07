@@ -9,13 +9,10 @@ using CombatMaid.Core.MaidSkillSystem.Skills;
 namespace CombatMaid.Core
 {
     /// <summary>
-    /// 女仆核心控制器
-    /// 职责：组件组装、状态机驱动、对外接口
+    /// 女仆核心控制器：负责组件组装、状态机驱动及对外接口
     /// </summary>
     public class MaidController : MonoBehaviour
     {
-        // ==================== 静态注册表 ====================
-        
         private static readonly Dictionary<AICharacterController, MaidController> _maidRegistry 
             = new Dictionary<AICharacterController, MaidController>();
 
@@ -24,114 +21,75 @@ namespace CombatMaid.Core
             if (ai == null) return null;
             return _maidRegistry.TryGetValue(ai, out var maid) ? maid : null;
         }
-        
-        // ==================== 核心引用 ====================
-        
+
+        #region 核心
+
         public AICharacterController AI { get; private set; }
         public CharacterMainControl MaidCharacter => AI != null ? AI.CharacterMainControl : null;
         public CharacterMainControl MainOwner { get; private set; }
         
-        /// <summary>
-        /// 有限状态机：管理 AI 的行为模式
-        /// </summary>
         public MaidStateMachine StateMachine { get; private set; }
-        
         public MaidSkillComponent SkillSystem { get; private set; }
-        
 
-        // ==================== 配置参数 ====================
-        
-        [Header("Distance Config")]
-        public float ForceFollowDistance = 15.0f;     // 超过此距离 -> 请求进入强制跟随状态
-        public float HoldMaxDistance = 25.0f;         // 驻守模式下的最大宽容距离 (超过这个距离才会破防跟上)
-        public float TeleportDistance = 30.0f;        // 超过此距离 -> 强制传送
-        public float TeleportTimeout = 5.0f;          // 强制跟随卡住超过此时间 -> 传送
-        public float SafeDistanceToResumeCombat = 10.0f; // 回到此距离内 -> 恢复自主战斗状态
+        #endregion
 
-        // ==================== 状态属性 ====================
+        #region 默认设置
+
+        public float ForceFollowDistance = 15.0f;        // 强制跟随触发距离
+        public float HoldMaxDistance = 25.0f;            // 驻守模式最大宽容距离
+        public float TeleportDistance = 30.0f;           // 强制传送距离
+        public float TeleportTimeout = 5.0f;             // 强制跟随卡死超时时间
+        public float SafeDistanceToResumeCombat = 5.0f; // 恢复自主战斗的安全距离
 
         /// <summary>
-        /// 是否处于非原版接管状态 (用于 HarmonyPatch 拦截原版 AI)
-        /// 如果当前状态不是 State_Autonomous，则认为正在 Override
+        /// 是否处于非原版接管状态
         /// </summary>
         public bool IsOverrideActive => StateMachine != null && !(StateMachine.CurrentState is State_Autonomous);
 
-        // ==================== 初始化与生命周期 ====================
+        #endregion
 
-        public void Initialize(MaidProfileData profileData, CharacterMainControl player)
+        #region 基础
+
+        public void Initialize(MaidProfileData profileData, CharacterMainControl player, AICharacterController preCachedAI = null)
         {
             MainOwner = player;
-
-            // 1. 获取核心组件
-            AI = GetComponent<AICharacterController>();
-            if (AI == null) AI = GetComponentInChildren<AICharacterController>();
-    
+            
+            AI = preCachedAI != null ? preCachedAI : GetComponentInChildren<AICharacterController>();
             if (AI == null)
             {
                 CMDebug.LogError($"严重错误：找不到 AICharacterController！");
                 return;
             }
 
-            // 2. 注册到全局字典
-            if (!_maidRegistry.ContainsKey(AI))
-            {
-                _maidRegistry.Add(AI, this);
-            }
+            // 注册实例
+            if (!_maidRegistry.ContainsKey(AI)) _maidRegistry.Add(AI, this);
 
-            // 3. 设置基础 AI 归属
-            AI.leader = player;
-            AI.patrolRange = 25.0f;
-            AI.patrolPosition = player.transform.position;
-
-            // 4. 初始化技能系统
-            SkillSystem = gameObject.GetComponent<MaidSkillComponent>();
-            if (SkillSystem == null) SkillSystem = gameObject.AddComponent<MaidSkillComponent>();
+            // 初始化技能系统
+            SkillSystem = gameObject.GetComponent<MaidSkillComponent>() ?? gameObject.AddComponent<MaidSkillComponent>();
             SkillSystem.Initialize(this);
             
-            // 默认固有技能：小队协同
+            // 固有技能：小队协同
             SkillSystem.AddSkill(new Skill_SquadCoordination());
             
-            // ==================== 修改开始：使用通用配置加载技能 ====================
-            if (profileData.ExtraData != null && profileData.ExtraData.Skills != null)
+            // 加载配置技能
+            if (profileData.ExtraData?.Skills != null)
             {
                 foreach (var skillConfig in profileData.ExtraData.Skills)
                 {
                     var skill = MaidSkillFactory.CreateSkill(skillConfig);
-                    if (skill != null)
-                    {
-                        SkillSystem.AddSkill(skill);
-                    }
+                    if (skill != null) SkillSystem.AddSkill(skill);
                 }
             }
-            // ==================== 修改结束 ====================
     
-            // 5. 初始化状态机
+            // 初始化状态机
             InitializeStateMachine();
     
-            CMDebug.Log($"初始化完成。宿主: {player.name}, 技能数: {SkillSystem.SkillCount}");
-        }
-
-        private void InitializeStateMachine()
-        {
-            StateMachine = new MaidStateMachine(this);
-
-            // 注册所有可用状态
-            StateMachine.AddState(new State_Autonomous());
-            StateMachine.AddState(new State_TacticalMove());
-            StateMachine.AddState(new State_ForceFollow());
-            StateMachine.AddState(new State_HoldPosition());
-            StateMachine.AddState(new State_PassiveFollow());
-
-            // 启动默认状态 自主模式
-            StateMachine.ChangeState<State_Autonomous>();
+            CMDebug.Log($"女仆控制器初始化完成。主人: {player.name}, 技能数: {SkillSystem.SkillCount}");
         }
 
         private void Update()
         {
-            if (AI == null || MaidCharacter == null || MaidCharacter.Health.IsDead) 
-                return;
-
-            // 驱动状态机心跳
+            if (AI == null || MaidCharacter == null || MaidCharacter.Health.IsDead) return;
             StateMachine?.Update();
         }
 
@@ -143,42 +101,55 @@ namespace CombatMaid.Core
             }
         }
 
-        // ==================== 对外接口 (API) ====================
+        #endregion
+
+        #region 状态机初始化
+
+        private void InitializeStateMachine()
+        {
+            StateMachine = new MaidStateMachine(this);
+
+            StateMachine.AddState(new State_Autonomous());
+            StateMachine.AddState(new State_TacticalMove());
+            StateMachine.AddState(new State_ForceFollow());
+            StateMachine.AddState(new State_HoldPosition());
+            StateMachine.AddState(new State_PassiveFollow());
+
+            StateMachine.ChangeState<State_Autonomous>();
+        }
+
+        #endregion
+
+        #region 对外api
 
         /// <summary>
-        /// 强制移动指令 (G键调用)
-        /// 切换到 State_TacticalMove 并执行移动
+        /// 强制移动指令 (G键)
         /// </summary>
         public void ForceMoveTo(Vector3 position)
         {
-            // 使用带参数的切换方法，直接将目标点传递给状态
             StateMachine.ChangeState<State_TacticalMove>(state => 
             {
                 state.TargetPosition = position;
             });
         }
         
+        /// <summary>
+        /// 强制治疗指令 (H键)
+        /// </summary>
         public void ForceHeal()
         {
             if (SkillSystem == null) return;
 
-            // 尝试获取自愈技能实例
             var healSkill = SkillSystem.GetSkill<Skill_SelfHeal>();
-            
             if (healSkill != null)
             {
-                CMDebug.Log($"{MaidCharacter.name} 收到强制治疗指令...");
-                healSkill.ForceActivate(); // 需要在 Skill_SelfHeal 中实现此方法
-            }
-            else
-            {
-                CMDebug.LogWarning($"{MaidCharacter.name} 未装备自愈技能 (EnableAutoHeal=false?)");
+                // CMDebug.Log($"{MaidCharacter.name} 收到强制治疗指令...");
+                healSkill.ForceActivate(); 
             }
         }
 
         /// <summary>
-        /// 供 State_Autonomous 轮询使用
-        /// 判断是否距离主人太远，需要请求救援(强制跟随)
+        /// 检查是否距离主人过远
         /// </summary>
         public bool IsTooFarFromOwner()
         {
@@ -186,12 +157,11 @@ namespace CombatMaid.Core
             
             float dist = Vector3.Distance(transform.position, MainOwner.transform.position);
             
-            // 紧急情况：如果距离极远，直接在这里处理传送，
-            // 但为了逻辑统一，建议尽量交给 State_ForceFollow 处理。
-            // 这里只做阈值判断。
+            // 紧急情况传送判断交给状态机，此处仅返回距离阈值
             if (dist > TeleportDistance) return true;
-            
             return dist > ForceFollowDistance;
         }
+
+        #endregion
     }
 }

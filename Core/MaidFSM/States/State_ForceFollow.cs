@@ -1,4 +1,7 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
+using CombatMaid.Core.AttributeModifiers;
+using ItemStatsSystem.Stats;
 
 namespace CombatMaid.Core.MaidFSM.States
 {
@@ -10,12 +13,17 @@ namespace CombatMaid.Core.MaidFSM.States
         private float _checkTimer;
         private float _stuckTimer;
         
+        // 缓存临时的速度修改器
+        private List<Modifier> _speedBuffs = new List<Modifier>();
+        // 强制跟随时的速度倍率
+        private const float SpeedMultiplier = 3f;
+
         public override void Enter()
         {
-            // 暂停 AI，专心跑路
+            // 1. 暂停 AI
             SetNativeBrainActive(false);
             
-            // 清除战斗目标
+            // 2. 清除战斗目标
             if (Controller.AI != null)
             {
                 Controller.AI.searchedEnemy = null;
@@ -23,9 +31,10 @@ namespace CombatMaid.Core.MaidFSM.States
                 Controller.AI.StopMove();
             }
             
-            Controller.MaidCharacter?.PopText("归队中...");
+            // 3. 添加临时移速加成
+            ApplySpeedBuff();
+            Controller.MaidCharacter?.PopText("主人等等我！！！");
             _stuckTimer = 0f;
-            
             // 立即触发一次移动
             MoveToOwner();
         }
@@ -34,10 +43,9 @@ namespace CombatMaid.Core.MaidFSM.States
         {
             if (Controller.MainOwner == null) return;
 
-            // 1. 检查是否需要传送
             float dist = Vector3.Distance(Controller.transform.position, Controller.MainOwner.transform.position);
             
-            // 如果在强制跟随状态下还这么远，或者时间太久，就传送
+            // 1. 检查是否需要传送
             if (dist > Controller.TeleportDistance || _stuckTimer > Controller.TeleportTimeout)
             {
                 Teleport();
@@ -48,12 +56,12 @@ namespace CombatMaid.Core.MaidFSM.States
             // 2. 检查是否已经回到了安全距离
             if (dist < Controller.SafeDistanceToResumeCombat)
             {
-                Controller.MaidCharacter?.PopText("归队完成");
+                Controller.MaidCharacter?.PopText("回来啦~");
                 Machine.ChangeState<State_Autonomous>();
                 return;
             }
 
-            // 3. 驱动移动
+            // 3. 移动
             _checkTimer += Time.deltaTime;
             _stuckTimer += Time.deltaTime;
             
@@ -61,6 +69,17 @@ namespace CombatMaid.Core.MaidFSM.States
             {
                 MoveToOwner();
                 _checkTimer = 0f;
+            }
+        }
+
+        // 状态退出时清理 Buff
+        public override void Exit()
+        {
+            RemoveSpeedBuff();
+            
+            if (Controller.AI != null)
+            {
+                Controller.AI.StopMove();
             }
         }
 
@@ -75,12 +94,39 @@ namespace CombatMaid.Core.MaidFSM.States
         private void Teleport()
         {
             Controller.transform.position = Controller.MainOwner.transform.position;
-            // 处理可能的父子级位移问题
             if (Controller.AI != null && Controller.AI.transform.parent != Controller.transform)
             {
                 Controller.AI.transform.position = Controller.MainOwner.transform.position;
             }
             Controller.MaidCharacter?.PopText("强制传送");
+        }
+        
+
+        private void ApplySpeedBuff()
+        {
+            RemoveSpeedBuff();
+
+            if (Controller.MaidCharacter != null)
+            {
+                _speedBuffs = AttributeModifier.Quick.ModifySpeed(Controller.MaidCharacter, SpeedMultiplier);
+                //CMDebug.Log($"[ForceFollow] 已应用加速 Buff (x{SpeedMultiplier})");
+            }
+        }
+
+        private void RemoveSpeedBuff()
+        {
+            if (_speedBuffs != null && _speedBuffs.Count > 0 && Controller.MaidCharacter != null)
+            {
+                foreach (var mod in _speedBuffs)
+                {
+                    StatModifier.RemoveModifier(Controller.MaidCharacter, StatModifier.Attributes.WalkSpeed, mod);
+                    StatModifier.RemoveModifier(Controller.MaidCharacter, StatModifier.Attributes.RunSpeed, mod);
+                    StatModifier.RemoveModifier(Controller.MaidCharacter, StatModifier.Attributes.WalkAcc, mod);
+                    StatModifier.RemoveModifier(Controller.MaidCharacter, StatModifier.Attributes.RunAcc, mod);
+                }
+                _speedBuffs.Clear();
+                //CMDebug.Log("[ForceFollow] 加速 Buff 已移除");
+            }
         }
     }
 }

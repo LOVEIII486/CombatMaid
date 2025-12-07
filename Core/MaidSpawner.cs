@@ -282,7 +282,7 @@ namespace CombatMaid.Core
 
             // 1. 挂载控制器
             var controller = charCtrl.gameObject.AddComponent<MaidController>();
-            controller.Initialize(profileData, LevelManager.Instance.MainCharacter);
+            controller.Initialize(profileData, LevelManager.Instance.MainCharacter, ai);
 
             // 2. 异步换肤
             if (profileData.ExtraData != null && !string.IsNullOrEmpty(profileData.ExtraData.CustomModelID))
