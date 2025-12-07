@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
-using Duckov.Utilities; 
+using Duckov.Utilities;
 using Duckov.Modding;
 using SodaCraft.Localizations;
 using ItemStatsSystem;
 using CombatMaid.Core.MaidConfigs;
 using CombatMaid.Core.WineFox;
+using CombatMaid.Settings;
 using Cysharp.Threading.Tasks;
 using Duckov.Scenes;
 using Newtonsoft.Json;
@@ -37,6 +38,7 @@ namespace CombatMaid.Core
             {
                 if (preset != null) Destroy(preset);
             }
+
             _tempPresets.Clear();
         }
 
@@ -45,17 +47,22 @@ namespace CombatMaid.Core
         private Egg _eggPrefab;
         private bool _isInitialized = false;
 
-        // 临时预设缓存（用于销毁清理）
+        // 临时预设缓存
         private List<CharacterRandomPreset> _tempPresets = new List<CharacterRandomPreset>();
 
         // 游戏原生预设库
-        private Dictionary<string, CharacterRandomPreset> _gameNativePresetMap = new Dictionary<string, CharacterRandomPreset>();
+        private Dictionary<string, CharacterRandomPreset> _gameNativePresetMap =
+            new Dictionary<string, CharacterRandomPreset>();
 
         // 生成预设缓存
-        private Dictionary<string, CharacterRandomPreset> _generatedPresetsCache = new Dictionary<string, CharacterRandomPreset>();
-        
+        private Dictionary<string, CharacterRandomPreset> _generatedPresetsCache =
+            new Dictionary<string, CharacterRandomPreset>();
+
         // 自定义 JSON 配置库
         private Dictionary<string, MaidProfileData> _maidProfiles = new Dictionary<string, MaidProfileData>();
+        
+        // 缓存的倍率快照
+        private Vector3 _cachedMultipliers = Vector3.one;
 
         #endregion
 
@@ -84,7 +91,8 @@ namespace CombatMaid.Core
             _gameNativePresetMap.Clear();
             foreach (var preset in allPresets)
             {
-                if (preset != null && !string.IsNullOrEmpty(preset.nameKey) && !_gameNativePresetMap.ContainsKey(preset.nameKey))
+                if (preset != null && !string.IsNullOrEmpty(preset.nameKey) &&
+                    !_gameNativePresetMap.ContainsKey(preset.nameKey))
                 {
                     _gameNativePresetMap.Add(preset.nameKey, preset);
                 }
@@ -96,7 +104,7 @@ namespace CombatMaid.Core
             _isInitialized = true;
             CMDebug.LogInfo("MaidSpawner初始化完成。");
         }
-        
+
         public void LoadAllCustomPresets()
         {
             _maidProfiles.Clear();
@@ -127,6 +135,7 @@ namespace CombatMaid.Core
                         {
                             CMDebug.LogWarning($"检测到重复的 ProfileName: {data.ProfileName}，将覆盖旧配置。");
                         }
+
                         _maidProfiles[data.ProfileName] = data;
                         CMDebug.Log($"已加载预设: {data.ProfileName}");
                     }
@@ -159,7 +168,7 @@ namespace CombatMaid.Core
 
             MaidProfileData finalData = null;
             bool isWineFox = (profileName == "RoyalMaid_WineFox");
-            
+
             if (isWineFox)
             {
                 // 酒狐：强制从存档加载最新数据
@@ -206,8 +215,22 @@ namespace CombatMaid.Core
         /// <summary>
         /// 生成流程：准备预设 -> 异步生成 -> 基础 AI 设置
         /// </summary>
-        private void SpawnInternal(Vector3 targetPos, MaidProfileData profileData, Action<AICharacterController> callback)
+        private void SpawnInternal(Vector3 targetPos, MaidProfileData profileData,
+            Action<AICharacterController> callback)
         {
+            Vector3 currentMultipliers = new Vector3(
+                CombatMaidConfig.HealthMultiplier,
+                CombatMaidConfig.AttackMultiplier,
+                CombatMaidConfig.MoveSpeedMultiplier
+            );
+            
+            if (_cachedMultipliers != currentMultipliers)
+            {
+                CMDebug.Log($"检测到倍率变化: {_cachedMultipliers} -> {currentMultipliers}，刷新预设缓存");
+                _generatedPresetsCache.Clear();
+                _cachedMultipliers = currentMultipliers;
+            }
+            
             var spawnConfig = profileData.PresetConfig;
             var extraData = profileData.ExtraData;
             string baseKey = extraData?.BasePresetKey ?? "Cname_Usec";
@@ -219,14 +242,16 @@ namespace CombatMaid.Core
             }
 
             CMDebug.Log($"正在生成 [{profileData.ProfileName}] (Base: {baseKey})...");
-            
-            CharacterRandomPreset finalPreset = CreateFullCustomPreset(sourcePreset, spawnConfig, profileData.ProfileName);
+
+            CharacterRandomPreset finalPreset =
+                CreateFullCustomPreset(sourcePreset, spawnConfig, profileData.ProfileName);
             _tempPresets.Add(finalPreset);
-            
+
             SpawnAsync(finalPreset, targetPos, LevelManager.Instance.MainCharacter, callback).Forget();
         }
 
-        private async UniTaskVoid SpawnAsync(CharacterRandomPreset preset, Vector3 position, CharacterMainControl player, Action<AICharacterController> callback)
+        private async UniTaskVoid SpawnAsync(CharacterRandomPreset preset, Vector3 position,
+            CharacterMainControl player, Action<AICharacterController> callback)
         {
             try
             {
@@ -235,8 +260,8 @@ namespace CombatMaid.Core
                     Instantiate(_eggPrefab.spawnFx, position, Quaternion.identity);
                 }
 
-                int sceneIndex = MultiSceneCore.MainScene.HasValue 
-                    ? MultiSceneCore.MainScene.Value.buildIndex 
+                int sceneIndex = MultiSceneCore.MainScene.HasValue
+                    ? MultiSceneCore.MainScene.Value.buildIndex
                     : UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex;
 
                 CharacterMainControl spawnedChar = await preset.CreateCharacterAsync(
@@ -256,10 +281,10 @@ namespace CombatMaid.Core
                     {
                         var pet = ai.GetComponent<PetAI>();
                         if (pet != null) pet.SetMaster(player);
-                        
+
                         ai.leader = player;
                         spawnedChar.SetTeam(player.Team);
-                        
+
                         callback?.Invoke(ai);
                         CMDebug.Log($"生成成功: {spawnedChar.name}");
                     }
@@ -329,7 +354,8 @@ namespace CombatMaid.Core
             }
         }
 
-        private CharacterRandomPreset CreateFullCustomPreset(CharacterRandomPreset source, MaidConfig config, string profileName)
+        private CharacterRandomPreset CreateFullCustomPreset(CharacterRandomPreset source, MaidConfig config,
+            string profileName)
         {
             string uniqueSuffix = $"_CM_{profileName}";
             string finalKey = source.nameKey + uniqueSuffix;
@@ -435,6 +461,10 @@ namespace CombatMaid.Core
             {
                 SetupInventory(preset, config.CustomItemIDs);
             }
+            
+            preset.health *= CombatMaidConfig.HealthMultiplier;
+            preset.damageMultiplier *= CombatMaidConfig.AttackMultiplier;
+            preset.moveSpeedFactor *= CombatMaidConfig.MoveSpeedMultiplier;
         }
 
         private void SetupInventory(CharacterRandomPreset preset, List<int> itemIDs)
@@ -476,11 +506,12 @@ namespace CombatMaid.Core
             CMDebug.Log("========== 开始导出参考数值 (Keys) ==========");
             foreach (var key in _gameNativePresetMap.Keys)
             {
-                LogPresetDebugInfo(key); 
+                LogPresetDebugInfo(key);
             }
+
             CMDebug.Log("========== 导出结束 ==========");
         }
-        
+
         public void LogPresetDebugInfo(string presetKey)
         {
             if (!_isInitialized)
@@ -498,7 +529,7 @@ namespace CombatMaid.Core
 
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
             sb.AppendLine($"========== [原始预设参考数据: {presetKey}] ==========");
-            
+
             // --- 1. 基础属性 ---
             sb.AppendLine("--- [基础属性] ---");
             sb.AppendLine($"Health: {p.health}");
@@ -582,17 +613,25 @@ namespace CombatMaid.Core
                 sb.Append("CustomItemIDs: [");
                 foreach (var item in items)
                 {
-                    try {
+                    try
+                    {
                         var pool = item.GetType().GetField("itemPool").GetValue(item);
-                        var entries = pool.GetType().GetField("entries", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(pool) as IList;
-                        if (entries != null) {
-                            foreach (var entry in entries) {
+                        var entries = pool.GetType().GetField("entries", BindingFlags.Instance | BindingFlags.NonPublic)
+                            .GetValue(pool) as IList;
+                        if (entries != null)
+                        {
+                            foreach (var entry in entries)
+                            {
                                 var id = entry.GetType().GetField("itemTypeID").GetValue(entry);
                                 sb.Append($"{id}, ");
                             }
                         }
-                    } catch {}
+                    }
+                    catch
+                    {
+                    }
                 }
+
                 sb.AppendLine("]");
             }
             else
