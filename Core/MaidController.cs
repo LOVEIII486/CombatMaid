@@ -161,7 +161,24 @@ namespace CombatMaid.Core
                 healSkill.ForceActivate(); 
             }
         }
-
+        
+        /// <summary>
+        /// 切换驻守状态 (F键)
+        /// </summary>
+        public void ToggleHoldPosition()
+        {
+            // 如果当前已经是驻守状态 -> 解除驻守，切回自主模式
+            if (StateMachine.CurrentState is State_HoldPosition)
+            {
+                StateMachine.ChangeState<State_Autonomous>();
+            }
+            // 如果当前不是驻守状态 -> 进入驻守模式
+            else
+            {
+                StateMachine.ChangeState<State_HoldPosition>();
+            }
+        }
+        
         /// <summary>
         /// 检查是否距离主人过远
         /// </summary>

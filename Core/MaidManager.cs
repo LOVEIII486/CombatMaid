@@ -117,7 +117,9 @@ namespace CombatMaid.Core
         private int _enemyLayerMask;
 
         private void HandleCommandInput()
-        {
+        {   
+            if (Input.GetKeyDown(KeyCode.F)) CommandToggleHoldTeam();
+            
             // G 移动指令
             if (Input.GetKeyDown(KeyCode.G)) CommandMoveTeamToMouse();
 
@@ -164,7 +166,18 @@ namespace CombatMaid.Core
                 }
             }
         }
-
+        private void CommandToggleHoldTeam()
+        {
+            for (int i = _activeMaids.Count - 1; i >= 0; i--)
+            {
+                var maid = _activeMaids[i];
+                if (maid != null)
+                {
+                    maid.ToggleHoldPosition();
+                }
+            }
+        }
+        
         private void CommandMoveTeamToMouse()
         {
             Vector3 targetPos = GetMousePosition();

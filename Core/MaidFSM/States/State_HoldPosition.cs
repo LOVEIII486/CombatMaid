@@ -3,9 +3,7 @@
 namespace CombatMaid.Core.MaidFSM.States
 {
     /// <summary>
-    /// 驻守/哨戒模式：
-    /// 原地待命，允许主动战斗（找掩体/开火），但不跟随玩家。
-    /// 只有当玩家距离过远时，才会打破驻守状态强制归队。
+    /// 驻守模式
     /// </summary>
     public class State_HoldPosition : MaidStateBase
     {
@@ -19,25 +17,17 @@ namespace CombatMaid.Core.MaidFSM.States
 
             // 2. 钉住当前位置
             _holdPoint = Controller.transform.position;
-            
-            if (Controller.AI != null)
-            {
-                Controller.AI.patrolPosition = _holdPoint;
-                // 缩小巡逻范围，让她只在驻守点附近找掩体，不要跑太远去追人
-                Controller.AI.patrolRange = 5.0f; 
-            }
 
+            Controller.AI.patrolPosition = _holdPoint;
+            // 缩小巡逻范围
+            Controller.AI.patrolRange = 2.0f;
             Controller.MaidCharacter?.PopText("正在驻守");
         }
 
         public override void Update()
         {
             // 1. 持续锁定巡逻点
-            if (Controller.AI != null)
-            {
-                Controller.AI.patrolPosition = _holdPoint;
-            }
-
+            Controller.AI.patrolPosition = _holdPoint;
             // 2. 距离检查
             _checkTimer += Time.deltaTime;
             if (_checkTimer > 0.5f)
@@ -64,11 +54,8 @@ namespace CombatMaid.Core.MaidFSM.States
 
         public override void Exit()
         {
-            // 退出时恢复正常的巡逻范围
-            if (Controller.AI != null)
-            {
-                Controller.AI.patrolRange = 20.0f; 
-            }
+            Controller.AI.patrolRange = 10.0f;
+            Controller.MaidCharacter?.PopText("停止驻守");
         }
     }
 }
