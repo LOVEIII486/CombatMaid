@@ -10,7 +10,7 @@ namespace CombatMaid.Core
         #region Singleton & Lifecycle
 
         public static MaidManager Instance { get; private set; }
-
+        
         private void Awake()
         {
             if (Instance == null)
@@ -18,7 +18,7 @@ namespace CombatMaid.Core
                 Instance = this;
                 DontDestroyOnLoad(gameObject);
 
-                _enemyLayerMask = LayerMask.GetMask("Default", "Character", "Hitbox", "Enemy");
+                _enemyLayerMask = LayerMask.GetMask("Default", "Terrain", "Character", "Hitbox", "Enemy");
 
                 CMDebug.LogInfo("MaidManager (指挥官) 初始化完成。");
             }
@@ -35,7 +35,9 @@ namespace CombatMaid.Core
             UpdateFocusTarget();
         }
 
-        public void OnLevelStart(string sceneName) { }
+        public void OnLevelStart(string sceneName)
+        {
+        }
 
         public void OnLevelEnd()
         {
@@ -79,7 +81,7 @@ namespace CombatMaid.Core
             _activeMaids.Clear();
             CMDebug.Log("女仆队伍已解散");
         }
-        
+
         /// <summary>
         /// 获取活跃的酒狐实例 (用于契约检测)
         /// </summary>
@@ -89,7 +91,7 @@ namespace CombatMaid.Core
             for (int i = _activeMaids.Count - 1; i >= 0; i--)
             {
                 var maid = _activeMaids[i];
-        
+
                 // 1. 清理无效引用
                 if (maid == null || maid.gameObject == null)
                 {
@@ -103,30 +105,34 @@ namespace CombatMaid.Core
                     return maid;
                 }
             }
+
             return null;
         }
 
         #endregion
 
         #region Command System
-
+        
+        // 集火系统变量
         public CharacterMainControl FocusTarget { get; private set; }
         private float _focusExpireTimer = 0f;
-        private const float FocusDuration = 5.0f;
-        private const float RaycastDistance = 25f;
+        private const float FocusDuration = 10.0f; // 延长到 10秒
+        private const float RaycastDistance = 150f; 
         private int _enemyLayerMask;
 
         private void HandleCommandInput()
-        {   
-            if (Input.GetKeyDown(Settings.CombatMaidConfig.KeyMove)) 
+        {
+            if (Input.GetKeyDown(Settings.CombatMaidConfig.KeyMove))
             {
                 CommandMoveTeamToMouse();
             }
-            if (Input.GetKeyDown(Settings.CombatMaidConfig.KeyHeal)) 
+
+            if (Input.GetKeyDown(Settings.CombatMaidConfig.KeyHeal))
             {
                 CommandForceHealTeam();
             }
-            if (Input.GetKeyDown(Settings.CombatMaidConfig.KeyHold)) 
+
+            if (Input.GetKeyDown(Settings.CombatMaidConfig.KeyHold))
             {
                 CommandToggleHoldTeam();
             }
@@ -142,12 +148,10 @@ namespace CombatMaid.Core
                     FocusTarget = null;
                 }
             }
-
-            if (Input.GetMouseButtonDown(0)) 
+            if (Input.GetMouseButton(0)) // 按住或点击均可
             {
                 DetectPlayerTarget();
             }
-
             if (FocusTarget != null && (FocusTarget.Health == null || FocusTarget.Health.IsDead))
             {
                 FocusTarget = null;
@@ -157,35 +161,34 @@ namespace CombatMaid.Core
         private void DetectPlayerTarget()
         {
             if (Camera.main == null) return;
-            float checkDistance = 30f; 
 
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            Debug.DrawRay(ray.origin, ray.direction * checkDistance, Color.red, 0.5f);
-
-            if (Physics.Raycast(ray, out RaycastHit hit, checkDistance, _enemyLayerMask))
+            
+            if (Physics.Raycast(ray, out RaycastHit hit, RaycastDistance, _enemyLayerMask))
             {
                 var target = hit.collider.GetComponentInParent<CharacterMainControl>();
-                CMDebug.Log($"[Raycast] 打中: {hit.collider.name} (Layer: {hit.collider.gameObject.layer})");
+                
+                if (target == null || target.Health.IsDead || target.Team == CharacterMainControl.Main.Team) 
+                    return;
 
-                if (target != null)
+                if (FocusTarget != target)
                 {
-                    if (!target.Health.IsDead && target.Team != Teams.player)
-                    {
-                        if (FocusTarget != target)
-                        {
-                            FocusTarget = target;
-                            CMDebug.Log($"[指令] 集火目标更新: {target.name}"); 
-                        }
-                        _focusExpireTimer = FocusDuration;
-                    }
-                    else
-                    {
-                        CMDebug.Log($"[Raycast] 无效目标: {target.name} (Dead:{target.Health.IsDead}, Team:{target.Team})");
-                    }
+                    FocusTarget = target;
+                    _focusExpireTimer = FocusDuration;
+                    // if (CharacterMainControl.Main != null)
+                    // {
+                    //     CharacterMainControl.Main.PopText($">>> 集火: {target.name} <<<");
+                    // }
+                    // CMDebug.Log($"[集火] 锁定目标: {target.name} (距离: {hit.distance:F1}m)");
+                }
+                else
+                {
+                    // 持续按住时刷新计时器
+                    _focusExpireTimer = FocusDuration;
                 }
             }
         }
-        
+
         private void CommandToggleHoldTeam()
         {
             for (int i = _activeMaids.Count - 1; i >= 0; i--)
@@ -197,7 +200,7 @@ namespace CombatMaid.Core
                 }
             }
         }
-        
+
         private void CommandMoveTeamToMouse()
         {
             Vector3 targetPos = GetMousePosition();
@@ -241,7 +244,7 @@ namespace CombatMaid.Core
         private void HandleDebugInput()
         {
             // F5 测试: 调用 Spawner 生成酒狐
-            if (Input.GetKeyDown(KeyCode.F5)) 
+            if (Input.GetKeyDown(KeyCode.F5))
             {
                 if (MaidSpawner.Instance != null && CharacterMainControl.Main != null)
                 {
@@ -253,7 +256,7 @@ namespace CombatMaid.Core
             if (Input.GetKeyDown(KeyCode.F6)) DespawnTeam();
 
             // F8 重载配置: 调用 Spawner
-            if (Input.GetKeyDown(KeyCode.F8)) 
+            if (Input.GetKeyDown(KeyCode.F8))
             {
                 MaidSpawner.Instance?.LoadAllCustomPresets();
             }
