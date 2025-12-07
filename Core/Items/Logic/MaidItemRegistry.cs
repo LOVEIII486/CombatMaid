@@ -17,12 +17,8 @@ namespace CombatMaid.Core.Items.Logic
     {
         private const string MOD_ID = "CombatMaidMod";
 
-        // ==================== 初始化流程 ====================
-
         public static void Initialize(string modPath)
         {
-            CMDebug.Log($"[MaidItemRegistry] 开始初始化物品系统... {modPath}");
-
             var items = MaidItemDefs.GetDefinitions();
             int successCount = 0;
 
@@ -39,25 +35,25 @@ namespace CombatMaid.Core.Items.Logic
                 }
             }
 
-            CMDebug.Log($"[MaidItemRegistry] 初始化完成。成功注册 {successCount}/{items.Count} 个物品。");
+            CMDebug.LogInfo($"战斗女仆物品初始化完成！成功注册 {successCount}/{items.Count} 个物品。");
         }
 
         public static void Cleanup()
         {
-            try { ItemUtils.UnregisterAllItem(MOD_ID); } catch {}
+            ItemUtils.UnregisterAllItem(MOD_ID);
         }
 
         public static void RefreshLocalizations()
         {
-            CMDebug.Log("正在刷新物品本地化文本...");
+            CMDebug.Log("正在刷新战斗女仆物品本地化文本...");
             foreach (var info in MaidItemDefs.GetDefinitions())
             {
                 RegisterLocalization(info);
             }
         }
 
-        // ==================== 核心注册逻辑 ====================
-
+        #region 注册物品并添加到商店
+        
         private static void RegisterSingleItemSafe(string modPath, MaidItemInfo info)
         {
             // 1. 本地化
@@ -78,7 +74,7 @@ namespace CombatMaid.Core.Items.Logic
                 ApplyExtendedLogic(registeredPrefab, info);
             }
 
-            // 5. 商店注入 (关键修改：直接注入，由参数控制锁定状态)
+            // 5. 商店注入
             InjectToShopWithLockState(info);
         }
 
@@ -92,10 +88,7 @@ namespace CombatMaid.Core.Items.Logic
             // 检查该物品是否需要技能树前置
             string requiredNodeID = GetRequiredSkillNode(info.itemId);
             bool hasRequirement = !string.IsNullOrEmpty(requiredNodeID);
-
-            // 逻辑核心：
-            // - 无前置要求 -> forceUnlock = true (默认解锁，直接可买)
-            // - 有前置要求 -> forceUnlock = false (初始锁定，不可见，等待 EconomyManager.Unlock 解锁)
+            
             // 注意：这里覆盖了 MaidItemInfo 中配置的 ShopForceUnlock 默认值
             bool finalUnlockState = !hasRequirement;
 
@@ -110,11 +103,13 @@ namespace CombatMaid.Core.Items.Logic
             });
 
             string statusLog = finalUnlockState ? "默认解锁" : $"初始锁定 (等待技能 {requiredNodeID} 解锁)";
-            // CMDebug.Log($"[商店] 注册 {info.itemId} -> {statusLog}");
+            CMDebug.LogInfo($"战斗女仆商人物品注册 {info.itemId} -> {statusLog}");
         }
-
-        // ==================== 内部功能模块 ====================
-
+        
+        #endregion
+        
+        #region 内部注册物品函数
+        
         private static Item BuildItemWithIcon(string modPath, MaidItemInfo info)
         {
             var builder = ItemBuilder.New()
@@ -138,7 +133,7 @@ namespace CombatMaid.Core.Items.Logic
                 }
                 else
                 {
-                    CMDebug.LogWarning($"[MaidItemRegistry] {info.itemId}: 图标文件未找到 -> {info.spritePath}");
+                    CMDebug.LogWarning($"{info.itemId}: 图标文件未找到 -> {info.spritePath}");
                 }
             }
 
@@ -184,7 +179,7 @@ namespace CombatMaid.Core.Items.Logic
                 if (typeof(MonoBehaviour).IsAssignableFrom(info.CustomComponentType))
                     prefab.gameObject.AddComponent(info.CustomComponentType);
                 else
-                    CMDebug.LogError($"[MaidItemRegistry] {info.itemId} 的组件类型无效，必须继承 MonoBehaviour");
+                    CMDebug.LogError($"{info.itemId} 的组件类型无效，必须继承 MonoBehaviour");
             }
 
             // 4. 注入常量
@@ -206,7 +201,7 @@ namespace CombatMaid.Core.Items.Logic
                 case int i: prefab.Constants.Add(new CustomData(key, (float)i)); break;
                 case string s: prefab.Constants.Add(new CustomData(key, s)); break;
                 default:
-                    CMDebug.LogWarning($"[MaidItemRegistry] 不支持的常量类型: Key={key}, Type={value?.GetType()}");
+                    CMDebug.LogWarning($"不支持的常量类型: Key={key}, Type={value?.GetType()}");
                     break;
             }
         }
@@ -221,9 +216,10 @@ namespace CombatMaid.Core.Items.Logic
             if (!string.IsNullOrEmpty(info.localizationDesc))
                 dict[info.localizationDesc] = LocalizationManager.GetText(info.localizationDesc, $"[{info.localizationDesc}]");
         }
+        
+        #endregion
 
-        // ==================== 技能树映射逻辑 ====================
-
+        #region 技能树映射
         /// <summary>
         /// 获取指定技能节点ID解锁的所有物品ID列表
         /// 供 SkillTreeBuilder 使用，用于给节点挂载 PerkUnlockStockShop 组件
@@ -243,26 +239,28 @@ namespace CombatMaid.Core.Items.Logic
         }
 
         /// <summary>
-        /// 配置表：定义哪些物品需要哪些技能节点
+        /// 配置表
         /// </summary>
         private static string GetRequiredSkillNode(int itemId)
         {
             switch (itemId)
             {
-                // === 契约类 ===
+                // === 契约 ===
                 // case 88888: // 贝拉契约
                 case 88000: // 酒狐契约
-                    return "maid_core_license"; // 需要核心授权
+                    return "maid_core_license";
 
-                // === 瓶中女仆类 ===
+                // === 瓶中女仆 ===
                 case 88001: return "maid_special_bottle_1"; // Lv1
                 case 88002: return "maid_special_bottle_2"; // Lv2
                 case 88003: return "maid_special_bottle_3"; // Lv3
 
-                // === 默认类 ===
+                // === 默认 ===
                 default: 
-                    return null; // 无特殊要求
+                    return null;
             }
         }
+        
+        #endregion
     }
 }

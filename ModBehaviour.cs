@@ -43,9 +43,7 @@ namespace CombatMaid
         protected override void OnAfterSetup()
         {
             base.OnAfterSetup();
-    
             InitializeLocalization(); 
-            
             if (ModSettingAPI.Init(info))
             {
                 Settings.CombatMaidConfig.Load();
@@ -55,38 +53,53 @@ namespace CombatMaid
             {
                 CMDebug.LogWarning("ModSettingAPI 初始化失败");
             }
-
-            // 使用新的 Registry 初始化物品
-            MaidItemRegistry.Initialize(ModRootPath);
-
-            // 挂载调试脚本
-            if (gameObject.GetComponent<ItemDebugSpawner>() == null)
-            {
-                gameObject.AddComponent<ItemDebugSpawner>();
-            }
-
-            // 初始化女仆系统
+            InitializeMaidItems();
             InitializeMaidSystem();
-            
-            // [修复] 初始化技能树系统（创建为独立 GameObject，DontDestroyOnLoad）
             InitializeSkillTreeSystem();
         }
 
         private void OnDisable()
         {
-            CleanupLocalization();
-            CleanupSceneHooks();
-            CleanupHarmonyPatches();
-            CleanupMaidSystem();
-            CleanupSkillTreeSystem();
-            
-            ItemUtils.UnregisterAllItem("CombatMaid");
-
+            CleanupAllSystems();
             Instance = null;
             CMDebug.LogInfo($"模组已禁用");
         }
+        
+        private void OnDestroy()
+        {
+            if (Instance == this)
+            {
+                CleanupAllSystems();
+                Instance = null;
+            }
+            CMDebug.LogInfo("模组已完全销毁");
+        }
 
-        #region Maid System
+        private void CleanupAllSystems()
+        {
+            CleanupLocalization();
+            CleanupSceneHooks();
+            CleanupHarmonyPatches();
+            CleanupMaidItems();
+            CleanupMaidSystem();
+            CleanupSkillTreeSystem();
+        }
+
+        #region MaidItem
+
+        private void InitializeMaidItems()
+        {
+            MaidItemRegistry.Initialize(ModRootPath);
+        }
+        
+        private void CleanupMaidItems()
+        {
+            MaidItemRegistry.Cleanup();
+        }
+
+        #endregion
+        
+        #region MaidSystem
 
         private void InitializeMaidSystem()
         {
@@ -97,7 +110,7 @@ namespace CombatMaid
                 go.AddComponent<MaidSpawner>(); 
                 
                 DontDestroyOnLoad(go);
-                CMDebug.Log("女仆系统 (Manager + Spawner) 初始化完成。");
+                CMDebug.Log("女仆系统初始化完成。");
             }
         }
 
@@ -108,12 +121,12 @@ namespace CombatMaid
                 Destroy(MaidManager.Instance.gameObject);
             }
 
-            CMDebug.LogInfo($"女仆核心系统已卸载");
+            CMDebug.LogInfo($"女仆系统已卸载");
         }
 
         #endregion
         
-        #region Skill Tree System
+        #region SkillTreeSystem
 
         private void InitializeSkillTreeSystem()
         {
@@ -139,13 +152,12 @@ namespace CombatMaid
 
         #endregion
         
-        #region Localization Management
+        #region Localization
 
         private void InitializeLocalization()
         {
             LocalizationManager.Initialize(info.path);
             SodaCraft.Localizations.LocalizationManager.OnSetLanguage += OnLanguageChanged;
-            CMDebug.LogInfo($"本地化系统已挂载");
         }
 
         private void CleanupLocalization()
@@ -162,7 +174,7 @@ namespace CombatMaid
 
         #endregion
 
-        #region Harmony Management
+        #region HarmonyPatches
 
         private void InitializeHarmonyPatches()
         {
@@ -245,19 +257,5 @@ namespace CombatMaid
 
         #endregion
         
-        private void OnDestroy()
-        {
-            CleanupHarmonyPatches();
-            CleanupSceneHooks();
-            
-            // [修复] 在这里清理所有系统
-            CleanupMaidSystem();
-            CleanupSkillTreeSystem();
-            
-            MaidItemRegistry.Cleanup();
-            Instance = null;
-            
-            CMDebug.LogInfo("模组已完全销毁");
-        }
     }
 }

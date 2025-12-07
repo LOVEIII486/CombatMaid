@@ -18,8 +18,6 @@ namespace CombatMaid.Core
 {
     public class MaidSpawner : MonoBehaviour
     {
-        #region Singleton & Lifecycle
-
         public static MaidSpawner Instance { get; private set; }
 
         private void Awake()
@@ -42,34 +40,31 @@ namespace CombatMaid.Core
             _tempPresets.Clear();
         }
 
-        #endregion
-
-        #region Fields & Data
+        #region 数据
 
         private Egg _eggPrefab;
         private bool _isInitialized = false;
 
-        // 临时生成的预设缓存（用于销毁清理）
+        // 临时预设缓存（用于销毁清理）
         private List<CharacterRandomPreset> _tempPresets = new List<CharacterRandomPreset>();
 
-        // 游戏原生的随机预设库
+        // 游戏原生预设库
         private Dictionary<string, CharacterRandomPreset> _gameNativePresetMap = new Dictionary<string, CharacterRandomPreset>();
 
-        // 生成后的混合预设缓存
+        // 生成预设缓存
         private Dictionary<string, CharacterRandomPreset> _generatedPresetsCache = new Dictionary<string, CharacterRandomPreset>();
         
-        // [新增] 自定义 JSON 配置库 (从 Manager 移来)
+        // 自定义 JSON 配置库
         private Dictionary<string, MaidProfileData> _maidProfiles = new Dictionary<string, MaidProfileData>();
 
         #endregion
 
-        #region Initialization & Loading
+        #region 初始化
 
         private IEnumerator InitializeRoutine()
         {
             while (CharacterMainControl.Main == null) yield return null;
 
-            // 1. 获取 Egg 预制体 (用于生成特效和接口)
             if (_eggPrefab == null)
             {
                 Egg[] eggs = Resources.FindObjectsOfTypeAll<Egg>();
@@ -78,11 +73,11 @@ namespace CombatMaid.Core
 
             if (_eggPrefab == null)
             {
-                CMDebug.LogError($"严重错误：未找到 Egg 预制体。");
+                CMDebug.LogError($"错误：未找到 Egg 预制体。");
                 yield break;
             }
 
-            // 2. 获取游戏原生预设数据
+            // 获取游戏原生预设数据
             while (GameplayDataSettings.CharacterRandomPresetData == null) yield return null;
 
             var allPresets = GameplayDataSettings.CharacterRandomPresetData.presets;
@@ -95,16 +90,13 @@ namespace CombatMaid.Core
                 }
             }
 
-            // 3. 加载自定义 JSON 配置
+            // 自定义 JSON 配置
             LoadAllCustomPresets();
 
             _isInitialized = true;
-            CMDebug.LogInfo("MaidSpawner (工厂) 初始化完成。");
+            CMDebug.LogInfo("MaidSpawner初始化完成。");
         }
-
-        /// <summary>
-        /// 加载所有本地 JSON 配置文件
-        /// </summary>
+        
         public void LoadAllCustomPresets()
         {
             _maidProfiles.Clear();
@@ -148,10 +140,10 @@ namespace CombatMaid.Core
 
         #endregion
 
-        #region Public Spawn API
+        #region 生成女仆api
 
         /// <summary>
-        /// [API] 生成酒狐 (自动处理存档读取)
+        /// 生成酒狐 (自动处理存档读取)
         /// </summary>
         public void SpawnWineFox(Vector3 position, Action<MaidController> onComplete = null)
         {
@@ -159,7 +151,7 @@ namespace CombatMaid.Core
         }
 
         /// <summary>
-        /// [API] 根据 ProfileName 生成任意女仆
+        /// 根据 ProfileName 生成女仆
         /// </summary>
         public void SpawnMaidByProfile(string profileName, Vector3 targetPos, Action<MaidController> onComplete = null)
         {
@@ -167,8 +159,7 @@ namespace CombatMaid.Core
 
             MaidProfileData finalData = null;
             bool isWineFox = (profileName == "RoyalMaid_WineFox");
-
-            // 1. 数据源分流
+            
             if (isWineFox)
             {
                 // 酒狐：强制从存档加载最新数据
@@ -186,13 +177,11 @@ namespace CombatMaid.Core
                 return;
             }
 
-            // 2. 执行生成流程
             SpawnInternal(targetPos, finalData, (aiCtrl) =>
             {
-                // 3. 组装组件
                 var controller = AssemblyMaidComponents(aiCtrl, finalData);
 
-                // 4. 特殊处理：挂载数据同步器
+                // 酒狐要挂载数据同步器
                 if (isWineFox && controller != null)
                 {
                     var sync = controller.gameObject.AddComponent<WineFoxDataSync>();
@@ -200,7 +189,7 @@ namespace CombatMaid.Core
                     CMDebug.Log($"[Spawn] 酒狐已生成 (存档同步开启)");
                 }
 
-                // 5. 移交指挥权
+                // 移交指挥权
                 if (MaidManager.Instance != null && controller != null)
                 {
                     MaidManager.Instance.RegisterActiveMaid(controller);
@@ -212,10 +201,10 @@ namespace CombatMaid.Core
 
         #endregion
 
-        #region Internal Spawning Logic
+        #region 内部生成api
 
         /// <summary>
-        /// 内部生成流程：准备预设 -> 异步生成 -> 基础 AI 设置
+        /// 生成流程：准备预设 -> 异步生成 -> 基础 AI 设置
         /// </summary>
         private void SpawnInternal(Vector3 targetPos, MaidProfileData profileData, Action<AICharacterController> callback)
         {
@@ -230,12 +219,10 @@ namespace CombatMaid.Core
             }
 
             CMDebug.Log($"正在生成 [{profileData.ProfileName}] (Base: {baseKey})...");
-
-            // 准备混合预设
+            
             CharacterRandomPreset finalPreset = CreateFullCustomPreset(sourcePreset, spawnConfig, profileData.ProfileName);
             _tempPresets.Add(finalPreset);
-
-            // 启动异步任务
+            
             SpawnAsync(finalPreset, targetPos, LevelManager.Instance.MainCharacter, callback).Forget();
         }
 
@@ -243,7 +230,6 @@ namespace CombatMaid.Core
         {
             try
             {
-                // 播放特效
                 if (_eggPrefab != null && _eggPrefab.spawnFx != null)
                 {
                     Instantiate(_eggPrefab.spawnFx, position, Quaternion.identity);
@@ -253,7 +239,6 @@ namespace CombatMaid.Core
                     ? MultiSceneCore.MainScene.Value.buildIndex 
                     : UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex;
 
-                // 核心生成
                 CharacterMainControl spawnedChar = await preset.CreateCharacterAsync(
                     position + Vector3.down * 0.25f,
                     player.transform.forward,
@@ -262,7 +247,6 @@ namespace CombatMaid.Core
                     false
                 );
 
-                // 初始化 AI 归属
                 if (spawnedChar != null)
                 {
                     AICharacterController ai = spawnedChar.GetComponentInChildren<AICharacterController>();
@@ -277,7 +261,7 @@ namespace CombatMaid.Core
                         spawnedChar.SetTeam(player.Team);
                         
                         callback?.Invoke(ai);
-                        CMDebug.Log($"实体生成成功: {spawnedChar.name}");
+                        CMDebug.Log($"生成成功: {spawnedChar.name}");
                     }
                 }
             }
@@ -314,7 +298,7 @@ namespace CombatMaid.Core
 
         #endregion
 
-        #region Preset Configuration Helpers
+        #region 预设管理
 
         /// <summary>
         /// 当技能树解锁导致属性变化时，立即刷新缓存中的酒狐数据
@@ -326,7 +310,6 @@ namespace CombatMaid.Core
             var currentData = WineFoxDataManager.CurrentData;
             if (currentData == null || currentData.PresetConfig == null) return;
 
-            // 这里使用硬编码的 Key 后缀来匹配
             string targetKeyPart = "_CM_RoyalMaid_WineFox";
 
             CharacterRandomPreset targetPreset = null;
@@ -477,7 +460,7 @@ namespace CombatMaid.Core
 
         #endregion
 
-        #region Debug Tools
+        #region Debug函数
 
         public void DebugListAllKeys()
         {
@@ -490,24 +473,136 @@ namespace CombatMaid.Core
         public void DebugExportReferenceStats()
         {
             if (!_isInitialized) return;
-            // 仅作为示例，简单调用，不做完整展开
             CMDebug.Log("========== 开始导出参考数值 (Keys) ==========");
             foreach (var key in _gameNativePresetMap.Keys)
             {
-                // 可以按需调用 LogPresetDebugInfo
-                // LogPresetDebugInfo(key); 
+                LogPresetDebugInfo(key); 
             }
             CMDebug.Log("========== 导出结束 ==========");
         }
-
+        
         public void LogPresetDebugInfo(string presetKey)
         {
-            // 保持原有的详细日志输出逻辑
-            // 为节省篇幅，此处省略具体 StringBuilder 代码，逻辑与原文件一致
-            if (_gameNativePresetMap.TryGetValue(presetKey, out var p))
+            if (!_isInitialized)
             {
-                CMDebug.Log($"[Debug] Preset {presetKey}: HP={p.health}");
+                CMDebug.LogWarning($"Spawner 未初始化，无法读取预设");
+                return;
             }
+
+            // 注意：这里使用了新变量名 _gameNativePresetMap
+            if (!_gameNativePresetMap.TryGetValue(presetKey, out var p))
+            {
+                CMDebug.LogError($"找不到预设: {presetKey}");
+                return;
+            }
+
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            sb.AppendLine($"========== [原始预设参考数据: {presetKey}] ==========");
+            
+            // --- 1. 基础属性 ---
+            sb.AppendLine("--- [基础属性] ---");
+            sb.AppendLine($"Health: {p.health}");
+            sb.AppendLine($"MoveSpeedFactor: {p.moveSpeedFactor}");
+            sb.AppendLine($"HasSoul: {p.hasSoul}");
+            sb.AppendLine($"Exp: {p.exp}");
+            sb.AppendLine($"PushCharacter: {p.pushCharacter}");
+            sb.AppendLine($"ShowName: {p.showName}");
+            sb.AppendLine($"ShowHealthBar: {p.showHealthBar}");
+
+            // --- 2. 感知能力 ---
+            sb.AppendLine("\n--- [感知能力] ---");
+            sb.AppendLine($"SightDistance: {p.sightDistance}");
+            sb.AppendLine($"SightAngle: {p.sightAngle}");
+            sb.AppendLine($"HearingAbility: {p.hearingAbility}");
+            sb.AppendLine($"NightVisionAbility: {p.nightVisionAbility}");
+            sb.AppendLine($"ForgetTime: {p.forgetTime}");
+            sb.AppendLine($"SetActiveByPlayerDistance: {p.setActiveByPlayerDistance}");
+            sb.AppendLine($"ForceTracePlayerDistance: {p.forceTracePlayerDistance}");
+            sb.AppendLine($"TraceTargetChance: {p.minTraceTargetChance} ~ {p.maxTraceTargetChance}");
+
+            // --- 3. 反应与射击 ---
+            sb.AppendLine("\n--- [反应与射击] ---");
+            sb.AppendLine($"ReactionTime: {p.reactionTime}");
+            sb.AppendLine($"NightReactionTimeFactor: {p.nightReactionTimeFactor}");
+            sb.AppendLine($"ShootDelay: {p.shootDelay}");
+            sb.AppendLine($"ShootTimeRange: {p.shootTimeRange}");
+            sb.AppendLine($"ShootTimeSpaceRange: {p.shootTimeSpaceRange}");
+            sb.AppendLine($"ShootCanMove: {p.shootCanMove}");
+            sb.AppendLine($"DefaultWeaponOut: {p.defaultWeaponOut}");
+
+            // --- 4. 移动与战术 ---
+            sb.AppendLine("\n--- [移动与战术] ---");
+            sb.AppendLine($"PatrolRange: {p.patrolRange}");
+            sb.AppendLine($"CombatMoveRange: {p.combatMoveRange}");
+            sb.AppendLine($"CombatMoveTimeRange: {p.combatMoveTimeRange}");
+            sb.AppendLine($"PatrolTurnSpeed: {p.patrolTurnSpeed}");
+            sb.AppendLine($"CombatTurnSpeed: {p.combatTurnSpeed}");
+            sb.AppendLine($"CanDash: {p.canDash}");
+            sb.AppendLine($"DashCoolTimeRange: {p.dashCoolTimeRange}");
+            sb.AppendLine($"CanTalk: {p.canTalk}");
+
+            // --- 5. 战斗数值 ---
+            sb.AppendLine("\n--- [战斗数值] ---");
+            sb.AppendLine($"DamageMultiplier: {p.damageMultiplier}");
+            sb.AppendLine($"BulletSpeedMultiplier: {p.bulletSpeedMultiplier}");
+            sb.AppendLine($"GunDistanceMultiplier: {p.gunDistanceMultiplier}");
+            sb.AppendLine($"GunScatterMultiplier: {p.gunScatterMultiplier}");
+            sb.AppendLine($"ScatterMultiIfTargetRunning: {p.scatterMultiIfTargetRunning}");
+            sb.AppendLine($"ScatterMultiIfOffScreen: {p.scatterMultiIfOffScreen}");
+            sb.AppendLine($"GunCritRateGain: {p.gunCritRateGain}");
+            sb.AppendLine($"AiCombatFactor: {p.aiCombatFactor}");
+
+            // --- 6. 技能参数 ---
+            sb.AppendLine("\n--- [技能参数] ---");
+            sb.AppendLine($"HasSkill: {p.hasSkill}");
+            sb.AppendLine($"HasSkillChance: {p.hasSkillChance}");
+            sb.AppendLine($"SkillSuccessChance: {p.skillSuccessChance}");
+            sb.AppendLine($"SkillCoolTimeRange: {p.skillCoolTimeRange}");
+
+            // --- 7. 抗性 ---
+            sb.AppendLine("\n--- [抗性] ---");
+            sb.AppendLine($"ResistPhysics: {p.elementFactor_Physics}");
+            sb.AppendLine($"ResistFire: {p.elementFactor_Fire}");
+            sb.AppendLine($"ResistPoison: {p.elementFactor_Poison}");
+            sb.AppendLine($"ResistElectricity: {p.elementFactor_Electricity}");
+            sb.AppendLine($"ResistSpace: {p.elementFactor_Space}");
+            sb.AppendLine($"ResistGhost: {p.elementFactor_Ghost}");
+
+            // --- 8. 掉落与物品 ---
+            sb.AppendLine("\n--- [掉落与物品] ---");
+            sb.AppendLine($"HasCashChance: {p.hasCashChance}");
+            sb.AppendLine($"CashRange: {p.cashRange}");
+            sb.AppendLine($"WantItem: {p.wantItem}");
+            sb.AppendLine($"DropBoxOnDead: {p.dropBoxOnDead}");
+
+            // 读取物品列表
+            var items = ReflectionHelper.GetPrivateField<IList>(p, "itemsToGenerate");
+            if (items != null && items.Count > 0)
+            {
+                sb.Append("CustomItemIDs: [");
+                foreach (var item in items)
+                {
+                    try {
+                        var pool = item.GetType().GetField("itemPool").GetValue(item);
+                        var entries = pool.GetType().GetField("entries", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(pool) as IList;
+                        if (entries != null) {
+                            foreach (var entry in entries) {
+                                var id = entry.GetType().GetField("itemTypeID").GetValue(entry);
+                                sb.Append($"{id}, ");
+                            }
+                        }
+                    } catch {}
+                }
+                sb.AppendLine("]");
+            }
+            else
+            {
+                sb.AppendLine("CustomItemIDs: []");
+            }
+
+            sb.AppendLine("=============================================");
+
+            CMDebug.Log(sb.ToString());
         }
 
         #endregion
