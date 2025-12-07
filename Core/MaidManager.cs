@@ -136,6 +136,11 @@ namespace CombatMaid.Core
             {
                 CommandToggleHoldTeam();
             }
+            
+            if (Input.GetKeyDown(KeyCode.L))
+            {
+                CommandToggleScavenge();
+            }
         }
 
         private void UpdateFocusTarget()
@@ -225,6 +230,14 @@ namespace CombatMaid.Core
                 var maid = _activeMaids[i];
                 maid.ForceHeal();
                 //maid.MaidCharacter.PopText("手动治疗！");
+            }
+        }
+        
+        private void CommandToggleScavenge()
+        {
+            foreach (var maid in _activeMaids)
+            {
+                if (maid != null) maid.CommandScavenge();
             }
         }
 

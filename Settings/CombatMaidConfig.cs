@@ -55,7 +55,7 @@ namespace CombatMaid.Settings
         
         public static KeyCode KeyMove { get; set; } = KeyCode.G;
         public static KeyCode KeyHeal { get; set; } = KeyCode.H;
-        public static KeyCode KeyHold { get; set; } = KeyCode.F;
+        public static KeyCode KeyHold { get; set; } = KeyCode.J;
         
         // 自定义女仆配置
         public static string CustomMaidName { get; set; } = Default_CustomMaidName;

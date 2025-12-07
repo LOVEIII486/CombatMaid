@@ -114,6 +114,7 @@ namespace CombatMaid.Core
             StateMachine.AddState(new State_ForceFollow());
             StateMachine.AddState(new State_HoldPosition());
             StateMachine.AddState(new State_PassiveFollow());
+            StateMachine.AddState(new State_Scavenge());
 
             StateMachine.ChangeState<State_Autonomous>();
         }
@@ -163,7 +164,7 @@ namespace CombatMaid.Core
         }
         
         /// <summary>
-        /// 切换驻守状态 (F键)
+        /// 切换驻守状态 (J键)
         /// </summary>
         public void ToggleHoldPosition()
         {
@@ -176,6 +177,23 @@ namespace CombatMaid.Core
             else
             {
                 StateMachine.ChangeState<State_HoldPosition>();
+            }
+        }
+        
+        /// <summary>
+        /// 指挥搜刮 (L键)
+        /// </summary>
+        public void CommandScavenge()
+        {
+            // 如果已经在搜刮，取消
+            if (StateMachine.CurrentState is State_Scavenge)
+            {
+                StateMachine.ChangeState<State_Autonomous>(); // 再次按键取消
+                MaidCharacter?.PopText("取消搜刮");
+            }
+            else
+            {
+                StateMachine.ChangeState<State_Scavenge>();
             }
         }
         
