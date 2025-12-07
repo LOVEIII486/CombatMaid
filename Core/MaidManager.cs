@@ -143,7 +143,10 @@ namespace CombatMaid.Core
                 }
             }
 
-            if (Input.GetMouseButton(0)) DetectPlayerTarget();
+            if (Input.GetMouseButtonDown(0)) 
+            {
+                DetectPlayerTarget();
+            }
 
             if (FocusTarget != null && (FocusTarget.Health == null || FocusTarget.Health.IsDead))
             {
@@ -154,23 +157,35 @@ namespace CombatMaid.Core
         private void DetectPlayerTarget()
         {
             if (Camera.main == null) return;
+            float checkDistance = 30f; 
 
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit, RaycastDistance, _enemyLayerMask))
+            Debug.DrawRay(ray.origin, ray.direction * checkDistance, Color.red, 0.5f);
+
+            if (Physics.Raycast(ray, out RaycastHit hit, checkDistance, _enemyLayerMask))
             {
                 var target = hit.collider.GetComponentInParent<CharacterMainControl>();
-                if (target != null && !target.Health.IsDead && target.Team != Teams.player)
-                {
-                    if (FocusTarget != target)
-                    {
-                        FocusTarget = target;
-                        CMDebug.Log($"[指令] 集火目标: {target.name}");
-                    }
+                CMDebug.Log($"[Raycast] 打中: {hit.collider.name} (Layer: {hit.collider.gameObject.layer})");
 
-                    _focusExpireTimer = FocusDuration;
+                if (target != null)
+                {
+                    if (!target.Health.IsDead && target.Team != Teams.player)
+                    {
+                        if (FocusTarget != target)
+                        {
+                            FocusTarget = target;
+                            CMDebug.Log($"[指令] 集火目标更新: {target.name}"); 
+                        }
+                        _focusExpireTimer = FocusDuration;
+                    }
+                    else
+                    {
+                        CMDebug.Log($"[Raycast] 无效目标: {target.name} (Dead:{target.Health.IsDead}, Team:{target.Team})");
+                    }
                 }
             }
         }
+        
         private void CommandToggleHoldTeam()
         {
             for (int i = _activeMaids.Count - 1; i >= 0; i--)
@@ -202,12 +217,11 @@ namespace CombatMaid.Core
 
         private void CommandForceHealTeam()
         {
-            CMDebug.Log("[指令] 强制全队尝试使用医疗包 (H)");
             for (int i = _activeMaids.Count - 1; i >= 0; i--)
             {
                 var maid = _activeMaids[i];
                 maid.ForceHeal();
-                maid.MaidCharacter.PopText("手动治疗！");
+                //maid.MaidCharacter.PopText("手动治疗！");
             }
         }
 

@@ -10,15 +10,15 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
     public class Skill_SquadCoordination : MaidSkillBase
     {
         public override string SkillName => "SquadCoordination";
-        public override float Cooldown => 0.5f; // 检测频率
+        public override float Cooldown => 0.1f; // 检测频率
         public override bool RespectGlobalCooldown => false;
 
         protected override bool CheckTriggerCondition()
         {
             // 1. 基础检查
             if (Controller == null || Controller.AI == null) return false;
-            
-            // 2. 如果女仆正在执行“和平跟随”或“强制跟随”
+    
+            // 2. 状态检查
             if (Controller.StateMachine.CurrentState is State_PassiveFollow || 
                 Controller.StateMachine.CurrentState is State_ForceFollow)
             {
@@ -27,14 +27,26 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
 
             // 3. 检查是否有集火指令
             var focusTarget = MaidManager.Instance.FocusTarget;
-            if (focusTarget == null) return false;
+            if (focusTarget == null) 
+            {
+                return false;
+            }
 
             // 4. 检查是否需要修正
-            // A: AI 当前没目标
-            if (Controller.AI.searchedEnemy == null) return true;
-            // B: AI 有目标，但不是指挥官标记的目标
-            if (Controller.AI.searchedEnemy != focusTarget) return true;
+            // A: AI 当前没目标 -> 需要执行
+            if (Controller.AI.searchedEnemy == null) 
+            {
+                CMDebug.Log($"[{SkillName}] 触发: 当前无目标 -> 响应集火");
+                return true;
+            }
 
+            // B: AI 有目标，但不是集火目标 -> 需要执行
+            if (Controller.AI.searchedEnemy != focusTarget) 
+            {
+                CMDebug.Log($"[{SkillName}] 触发: 当前目标({Controller.AI.searchedEnemy.name}) != 集火目标({focusTarget.name}) -> 纠正");
+                return true;
+            }
+    
             return false;
         }
 
