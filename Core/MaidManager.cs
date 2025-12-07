@@ -118,13 +118,18 @@ namespace CombatMaid.Core
 
         private void HandleCommandInput()
         {   
-            if (Input.GetKeyDown(KeyCode.F)) CommandToggleHoldTeam();
-            
-            // G 移动指令
-            if (Input.GetKeyDown(KeyCode.G)) CommandMoveTeamToMouse();
-
-            // H 强制回血
-            if (Input.GetKeyDown(KeyCode.H)) CommandForceHealTeam();
+            if (Input.GetKeyDown(Settings.CombatMaidConfig.KeyMove)) 
+            {
+                CommandMoveTeamToMouse();
+            }
+            if (Input.GetKeyDown(Settings.CombatMaidConfig.KeyHeal)) 
+            {
+                CommandForceHealTeam();
+            }
+            if (Input.GetKeyDown(Settings.CombatMaidConfig.KeyHold)) 
+            {
+                CommandToggleHoldTeam();
+            }
         }
 
         private void UpdateFocusTarget()
