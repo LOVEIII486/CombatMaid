@@ -1,9 +1,5 @@
 key,value,version,sheet
 key,value,version,sheet
-Settings_CombatMaid_Group,战斗女仆设置,1.0,Groups
-Setting_EnableMaidMode,开启女仆模式,1.0,GeneralSettings
-Setting_AttackMultiplier,攻击倍率,1.0,GeneralSettings
-Setting_MoveSpeed,移动速度,1.0,GeneralSettings
 Item_MaidContract,标准女仆契约（测试物品）,1.0,MaidItemName
 Item_MaidContract_Desc,召唤皇家女仆-贝拉,1.0,MaidItemDescription
 Item_VialMaid_I,瓶中女仆·I型,1.0,MaidItemName
@@ -40,7 +36,12 @@ Perk_Bottle_Lv3,瓶中女仆 III 型,2.2.2,Perks
 Perk_Bottle_Lv3_Desc,解锁最高阶封存战偶级瓶中女仆，具备接近皇家近卫的战斗能力，但不继承任何酒狐女仆的成长属性。,2.2.2,Perks
 Perk_Weapon_Upgrade_1,武器升级: 战术突击,2.2.2,Perks
 Perk_Weapon_Upgrade_1_Desc,为酒狐换装更先进的武器。将默认格力克升级为MP5，大幅提升火力压制能力。,2.2.2,Perks
-Setting_Key_Move,指令: 战术移动,1.0,GeneralSettings
-Setting_Key_Heal,指令: 强制治疗,1.0,GeneralSettings
-Setting_Key_Hold,指令: 驻守/跟随,1.0,GeneralSettings
-Settings_CombatMaid_Keys,女仆按键配置,1.0,Groups
+Setting_HealthMultiplier,生命倍率,1.0,GeneralSettings
+Setting_AttackMultiplier,攻击倍率,1.0,GeneralSettings
+Setting_MoveSpeedMultiplier,移速倍率,1.0,GeneralSettings
+Setting_Key_Move,指令: 战术移动,1.0,KeyBindings
+Setting_Key_Heal,指令: 强制治疗,1.0,KeyBindings
+Setting_Key_Hold,指令: 驻守/跟随,1.0,KeyBindings
+Settings_CombatMaid_Group,战斗女仆核心设置,1.0,Groups
+Settings_CombatMaid_Stats,属性倍率调整,1.0,Groups
+Settings_CombatMaid_Keys,按键绑定设置,1.0,Groups
