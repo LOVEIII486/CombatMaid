@@ -19,7 +19,6 @@ namespace CombatMaid
         public static void Log(object message, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "")
         {
             if (!ShowDebugLogs) return;
-
             string className = Path.GetFileNameWithoutExtension(sourceFilePath);
             Debug.Log($"{BasePrefix}[Debug][{className}.{memberName}] {message ?? "null"}");
         }

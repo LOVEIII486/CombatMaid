@@ -24,7 +24,7 @@ namespace CombatMaid.Core
         private List<CharacterRandomPreset> _tempPresets = new List<CharacterRandomPreset>();
 
         private Dictionary<string, CharacterRandomPreset> _presetMap = new Dictionary<string, CharacterRandomPreset>();
-        
+
         private Dictionary<string, CharacterRandomPreset> _generatedPresetsCache =
             new Dictionary<string, CharacterRandomPreset>();
 
@@ -80,6 +80,8 @@ namespace CombatMaid.Core
             _isInitialized = true;
         }
 
+        #region  女仆生成逻辑
+        
         public void SpawnMaid(string presetNameKey, Vector3 position, CharacterMainControl player,
             MaidConfig config, string profileName, Action<AICharacterController> onSuccess)
         {
@@ -91,27 +93,24 @@ namespace CombatMaid.Core
                 return;
             }
 
-            // 1. 准备预设
             if (config == null) config = new MaidConfig();
             CharacterRandomPreset finalPreset = CreateFullCustomPreset(sourcePreset, config, profileName);
             _tempPresets.Add(finalPreset);
 
-            // 2. 启动异步生成流程
             SpawnMaidDirectlyAsync(finalPreset, position, player, onSuccess).Forget();
         }
 
-        private async UniTaskVoid SpawnMaidDirectlyAsync(CharacterRandomPreset preset, Vector3 position, 
+        private async UniTaskVoid SpawnMaidDirectlyAsync(CharacterRandomPreset preset, Vector3 position,
             CharacterMainControl player, Action<AICharacterController> callback)
         {
-            try 
+            try
             {
-                // A. 播放特效 (借用 Egg 的特效资源)
                 if (_eggPrefab != null && _eggPrefab.spawnFx != null)
                 {
                     Instantiate(_eggPrefab.spawnFx, position, Quaternion.identity);
                 }
 
-                // B. 获取当前场景 Index
+                // 获取当前场景 Index
                 int sceneIndex = 0;
                 if (MultiSceneCore.MainScene.HasValue)
                 {
@@ -119,41 +118,35 @@ namespace CombatMaid.Core
                 }
                 else
                 {
-                    // 如果拿不到 MainScene，就拿当前激活的场景
                     sceneIndex = UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex;
                 }
 
-                // C. 直接异步生成角色，并获得返回值
+                // 直接异步生成角色，并获得返回值
                 // 参数参考 Egg.cs: pos + down*0.25f, forward, sceneIndex, group=null, unk=false
                 CharacterMainControl spawnedChar = await preset.CreateCharacterAsync(
-                    position + Vector3.down * 0.25f, 
+                    position + Vector3.down * 0.25f,
                     player.transform.forward,
-                    sceneIndex, 
-                    null, 
+                    sceneIndex,
+                    null,
                     false
                 );
 
-                // D. 初始化 AI 关系
+                // 初始化 AI 关系
                 if (spawnedChar != null)
                 {
                     AICharacterController ai = spawnedChar.GetComponentInChildren<AICharacterController>();
-                    
                     // 修正位置
                     spawnedChar.SetPosition(position + Vector3.down * 0.25f);
 
                     if (ai != null)
                     {
-                        // 设置 PetAI
                         var petComponent = ai.GetComponent<PetAI>();
                         if (petComponent != null)
                         {
                             petComponent.SetMaster(player);
                         }
-
-                        // 设置队长和队伍
                         ai.leader = player;
                         spawnedChar.SetTeam(player.Team);
-                        
                         callback?.Invoke(ai);
                         CMDebug.Log($"精准生成成功: {spawnedChar.name}");
                     }
@@ -165,25 +158,20 @@ namespace CombatMaid.Core
             }
         }
         
+        #endregion
+        
         /// <summary>
-        /// 当技能树解锁导致属性变化时，调用此方法立即刷新缓存中的酒狐数据
+        /// 当技能树解锁导致属性变化时，立即刷新缓存中的酒狐数据
         /// </summary>
         public void RefreshWineFoxCache()
         {
             if (!_isInitialized) return;
 
-            // 1. 获取最新数据
             var currentData = WineFoxDataManager.CurrentData;
             if (currentData == null || currentData.PresetConfig == null) return;
 
-            // 2. 构造缓存 Key (硬编码酒狐的 ProfileName)
-            // 注意：这里需要确保和 CreateFullCustomPreset 里的命名逻辑一致
-            // 假设原始 Key 是 "Cname_Usec" (BasePresetKey)，但我们通常不知道 Source 是哪个
-            // 我们可以遍历缓存找到它，或者构建标准 Key
-            
-            // 更稳妥的方式：直接遍历缓存找到包含 "RoyalMaid_WineFox" 的项
             string targetKeyPart = "_CM_RoyalMaid_WineFox";
-            
+
             CharacterRandomPreset targetPreset = null;
             foreach (var kvp in _generatedPresetsCache)
             {
@@ -196,21 +184,19 @@ namespace CombatMaid.Core
 
             if (targetPreset != null)
             {
-                // 3. 原地刷新数据
                 ApplyConfigToPreset(targetPreset, currentData.PresetConfig);
-                CMDebug.Log("[MaidSpawner] 缓存中的酒狐数据已热更新！");
+                CMDebug.Log("缓存中的酒狐数据已热更新！");
             }
             else
             {
-                // 如果缓存里还没有（还没生成过），那就无所谓，下次生成会自动读取最新的
-                CMDebug.Log("[MaidSpawner] 缓存中无酒狐实例，无需刷新。");
+                CMDebug.Log("缓存中无酒狐实例，无需刷新。");
             }
         }
 
-        // ==================== 预设配置逻辑 ====================
+        #region 预设配置逻辑
 
         /// <summary>
-        /// 解析 MaidConfig 并应用
+        /// 解析 MaidConfig
         /// </summary>
         private CharacterRandomPreset CreateFullCustomPreset(CharacterRandomPreset source, MaidConfig config,
             string profileName)
@@ -218,20 +204,19 @@ namespace CombatMaid.Core
             string uniqueSuffix = $"_CM_{profileName}";
             string finalKey = source.nameKey + uniqueSuffix;
 
-            // [修改] 只要缓存有，就直接返回 (因为我们有了 Refresh 机制，缓存永远是最新的)
+            // 缓存有就直接返回
             if (_generatedPresetsCache.TryGetValue(finalKey, out var cachedPreset))
             {
-                return cachedPreset; 
+                return cachedPreset;
             }
 
-            // 新建逻辑
             CharacterRandomPreset preset = Instantiate(source);
             preset.name = source.name + uniqueSuffix;
             preset.nameKey = finalKey;
             preset.team = Teams.player;
 
-            // 注册本地化 (仅需一次)
-            string displayName = !string.IsNullOrEmpty(config.CustomName) ? config.CustomName : "战斗女仆";
+            // 注册本地化
+            string displayName = !string.IsNullOrEmpty(config.CustomName) ? config.CustomName : "未知战斗女仆";
             if (LocalizationManager.overrideTexts != null)
             {
                 LocalizationManager.overrideTexts[finalKey] = displayName;
@@ -245,9 +230,9 @@ namespace CombatMaid.Core
 
             return preset;
         }
-        
+
         /// <summary>
-        /// 将配置应用到预设对象 (核心数值逻辑)
+        /// 将配置应用到预设对象
         /// </summary>
         private void ApplyConfigToPreset(CharacterRandomPreset preset, MaidConfig config)
         {
@@ -350,25 +335,28 @@ namespace CombatMaid.Core
             }
         }
         
-        // ==================== 调试函数 ====================
+        #endregion
         
+        #region 调试函数
+
         /// <summary>
-        /// [调试] 输出所有已加载的预设 Key
+        /// 输出所有已加载的预设 Key
         /// </summary>
         public void DebugListAllKeys()
         {
             if (!_isInitialized) return;
-            
+
             CMDebug.Log("========== [可用预设列表] ==========");
             foreach (var key in _presetMap.Keys)
             {
                 CMDebug.Log($"- {key}");
             }
+
             CMDebug.Log("==================================");
         }
 
         /// <summary>
-        /// [调试] 批量输出官方参考数值
+        /// 批量输出官方参考数值
         /// </summary>
         public void DebugExportReferenceStats()
         {
@@ -378,7 +366,6 @@ namespace CombatMaid.Core
                 return;
             }
 
-            // 这里列出你感兴趣的官方预设 ID
             string[] targetKeys = new string[]
             {
                 "Cname_Usec",
@@ -391,24 +378,24 @@ namespace CombatMaid.Core
             };
 
             CMDebug.Log("========== 开始导出官方参考数值 ==========");
-            
+
             foreach (var key in targetKeys)
             {
                 if (_presetMap.ContainsKey(key))
                 {
-                    LogPresetDebugInfo(key); 
+                    LogPresetDebugInfo(key);
                 }
                 else
                 {
-                    CMDebug.LogWarning($"未找到官方预设: {key} (可能是拼写错误或该版本游戏未包含)");
+                    CMDebug.LogWarning($"未找到官方预设: {key}");
                 }
             }
-            
+
             CMDebug.Log("========== 导出结束 ==========");
         }
-        
+
         /// <summary>
-        /// [调试] 输出原始预设的所有属性值
+        /// 输出原始预设的所有属性值
         /// </summary>
         public void LogPresetDebugInfo(string presetKey)
         {
@@ -426,7 +413,7 @@ namespace CombatMaid.Core
 
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
             sb.AppendLine($"========== [原始预设参考数据: {presetKey}] ==========");
-            
+
             // --- 1. 基础属性 ---
             sb.AppendLine("--- [基础属性] ---");
             sb.AppendLine($"Health: {p.health}");
@@ -510,17 +497,25 @@ namespace CombatMaid.Core
                 sb.Append("CustomItemIDs: [");
                 foreach (var item in items)
                 {
-                    try {
+                    try
+                    {
                         var pool = item.GetType().GetField("itemPool").GetValue(item);
-                        var entries = pool.GetType().GetField("entries", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(pool) as IList;
-                        if (entries != null) {
-                            foreach (var entry in entries) {
+                        var entries = pool.GetType().GetField("entries", BindingFlags.Instance | BindingFlags.NonPublic)
+                            .GetValue(pool) as IList;
+                        if (entries != null)
+                        {
+                            foreach (var entry in entries)
+                            {
                                 var id = entry.GetType().GetField("itemTypeID").GetValue(entry);
                                 sb.Append($"{id}, ");
                             }
                         }
-                    } catch {}
+                    }
+                    catch
+                    {
+                    }
                 }
+
                 sb.AppendLine("]");
             }
             else
@@ -532,9 +527,10 @@ namespace CombatMaid.Core
 
             CMDebug.Log(sb.ToString());
         }
-
+        
+        #endregion
     }
-
+    
     public static class ReflectionHelper
     {
         public static void SetPrivateField(object obj, string fieldName, object value)

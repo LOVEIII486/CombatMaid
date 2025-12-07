@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
-using Duckov;           // 游戏原生命名空间
-using Duckov.Scenes;    // 游戏原生命名空间
-using ItemStatsSystem;  // 游戏原生命名空间
+using Duckov;
+using Duckov.Scenes;
+using ItemStatsSystem;
 using ItemStatsSystem.Items;
 
 namespace CombatMaid.Core.MaidSkillSystem
@@ -47,16 +47,6 @@ namespace CombatMaid.Core.MaidSkillSystem
             
             // 5. 释放技能
             skill.ReleaseSkill(context, attacker);
-        }
-
-        /// <summary>
-        /// 直接向玩家当前位置发射
-        /// </summary>
-        public static void LaunchGrenadeAtPlayer(CharacterMainControl attacker, int itemId, float delay = 2.0f)
-        {
-            if (LevelManager.Instance?.MainCharacter == null) return;
-            Vector3 playerPos = LevelManager.Instance.MainCharacter.transform.position;
-            LaunchGrenade(attacker, itemId, playerPos, delay);
         }
     }
 }

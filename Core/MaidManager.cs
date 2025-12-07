@@ -15,7 +15,7 @@ namespace CombatMaid.Core
     {
         public static MaidManager Instance { get; private set; }
 
-        // Key = ProfileName (仅存储普通女仆的只读配置)
+        // Key = ProfileName 只存储普通女仆的只读配置
         private Dictionary<string, MaidProfileData> _maidProfiles = new Dictionary<string, MaidProfileData>();
 
         private List<MaidController> _activeMaids = new List<MaidController>();
@@ -38,7 +38,7 @@ namespace CombatMaid.Core
 
                 LoadAllPresets();
 
-                CMDebug.Log("MaidManager 初始化完成。");
+                CMDebug.LogInfo("MaidManager 初始化完成。");
             }
             else
             {
@@ -49,45 +49,46 @@ namespace CombatMaid.Core
         private void Update()
         {
             HandleDebugInput();
+            HandleCommandInput();
             UpdateFocusTarget();
         }
 
-        public void OnLevelStart(string sceneName)
-        {
-            CMDebug.Log($"场景加载: {sceneName}");
-        }
+        public void OnLevelStart(string sceneName) { }
 
         public void OnLevelEnd()
         {
             DespawnTeam();
         }
-
-        private void HandleDebugInput()
+        
+        private void HandleCommandInput()
         {
-            // F5 测试生成默认的贝拉
-            // if (Input.GetKeyDown(KeyCode.F5)) SpawnSpecificMaid("RoyalMaid_Bella");
-
-            // F6 清除
-            if (Input.GetKeyDown(KeyCode.F6)) DespawnTeam();
-
-            // F8 重载配置
-            //if (Input.GetKeyDown(KeyCode.F8)) LoadAllPresets();
-
             // G 移动指令
             if (Input.GetKeyDown(KeyCode.G)) CommandMoveTeamToMouse();
 
             // H 强制回血
             if (Input.GetKeyDown(KeyCode.H)) CommandForceHealTeam();
+        }
+        
+        private void HandleDebugInput()
+        {
+            // F5 测试生成默认的贝拉
+            if (Input.GetKeyDown(KeyCode.F5)) SpawnWineFox(CharacterMainControl.Main.transform.position);
+
+            // F6 清除
+            if (Input.GetKeyDown(KeyCode.F6)) DespawnTeam();
+
+            // F8 重载配置
+            if (Input.GetKeyDown(KeyCode.F8)) LoadAllPresets();
 
             // F9 调试输出
-            // if (Input.GetKeyDown(KeyCode.F9))
-            // {
-            //     if (MaidSpawner.Instance != null)
-            //     {
-            //         MaidSpawner.Instance.DebugListAllKeys();
-            //         MaidSpawner.Instance.DebugExportReferenceStats();
-            //     }
-            // }
+            if (Input.GetKeyDown(KeyCode.F9))
+            {
+                if (MaidSpawner.Instance != null)
+                {
+                    MaidSpawner.Instance.DebugListAllKeys();
+                    MaidSpawner.Instance.DebugExportReferenceStats();
+                }
+            }
         }
 
         // ==================== JSON 加载逻辑 (普通女仆) ====================
@@ -249,15 +250,7 @@ namespace CombatMaid.Core
             return controller;
         }
 
-        private void SpawnSpecificMaid(string profileName)
-        {
-            Vector3 mousePos = GetMousePosition();
-            if (mousePos != Vector3.zero)
-            {
-                SpawnMaidAt(profileName, mousePos);
-            }
-        }
-
+ 
         // ==================== 队伍控制 & 集火逻辑 ====================
 
         private void UpdateFocusTarget()
@@ -336,7 +329,10 @@ namespace CombatMaid.Core
                 maid.MaidCharacter.PopText("手动治疗！");
             }
         }
-
+        
+        
+        // ==================== 其他 ====================
+        
         public void DespawnTeam()
         {
             for (int i = _activeMaids.Count - 1; i >= 0; i--)
@@ -352,38 +348,28 @@ namespace CombatMaid.Core
             _activeMaids.Clear();
             CMDebug.Log("女仆队伍已解散");
         }
-    }
-
-    // ==================== 数据结构定义 ====================
-
-    [System.Serializable]
-    public class MaidProfileData
-    {
-        public string ProfileName;
-        public MaidConfig PresetConfig;
-        public MaidExtraInfo ExtraData;
-    }
-
-    [System.Serializable]
-    public class MaidExtraInfo
-    {
-        public string Description;
-
-        [Header("生成基底")] public string BasePresetKey = "Cname_Usec";
-
-        [Header("外观模型")] public string CustomModelID = "";
-
-        [Header("Mod行为")] public string TacticalMode = "Standard";
-
-        [Header("通用技能配置")] public List<MaidSkillConfig> Skills = new List<MaidSkillConfig>();
         
-        [Header("存档状态")] public List<string> AppliedModifierKeys = new List<string>();
-    }
+        public MaidController GetActiveWineFox()
+        {
+            // 倒序遍历以安全移除空引用
+            for (int i = _activeMaids.Count - 1; i >= 0; i--)
+            {
+                var maid = _activeMaids[i];
+        
+                // 1. 清理无效引用 (以防对象已被销毁但未从列表移除)
+                if (maid == null || maid.gameObject == null)
+                {
+                    _activeMaids.RemoveAt(i);
+                    continue;
+                }
 
-    [System.Serializable]
-    public class MaidSkillConfig
-    {
-        public string SkillID; // 例如 "Grenade", "AutoHeal"
-        public Dictionary<string, object> Params = new Dictionary<string, object>();
+                // 2. 检查标记组件 (WineFoxDataSync 仅挂载在酒狐身上)
+                if (maid.GetComponent<WineFoxDataSync>() != null)
+                {
+                    return maid;
+                }
+            }
+            return null;
+        }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using ItemStatsSystem;
 using CombatMaid.Core;
-using CombatMaid.Core.WineFox; // [关键] 引用酒狐组件命名空间以进行唯一性检查
+using CombatMaid.Core.WineFox;
 
 namespace CombatMaid.Core.Items.Components
 {
@@ -9,9 +9,9 @@ namespace CombatMaid.Core.Items.Components
     {
         private Item _item;
 
-        // [全局CD] 静态变量，所有酒狐契约物品共享此计时器
+        // 全局冷却时间戳
         private static float _nextSummonTime = 0f;
-        private const float GlobalCooldown = 10f; // 5分钟冷却
+        private const float GlobalCooldown = 120f;
 
         private void Awake()
         {
@@ -26,34 +26,41 @@ namespace CombatMaid.Core.Items.Components
         {
             var player = user as CharacterMainControl;
             if (player == null) return;
+            
+            if (MaidManager.Instance == null)
+            {
+                CMDebug.LogError("MaidManager 未初始化");
+                return;
+            }
 
-            // 1. [检查] 全局冷却
+            // 1. CD 检查
             if (Time.time < _nextSummonTime)
             {
                 float remaining = _nextSummonTime - Time.time;
                 player.PopText($"契约冷却中... {remaining:F0}秒");
-                return; // 直接返回，不执行召唤
+                return; 
             }
 
-            // 2. [检查] 唯一性 (检查场上是否有挂载了同步组件的酒狐)
-            if (FindObjectOfType<WineFoxDataSync>() != null)
+            // 2. 首次召唤，如果存在则重新召唤
+            MaidController existingFox = MaidManager.Instance.GetActiveWineFox();
+
+            if (existingFox != null)
             {
-                player.PopText("酒狐已在场，无法重复召唤！");
-                return; // 直接返回
+                CMDebug.Log("[WineFoxContract] 重新构筑酒狐实体...");
+                player.PopText("正在重铸酒狐躯体...");
+                Destroy(existingFox.gameObject);
             }
-            
-            // 3. [执行] 召唤逻辑
-            Vector3 spawnPos = player.transform.position + player.transform.forward * 1.5f;
-            
-            if (MaidManager.Instance != null)
+            else
             {
-                MaidManager.Instance.SpawnWineFox(spawnPos);
-                
-                // 设置 CD
-                _nextSummonTime = Time.time + GlobalCooldown;
-                
                 player.PopText("酒狐契约响应中...");
             }
+            
+            // 3. 召唤
+            Vector3 spawnPos = player.transform.position + player.transform.forward * 1.5f;
+            MaidManager.Instance.SpawnWineFox(spawnPos);
+            
+            // 4. 重置冷却
+            _nextSummonTime = Time.time + GlobalCooldown;
         }
 
         private void OnDestroy()

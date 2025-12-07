@@ -77,9 +77,8 @@ namespace CombatMaid
             CleanupLocalization();
             CleanupSceneHooks();
             CleanupHarmonyPatches();
-            // [修复] 不要在这里清理系统，等到 OnDestroy 时再清理
-            // CleanupMaidSystem();
-            // CleanupSkillTreeSystem();
+            CleanupMaidSystem();
+            CleanupSkillTreeSystem();
             
             ItemUtils.UnregisterAllItem("CombatMaid");
 
