@@ -252,22 +252,37 @@ namespace CombatMaid.Core
         {
             var prefab = MaidCharacter.deadLootBoxPrefab;
             if (prefab == null) return null;
-            Vector3 spawnPos = MaidCharacter.transform.position + MaidCharacter.transform.up * 1.0f + MaidCharacter.transform.forward * 0.5f;
+
+            Vector3 spawnPos = MaidCharacter.transform.position + Vector3.up * 1.5f + MaidCharacter.transform.forward * 0.5f;
+
             var boxInstance = Instantiate(prefab, spawnPos, MaidCharacter.transform.rotation);
+
             MultiSceneCore.MoveToActiveWithScene(boxInstance.gameObject, SceneManager.GetActiveScene().buildIndex);
+
             var rb = boxInstance.GetComponent<Rigidbody>();
             if (rb != null)
             {
-                rb.isKinematic = false; 
+                rb.isKinematic = false;
+                rb.useGravity = true; 
                 Vector3 throwForce = MaidCharacter.transform.forward * 3.0f + Vector3.up * 2.0f;
                 rb.velocity = throwForce;
                 rb.angularVelocity = Random.insideUnitSphere * 5f;
+            }
+            if (boxInstance.interactCollider != null)
+            {
+                boxInstance.interactCollider.isTrigger = false;
+            }
+            else
+            {
+                var col = boxInstance.GetComponent<Collider>();
+                if (col != null) col.isTrigger = false;
             }
             if (boxInstance.Inventory != null)
             {
                 int safeCapacity = Mathf.Max(20, requiredCapacity + 10);
                 boxInstance.Inventory.SetCapacity(safeCapacity);
             }
+
             return boxInstance;
         }
 
