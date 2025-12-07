@@ -229,18 +229,37 @@ namespace CombatMaid.Core.SkillTreeSystem
 
         private bool ApplyCustomLogic(SkillTreeModifier modifier, MaidProfileData data)
         {
-            // 根据 CustomActionID 执行特定逻辑
             switch (modifier.CustomActionID)
             {
-                case "UnlockEliteWeapons":
-                    // 示例：解锁高级武器
-                    if (data.PresetConfig.CustomItemIDs == null)
-                    {
-                        data.PresetConfig.CustomItemIDs = new List<int>();
-                    }
-                    data.PresetConfig.CustomItemIDs.Add(999); // 假设 999 是高级武器
-                    CMDebug.Log($"  [Custom] 已解锁精英武器");
+                case "UnlockEliteWeapons": // 旧示例
+                    if (data.PresetConfig.CustomItemIDs == null) data.PresetConfig.CustomItemIDs = new List<int>();
+                    data.PresetConfig.CustomItemIDs.Add(999);
                     return true;
+
+                // [新增] 武器升级逻辑：将 ID 254 替换为 258
+                case "Upgrade_Weapon_254_258":
+                    if (data.PresetConfig.CustomItemIDs == null) 
+                        data.PresetConfig.CustomItemIDs = new List<int>();
+
+                    int targetIndex = data.PresetConfig.CustomItemIDs.IndexOf(254);
+                    if (targetIndex != -1)
+                    {
+                        // 找到旧武器，直接替换
+                        data.PresetConfig.CustomItemIDs[targetIndex] = 258;
+                        CMDebug.Log($"  [Custom] 武器升级: 254 -> 258 (Index: {targetIndex})");
+                        return true;
+                    }
+                    else
+                    {
+                        // 没找到旧武器 (可能已被其他逻辑移除)，如果还没拥有新武器，则追加
+                        if (!data.PresetConfig.CustomItemIDs.Contains(258))
+                        {
+                            data.PresetConfig.CustomItemIDs.Add(258);
+                            CMDebug.Log($"  [Custom] 未找到旧武器254，直接补发新武器258");
+                            return true;
+                        }
+                    }
+                    return false;
 
                 default:
                     CMDebug.LogWarning($"  [Custom] 未知的自定义逻辑: {modifier.CustomActionID}");

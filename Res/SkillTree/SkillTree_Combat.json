@@ -155,6 +155,27 @@
       ]
     },
     {
+      "//": "--- 分支2扩展：武器升级 (替换 254 -> 258) ---",
+      "ID": "maid_weapon_upgrade_1",
+      "DisplayName": "Perk_Weapon_Upgrade_1",
+      "Description": "Perk_Weapon_Upgrade_1_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 3000,
+      "CostItems": {
+        "258": 1
+      },
+      "RequiredLevel": 8,
+      "Position": { "x": 0, "y": 300 },
+      "PrerequisiteIDs": [ "maid_combat_dmg_2" ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "Custom",
+          "CustomAction": "Upgrade_Weapon_254_258"
+        }
+      ]
+    },
+    {
       "ID": "maid_combat_dmg_3",
       "DisplayName": "Perk_WineFox_Dmg_3",
       "Description": "Perk_WineFox_Dmg_3_Desc",
