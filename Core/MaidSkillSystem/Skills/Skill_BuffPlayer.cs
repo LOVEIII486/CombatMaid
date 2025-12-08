@@ -7,7 +7,7 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
     public class Skill_BuffPlayer : MaidSkillBase
     {
         public override string SkillName => "BuffPlayer";
-        public override float Cooldown => 10.0f;
+        public override float Cooldown => 40.0f;
         
         public override bool RespectGlobalCooldown => true;
         public override float TriggerGCDDuration => 0.5f;
