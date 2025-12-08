@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using CombatMaid.Core.BuffsSystem;
 using CombatMaid.Core.MaidSkillSystem.Skills;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
@@ -73,14 +74,31 @@ namespace CombatMaid.Core.MaidSkillSystem
             var buffList = new List<(string, int)>();
             
             var listParams = GetListParam<BuffParamEntry>(parameters, "Buffs");
+            
             if (listParams != null)
             {
                 foreach (var p in listParams)
                 {
-                    if (!string.IsNullOrEmpty(p.BuffName) && p.BuffID > 0)
+                    if (string.IsNullOrEmpty(p.BuffName)) continue;
+
+                    int finalId = p.BuffID;
+
+                    // 如果 JSON 里没填 ID，则去注册表里查
+                    if (finalId == 0)
                     {
-                        buffList.Add((p.BuffName, p.BuffID));
+                        var effect = MaidBuffRegistry.Instance.GetEffect(p.BuffName);
+                        if (effect != null)
+                        {
+                            finalId = effect.BuffID;
+                        }
+                        else
+                        {
+                            CMDebug.LogWarning($"[SkillFactory] 未找到注册的 Buff 效果: {p.BuffName}，请检查拼写或是否已注册。");
+                            continue;
+                        }
                     }
+
+                    buffList.Add((p.BuffName, finalId));
                 }
             }
 
@@ -89,7 +107,7 @@ namespace CombatMaid.Core.MaidSkillSystem
                 return new Skill_BuffPlayer(buffList);
             }
 
-            CMDebug.LogWarning($"[CreateBuffPlayer] 配置无效: 'Buffs' 列表为空或格式错误");
+            CMDebug.LogWarning($"[CreateBuffPlayer] 配置无效: 没有找到有效的 Buff");
             return null;
         }
 

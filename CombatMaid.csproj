@@ -25,10 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Core\BuffsSystem\Effects\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Remove="SkillTreeSystem.7z" />
   </ItemGroup>
 

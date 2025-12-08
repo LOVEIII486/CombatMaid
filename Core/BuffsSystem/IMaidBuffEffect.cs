@@ -7,13 +7,13 @@ namespace CombatMaid.Core.BuffsSystem
     /// </summary>
     public interface IMaidBuffEffect
     {
-        // Buff 的唯一标识符
+        // Buff 的唯一标识名称
         string BuffName { get; }
+        
+        // Buff 的唯一数字 ID
+        int BuffID { get; }
 
-        // 当 Buff 被施加时触发
         void OnBuffSetup(Buff buff, CharacterMainControl target);
-
-        // 当 Buff 结束/被移除时触发
         void OnBuffDestroy(Buff buff, CharacterMainControl target);
     }
 }

@@ -15,8 +15,7 @@ namespace CombatMaid.Core.BuffsSystem
         /// </summary>
         public void Initialize()
         {
-            // RegisterEffect(new MaidBerserkEffect()); 
-            // RegisterEffect(new MaidInvincibleEffect());
+            RegisterEffect(new CombatMaid.Core.BuffsSystem.Effects.MaidTearEffect());
             
             CMDebug.Log($"初始化完成，已注册 {_effects.Count} 个效果");
         }
