@@ -257,6 +257,26 @@
       ]
     },
     {
+      "ID": "maid_skill_buff_vanilla",
+      "DisplayName": "Perk_Maid_Buffs",
+      "Description": "Perk_Maid_Buffs_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 3500,
+      "RequiredLevel": 4,
+      "Position": { "x": 50, "y": 450 },
+      "PrerequisiteIDs": [ "maid_skill_grenade" ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "AddSkill",
+          "SkillID": "VanillaBuff",
+          "SkillParams": {
+            "BuffIDs": [ 1011, 1014 ]
+          }
+        }
+      ]
+    },
+    {
       "//": "========== 分支4：特殊物品：瓶中女仆 (最右侧 x: 180) ==========",
       "ID": "maid_special_bottle_1",
       "DisplayName": "Perk_Bottle_Lv1",
