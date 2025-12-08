@@ -2,7 +2,7 @@
   "TreeID": "MaidTechTree",
   "TreeName": "SkillTree_MaidTech_Name",
   "Description": "SkillTree_MaidTech_Desc",
-  "Version": "1.0.0",
+  "Version": "1.1.0",
   "Nodes": [
     {
       "//": "--- 核心节点：酒狐女仆契约 ---",
@@ -17,14 +17,12 @@
         "58": 1
       },
       "RequiredLevel": 1,
-      "Position": {
-        "x": 0,
-        "y": 0
-      },
+      "Position": { "x": 0, "y": 0 },
       "PrerequisiteIDs": [],
       "PlayerStatModifiers": {},
       "MaidModifiers": []
     },
+
     {
       "//": "========== 分支1：生存能力加成 (最左侧 x: -180) ==========",
       "ID": "maid_survival_health_1",
@@ -32,25 +30,13 @@
       "Description": "Perk_WineFox_Health_1_Desc",
       "IconFileName": "default_icon.png",
       "CostMoney": 1000,
-      "CostItems": {
-        "17": 2,
-        "88": 4
-      },
+      "CostItems": { "17": 2, "88": 4 },
       "RequiredLevel": 1,
-      "Position": {
-        "x": -180,
-        "y": 150
-      },
-      "PrerequisiteIDs": [
-        "maid_core_license"
-      ],
+      "Position": { "x": -180, "y": 150 },
+      "PrerequisiteIDs": [ "maid_core_license" ],
       "PlayerStatModifiers": {},
       "MaidModifiers": [
-        {
-          "Type": "AddAttribute",
-          "Attribute": "Health",
-          "Value": 20.0
-        }
+        { "Type": "AddAttribute", "Attribute": "Health", "Value": 20.0 }
       ]
     },
     {
@@ -59,25 +45,13 @@
       "Description": "Perk_WineFox_Health_2_Desc",
       "IconFileName": "default_icon.png",
       "CostMoney": 2000,
-      "CostItems": {
-        "16": 2,
-        "88": 5
-      },
+      "CostItems": { "16": 2, "88": 5 },
       "RequiredLevel": 5,
-      "Position": {
-        "x": -180,
-        "y": 300
-      },
-      "PrerequisiteIDs": [
-        "maid_survival_health_1"
-      ],
+      "Position": { "x": -180, "y": 300 },
+      "PrerequisiteIDs": [ "maid_survival_health_1" ],
       "PlayerStatModifiers": {},
       "MaidModifiers": [
-        {
-          "Type": "AddAttribute",
-          "Attribute": "Health",
-          "Value": 20.0
-        }
+        { "Type": "AddAttribute", "Attribute": "Health", "Value": 20.0 }
       ]
     },
     {
@@ -86,27 +60,16 @@
       "Description": "Perk_WineFox_Health_3_Desc",
       "IconFileName": "default_icon.png",
       "CostMoney": 5000,
-      "CostItems": {
-        "15": 3,
-        "88": 8
-      },
+      "CostItems": { "15": 3, "88": 8 },
       "RequiredLevel": 10,
-      "Position": {
-        "x": -180,
-        "y": 450
-      },
-      "PrerequisiteIDs": [
-        "maid_survival_health_2"
-      ],
+      "Position": { "x": -180, "y": 450 },
+      "PrerequisiteIDs": [ "maid_survival_health_2" ],
       "PlayerStatModifiers": {},
       "MaidModifiers": [
-        {
-          "Type": "AddAttribute",
-          "Attribute": "Health",
-          "Value": 40.0
-        }
+        { "Type": "AddAttribute", "Attribute": "Health", "Value": 40.0 }
       ]
     },
+
     {
       "//": "========== 分支2：战斗能力加成 (中左侧 x: -60) ==========",
       "ID": "maid_combat_dmg_1",
@@ -115,20 +78,11 @@
       "IconFileName": "default_icon.png",
       "CostMoney": 1000,
       "RequiredLevel": 1,
-      "Position": {
-        "x": -60,
-        "y": 150
-      },
-      "PrerequisiteIDs": [
-        "maid_core_license"
-      ],
+      "Position": { "x": -60, "y": 150 },
+      "PrerequisiteIDs": [ "maid_core_license" ],
       "PlayerStatModifiers": {},
       "MaidModifiers": [
-        {
-          "Type": "AddAttribute",
-          "Attribute": "DamageMultiplier",
-          "Value": 0.1
-        }
+        { "Type": "AddAttribute", "Attribute": "DamageMultiplier", "Value": 0.1 }
       ]
     },
     {
@@ -138,41 +92,27 @@
       "IconFileName": "default_icon.png",
       "CostMoney": 2000,
       "RequiredLevel": 5,
-      "Position": {
-        "x": -60,
-        "y": 300
-      },
-      "PrerequisiteIDs": [
-        "maid_combat_dmg_1"
-      ],
+      "Position": { "x": -60, "y": 300 },
+      "PrerequisiteIDs": [ "maid_combat_dmg_1" ],
       "PlayerStatModifiers": {},
       "MaidModifiers": [
-        {
-          "Type": "AddAttribute",
-          "Attribute": "DamageMultiplier",
-          "Value": 0.1
-        }
+        { "Type": "AddAttribute", "Attribute": "DamageMultiplier", "Value": 0.1 }
       ]
     },
     {
-      "//": "--- 分支2扩展：武器升级 ---",
+      "//": "--- 分支2扩展：武器升级 (位于正中间偏下 x:0, y:400) ---",
       "ID": "maid_weapon_upgrade_1",
       "DisplayName": "Perk_Weapon_Upgrade_1",
       "Description": "Perk_Weapon_Upgrade_1_Desc",
       "IconFileName": "default_icon.png",
       "CostMoney": 3000,
-      "CostItems": {
-        "258": 1
-      },
+      "CostItems": { "258": 1 },
       "RequiredLevel": 8,
       "Position": { "x": 0, "y": 400 },
       "PrerequisiteIDs": [ "maid_combat_dmg_2" ],
       "PlayerStatModifiers": {},
       "MaidModifiers": [
-        {
-          "Type": "Custom",
-          "CustomAction": "Upgrade_Weapon_254_258"
-        }
+        { "Type": "Custom", "CustomAction": "Upgrade_Weapon_254_258" }
       ]
     },
     {
@@ -182,22 +122,14 @@
       "IconFileName": "default_icon.png",
       "CostMoney": 5000,
       "RequiredLevel": 10,
-      "Position": {
-        "x": -60,
-        "y": 450
-      },
-      "PrerequisiteIDs": [
-        "maid_combat_dmg_2"
-      ],
+      "Position": { "x": -60, "y": 450 },
+      "PrerequisiteIDs": [ "maid_combat_dmg_2" ],
       "PlayerStatModifiers": {},
       "MaidModifiers": [
-        {
-          "Type": "AddAttribute",
-          "Attribute": "DamageMultiplier",
-          "Value": 0.1
-        }
+        { "Type": "AddAttribute", "Attribute": "DamageMultiplier", "Value": 0.1 }
       ]
     },
+
     {
       "//": "========== 分支3：主动技能系 (中右侧 x: 60) ==========",
       "ID": "maid_skill_autoheal",
@@ -205,27 +137,13 @@
       "Description": "Perk_Maid_AutoHeal_Desc",
       "IconFileName": "default_icon.png",
       "CostMoney": 1500,
-      "CostItems": {
-        "17": 1,
-        "16": 1,
-        "10": 1,
-        "20": 1
-      },
+      "CostItems": { "17": 1, "16": 1, "10": 1, "20": 1 },
       "RequiredLevel": 2,
-      "Position": {
-        "x": 60,
-        "y": 150
-      },
-      "PrerequisiteIDs": [
-        "maid_core_license"
-      ],
+      "Position": { "x": 60, "y": 150 },
+      "PrerequisiteIDs": [ "maid_core_license" ],
       "PlayerStatModifiers": {},
       "MaidModifiers": [
-        {
-          "Type": "AddSkill",
-          "SkillID": "SelfHeal",
-          "SkillParams": {}
-        }
+        { "Type": "AddSkill", "SkillID": "SelfHeal", "SkillParams": {} }
       ]
     },
     {
@@ -234,28 +152,85 @@
       "Description": "Perk_Maid_Grenade_Desc",
       "IconFileName": "default_icon.png",
       "CostMoney": 2500,
-      "CostItems": {
-        "67": 5
-      },
+      "CostItems": { "67": 5 },
       "RequiredLevel": 3,
-      "Position": {
-        "x": 60,
-        "y": 300
-      },
-      "PrerequisiteIDs": [
-        "maid_skill_autoheal"
-      ],
+      "Position": { "x": 60, "y": 300 },
+      "PrerequisiteIDs": [ "maid_skill_autoheal" ],
       "PlayerStatModifiers": {},
       "MaidModifiers": [
         {
           "Type": "AddSkill",
           "SkillID": "GrenadeThrow",
+          "SkillParams": { "ItemIDs": [ 67 ] }
+        }
+      ]
+    },
+
+    {
+      "//": "--- [新增] 技能升级：追加闪光弹 (改为右侧分支节点) ---",
+      "ID": "maid_skill_grenade_flash",
+      "DisplayName": "Perk_Maid_Flashbang",
+      "Description": "Perk_Maid_Flashbang_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 3000,
+      "CostItems": { "66": 5 },
+      "RequiredLevel": 6,
+      "Position": { "x": 120, "y": 380 },
+      "PrerequisiteIDs": [ "maid_skill_grenade" ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "AddSkill",
+          "SkillID": "GrenadeThrow",
+          "SkillParams": { "ItemIDs": [ 66 ] }
+        }
+      ]
+    },
+
+    {
+      "//": "========== [新增] 分支5：Buff辅助系 (移动到手雷技能下方) ==========",
+      "ID": "maid_skill_vanilla_buff",
+      "DisplayName": "Perk_Maid_VanillaBuff",
+      "Description": "Perk_Maid_VanillaBuff_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 2000,
+      "RequiredLevel": 3,
+      "Position": { "x": 60, "y": 450 },
+      "PrerequisiteIDs": [ "maid_core_license" ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "AddSkill",
+          "SkillID": "VanillaBuff",
           "SkillParams": {
-            "ItemIDs": [ 67 ]
+            "BuffIDs": [ 1101 ]
           }
         }
       ]
     },
+    {
+      "ID": "maid_skill_buff_tear",
+      "DisplayName": "Perk_Maid_TearBuff",
+      "Description": "Perk_Maid_TearBuff_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 4000,
+      "RequiredLevel": 7,
+      "Position": { "x": 60, "y": 600 },
+      "PrerequisiteIDs": [ "maid_skill_vanilla_buff" ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "AddSkill",
+          "SkillID": "Buff",
+          "SkillParams": {
+            "Buffs": [
+              { "BuffName": "MaidBuff_Tear", "BuffID": 88001 }
+            ]
+          }
+        }
+      ]
+    },
+
     {
       "//": "========== 分支4：特殊物品：瓶中女仆 (最右侧 x: 180) ==========",
       "ID": "maid_special_bottle_1",
@@ -263,19 +238,10 @@
       "Description": "Perk_Bottle_Lv1_Desc",
       "IconFileName": "default_icon.png",
       "CostMoney": 5000,
-      "CostItems": {
-        "29": 1,
-        "308": 5,
-        "258": 1
-      },
+      "CostItems": { "29": 1, "308": 5, "258": 1 },
       "RequiredLevel": 5,
-      "Position": {
-        "x": 180,
-        "y": 150
-      },
-      "PrerequisiteIDs": [
-        "maid_core_license"
-      ],
+      "Position": { "x": 180, "y": 150 },
+      "PrerequisiteIDs": [ "maid_core_license" ],
       "PlayerStatModifiers": {},
       "MaidModifiers": []
     },
@@ -285,20 +251,10 @@
       "Description": "Perk_Bottle_Lv2_Desc",
       "IconFileName": "default_icon.png",
       "CostMoney": 10000,
-      "CostItems": {
-        "29": 1,
-        "308": 6,
-        "309": 3,
-        "733": 1
-      },
+      "CostItems": { "29": 1, "308": 6, "309": 3, "733": 1 },
       "RequiredLevel": 10,
-      "Position": {
-        "x": 180,
-        "y": 300
-      },
-      "PrerequisiteIDs": [
-        "maid_special_bottle_1"
-      ],
+      "Position": { "x": 180, "y": 300 },
+      "PrerequisiteIDs": [ "maid_special_bottle_1" ],
       "PlayerStatModifiers": {},
       "MaidModifiers": []
     },
@@ -308,21 +264,10 @@
       "Description": "Perk_Bottle_Lv3_Desc",
       "IconFileName": "default_icon.png",
       "CostMoney": 20000,
-      "CostItems": {
-        "29": 1,
-        "308": 10,
-        "309": 5,
-        "244": 1,
-        "65": 1
-      },
+      "CostItems": { "29": 1, "308": 10, "309": 5, "244": 1, "65": 1 },
       "RequiredLevel": 15,
-      "Position": {
-        "x": 180,
-        "y": 450
-      },
-      "PrerequisiteIDs": [
-        "maid_special_bottle_2"
-      ],
+      "Position": { "x": 180, "y": 450 },
+      "PrerequisiteIDs": [ "maid_special_bottle_2" ],
       "PlayerStatModifiers": {},
       "MaidModifiers": []
     }

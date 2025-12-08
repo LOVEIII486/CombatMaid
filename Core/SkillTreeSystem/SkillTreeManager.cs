@@ -375,5 +375,27 @@ namespace CombatMaid.Core.SkillTreeSystem
                 CMDebug.LogError($"[SaveProgress] 保存失败: {ex.Message}");
             }
         }
+        
+        
+        public void ReloadTree()
+        {
+            CMDebug.LogWarning("[SkillTreeManager] 开始执行热重载...");
+
+            if (_customTree != null)
+            {
+                Destroy(_customTree.gameObject);
+                _customTree = null;
+            }
+        
+            _currentConfig = null;
+            _isTreeBuilt = false;
+            _runtimePerks.Clear();
+            _nodeDefsMap.Clear();
+            _isInitializing = false; 
+        
+            StartCoroutine(InitSkillTreeRoutine());
+        
+            CMDebug.LogInfo("[SkillTreeManager] 热重载请求已发送");
+        }
     }
 }

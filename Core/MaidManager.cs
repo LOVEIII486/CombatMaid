@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using CombatMaid.Core.SkillTreeSystem;
 using UnityEngine;
 using Duckov.Modding;
 using CombatMaid.Core.WineFox;
@@ -283,7 +284,19 @@ namespace CombatMaid.Core
 
             // F6 清除
             if (Input.GetKeyDown(KeyCode.F6)) DespawnTeam();
-
+            
+            if (Input.GetKeyDown(KeyCode.F7))
+            {
+                if (SkillTreeManager.Instance != null)
+                {
+                    SkillTreeManager.Instance.ReloadTree();
+            
+                    // 可选：给玩家发个提示
+                    var player = CharacterMainControl.Main;
+                    if (player != null) player.PopText("正在重载技能树...");
+                }
+            }
+            
             // F8 重载配置: 调用 Spawner
             if (Input.GetKeyDown(KeyCode.F8))
             {
