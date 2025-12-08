@@ -19,6 +19,12 @@ namespace CombatMaid.Core.BuffsSystem
             
             CMDebug.Log($"初始化完成，已注册 {_effects.Count} 个效果");
         }
+        
+        public void Cleanup()
+        {
+            _effects.Clear();
+            CMDebug.Log("Buff注册表已清理");
+        }
 
         public void RegisterEffect(IMaidBuffEffect effect)
         {

@@ -1,5 +1,6 @@
 using System;
 using CombatMaid.Core;
+using CombatMaid.Core.BuffsSystem;
 using CombatMaid.Core.Items.DebugTools;
 using CombatMaid.Core.Items.Logic;
 using CombatMaid.Core.SkillTreeSystem;
@@ -54,6 +55,8 @@ namespace CombatMaid
                 CMDebug.LogWarning("ModSettingAPI 初始化失败");
             }
             InitializeMaidItems();
+            InitializeMaidBuffSystem();
+            
             InitializeMaidSystem();
             InitializeSkillTreeSystem();
         }
@@ -81,6 +84,7 @@ namespace CombatMaid
             CleanupSceneHooks();
             CleanupHarmonyPatches();
             CleanupMaidItems();
+            CleanupMaidBuffSystem();
             CleanupMaidSystem();
             CleanupSkillTreeSystem();
         }
@@ -122,6 +126,30 @@ namespace CombatMaid
             }
 
             CMDebug.LogInfo($"女仆系统已卸载");
+        }
+
+        #endregion
+        
+        #region MaidBuffSystem (新增部分)
+
+        private void InitializeMaidBuffSystem()
+        {
+            MaidBuffRegistry.Instance.Initialize();
+            // MaidBuffModifierManager.Instance.Initialize(); // 目前它是懒加载的，不强制调用
+        }
+
+        private void CleanupMaidBuffSystem()
+        {
+            if (MaidBuffRegistry.Instance != null)
+            {
+                MaidBuffRegistry.Instance.Cleanup();
+            }
+
+            // 清理运行时修改器
+            if (MaidBuffModifierManager.Instance != null)
+            {
+                MaidBuffModifierManager.Instance.Clear();
+            }
         }
 
         #endregion
