@@ -137,12 +137,12 @@ namespace CombatMaid.Core
                 CommandToggleHoldTeam();
             }
             
-            if (Input.GetKeyDown(KeyCode.L))
+            if (Input.GetKeyDown(Settings.CombatMaidConfig.KeyScavenge))
             {
                 CommandToggleScavenge();
             }
             
-            if (Input.GetKeyDown(KeyCode.K))
+            if (Input.GetKeyDown(Settings.CombatMaidConfig.KeyDrop))
             {
                 CommandDropItems();
             }

@@ -60,6 +60,16 @@ namespace CombatMaid.Settings
                 CombatMaidConfig.Key_Bind_Hold,
                 LocalizationManager.GetText("Setting_Key_Hold"),
                 CombatMaidConfig.KeyHold, KeyCode.J, (v) => CombatMaidConfig.KeyHold = v);
+            
+            ModSettingAPI.AddKeybinding(
+                CombatMaidConfig.Key_Bind_Scavenge,
+                LocalizationManager.GetText("Setting_Key_Scavenge"),
+                CombatMaidConfig.KeyScavenge, KeyCode.L, (v) => CombatMaidConfig.KeyScavenge = v);
+
+            ModSettingAPI.AddKeybinding(
+                CombatMaidConfig.Key_Bind_Drop,
+                LocalizationManager.GetText("Setting_Key_Drop"),
+                CombatMaidConfig.KeyDrop, KeyCode.K, (v) => CombatMaidConfig.KeyDrop = v);
 
             // ==================== 3. 自定义女仆配置 ====================
 
@@ -97,7 +107,7 @@ namespace CombatMaid.Settings
                     CombatMaidConfig.Key_AttackMultiplier,
                     CombatMaidConfig.Key_MoveSpeedMultiplier
                 },
-                0.7f, true, true
+                0.7f, true, false
             );
 
             ModSettingAPI.AddGroup(
@@ -107,7 +117,9 @@ namespace CombatMaid.Settings
                 {
                     CombatMaidConfig.Key_Bind_Move,
                     CombatMaidConfig.Key_Bind_Heal,
-                    CombatMaidConfig.Key_Bind_Hold
+                    CombatMaidConfig.Key_Bind_Hold,
+                    CombatMaidConfig.Key_Bind_Scavenge,
+                    CombatMaidConfig.Key_Bind_Drop
                 },
                 0.7f, false, false
             );
