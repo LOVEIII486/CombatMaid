@@ -137,7 +137,7 @@
       "Description": "Perk_WineFox_Dmg_2_Desc",
       "IconFileName": "default_icon.png",
       "CostMoney": 2000,
-      "RequiredLevel": 1,
+      "RequiredLevel": 5,
       "Position": {
         "x": -60,
         "y": 300
@@ -181,7 +181,7 @@
       "Description": "Perk_WineFox_Dmg_3_Desc",
       "IconFileName": "default_icon.png",
       "CostMoney": 5000,
-      "RequiredLevel": 1,
+      "RequiredLevel": 10,
       "Position": {
         "x": -60,
         "y": 450
@@ -235,7 +235,7 @@
       "IconFileName": "default_icon.png",
       "CostMoney": 2500,
       "CostItems": {
-        "67": 1
+        "67": 5
       },
       "RequiredLevel": 3,
       "Position": {
@@ -263,7 +263,12 @@
       "Description": "Perk_Bottle_Lv1_Desc",
       "IconFileName": "default_icon.png",
       "CostMoney": 5000,
-      "RequiredLevel": 1,
+      "CostItems": {
+        "29": 1,
+        "308": 5,
+        "258": 1
+      },
+      "RequiredLevel": 5,
       "Position": {
         "x": 180,
         "y": 150
@@ -279,8 +284,14 @@
       "DisplayName": "Perk_Bottle_Lv2",
       "Description": "Perk_Bottle_Lv2_Desc",
       "IconFileName": "default_icon.png",
-      "CostMoney": 5000,
-      "RequiredLevel": 1,
+      "CostMoney": 10000,
+      "CostItems": {
+        "29": 1,
+        "308": 6,
+        "309": 3,
+        "733": 1
+      },
+      "RequiredLevel": 10,
       "Position": {
         "x": 180,
         "y": 300
@@ -296,8 +307,15 @@
       "DisplayName": "Perk_Bottle_Lv3",
       "Description": "Perk_Bottle_Lv3_Desc",
       "IconFileName": "default_icon.png",
-      "CostMoney": 5000,
-      "RequiredLevel": 1,
+      "CostMoney": 20000,
+      "CostItems": {
+        "29": 1,
+        "308": 10,
+        "309": 5,
+        "244": 1,
+        "65": 1
+      },
+      "RequiredLevel": 15,
       "Position": {
         "x": 180,
         "y": 450
