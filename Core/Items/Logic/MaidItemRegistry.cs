@@ -36,6 +36,7 @@ namespace CombatMaid.Core.Items.Logic
             }
 
             CMDebug.LogInfo($"战斗女仆物品初始化完成！成功注册 {successCount}/{items.Count} 个物品。");
+            // CombatMaid.DebugTools.TagPrinter.PrintAllTags();
         }
 
         public static void Cleanup()

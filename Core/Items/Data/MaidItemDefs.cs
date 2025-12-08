@@ -48,8 +48,10 @@ namespace CombatMaid.Core.Items.Data
                     value = 10000,
                     maxStackCount = 1,
                     maxDurability = 100f,
+                    quality = 6,
+                    displayQuality = DisplayQuality.Red,
                     weight = 0.01f,
-                    tags = new List<string> { "MaidItem" },
+                    tags = new List<string> {},
                     usages = new UsageData
                     {
                         useTime = 1.0f,
@@ -78,13 +80,13 @@ namespace CombatMaid.Core.Items.Data
                     localizationDesc = "Item_VialMaid_I_Desc",
                     spritePath = "VialMaid_I.png",
 
-                    value = 1000,
+                    value = 3000,
                     weight = 1f,
                     maxStackCount = 3,
                     maxDurability = 0f,
 
                     order = 0,
-                    tags = new List<string> { "MaidItem", "Consumable" },
+                    tags = new List<string> {},
 
                     quality = 4,
                     displayQuality = DisplayQuality.Purple,
@@ -121,13 +123,13 @@ namespace CombatMaid.Core.Items.Data
                     localizationDesc = "Item_VialMaid_II_Desc",
                     spritePath = "VialMaid_II.png",
 
-                    value = 3000,
+                    value = 6000,
                     weight = 1.2f,
-                    maxStackCount = 3,
+                    maxStackCount = 2,
                     maxDurability = 0f,
 
                     order = 1,
-                    tags = new List<string> { "MaidItem", "Consumable" },
+                    tags = new List<string> { },
 
                     quality = 5,
                     displayQuality = DisplayQuality.Orange,
@@ -152,7 +154,7 @@ namespace CombatMaid.Core.Items.Data
                         { "ConsumeOnUse", true },
                     },
                     ShopMerchantId = MerchantIds.Mud,
-                    ShopMaxStock = 3,
+                    ShopMaxStock = 2,
                     ShopPriceFactor = 10f,
                     ShopPossibility = 1f,
                     ShopForceUnlock = false
@@ -164,13 +166,13 @@ namespace CombatMaid.Core.Items.Data
                     localizationDesc = "Item_VialMaid_III_Desc",
                     spritePath = "VialMaid_III.png",
 
-                    value = 7000,
+                    value = 10000,
                     weight = 1.5f,
-                    maxStackCount = 2,
+                    maxStackCount = 1,
                     maxDurability = 0f,
 
                     order = 2,
-                    tags = new List<string> { "MaidItem", "Consumable" },
+                    tags = new List<string> {},
 
                     quality = 6,
                     displayQuality = DisplayQuality.Red,
