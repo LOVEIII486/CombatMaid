@@ -70,19 +70,24 @@ namespace CombatMaid.Core.BuffsSystem
         /// <summary>
         /// 通过 ID 给目标施加 Buff
         /// </summary>
-        public static bool ApplyBuffByID(CharacterMainControl target, int buffId, CharacterMainControl fromWho = null)
+        public static bool ApplyBuffByID(CharacterMainControl target, int buffId, out string buffName, CharacterMainControl fromWho = null)
         {
+            buffName = ""; // out 参数必须在使用前赋值
+    
             if (!_isInitialized) Initialize();
             if (target == null || target.Health.IsDead) return false;
 
             if (_buffCache.TryGetValue(buffId, out Buff buffPrefab))
             {
+                // 获取本地化名称 (Duckov 原生属性)
+                buffName = buffPrefab.DisplayName; 
+        
                 target.AddBuff(buffPrefab, fromWho, 1);
                 return true;
             }
             else
             {
-                CMDebug.LogWarning($"未找到 ID 为 {buffId} 的 Buff");
+                CMDebug.LogWarning($"[MaidBuffUtils] 未找到 ID 为 {buffId} 的 Buff");
                 return false;
             }
         }
