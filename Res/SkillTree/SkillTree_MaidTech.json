@@ -22,7 +22,6 @@
       "PlayerStatModifiers": {},
       "MaidModifiers": []
     },
-
     {
       "//": "========== 分支1：生存能力加成 (最左侧 x: -180) ==========",
       "ID": "maid_survival_health_1",
@@ -37,6 +36,31 @@
       "PlayerStatModifiers": {},
       "MaidModifiers": [
         { "Type": "AddAttribute", "Attribute": "Health", "Value": 20.0 }
+      ]
+    },
+    {
+      "ID": "maid_armor_upgrade_1",
+      "DisplayName": "Perk_Armor_Upgrade_1",
+      "Description": "Perk_Armor_Upgrade_1_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 3000,
+      "CostItems": {
+        "33": 1,
+        "42": 1
+      },
+      "RequiredLevel": 5,
+      "Position": { "x": -300, "y": 300 },
+      "PrerequisiteIDs": [ "maid_survival_health_1" ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "Custom",
+          "CustomAction": "Upgrade_32_33"
+        },
+        {
+          "Type": "Custom",
+          "CustomAction": "Upgrade_41_42"
+        }
       ]
     },
     {
@@ -108,7 +132,7 @@
       "CostMoney": 3000,
       "CostItems": { "258": 1 },
       "RequiredLevel": 8,
-      "Position": { "x": 0, "y": 400 },
+      "Position": { "x": 0, "y": 380 },
       "PrerequisiteIDs": [ "maid_combat_dmg_2" ],
       "PlayerStatModifiers": {},
       "MaidModifiers": [

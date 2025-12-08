@@ -226,41 +226,52 @@ namespace CombatMaid.Core.SkillTreeSystem
 
         private bool ApplyCustomLogic(SkillTreeModifier modifier, MaidProfileData data)
         {
-            switch (modifier.CustomActionID)
-            {
-                case "UnlockEliteWeapons": // 旧示例
-                    if (data.PresetConfig.CustomItemIDs == null) data.PresetConfig.CustomItemIDs = new List<int>();
-                    data.PresetConfig.CustomItemIDs.Add(999);
-                    return true;
+            string action = modifier.CustomActionID;
 
-                // [新增] 武器升级逻辑：将 ID 254 替换为 258
-                case "Upgrade_Weapon_254_258":
-                    if (data.PresetConfig.CustomItemIDs == null)
+            // --- 通用升级逻辑：解析 "Upgrade_..._{OldID}_{NewID}" ---
+            // 示例: "Upgrade_254_258" 或 "Upgrade_Weapon_254_258"
+            if (!string.IsNullOrEmpty(action) && action.StartsWith("Upgrade_"))
+            {
+                string[] parts = action.Split('_');
+        
+                // 确保至少有3部分 (Upgrade, OldID, NewID)，并解析最后两个为整数
+                if (parts.Length >= 3 &&
+                    int.TryParse(parts[parts.Length - 2], out int oldId) &&
+                    int.TryParse(parts[parts.Length - 1], out int newId))
+                {
+                    if (data.PresetConfig.CustomItemIDs == null) 
                         data.PresetConfig.CustomItemIDs = new List<int>();
 
-                    int targetIndex = data.PresetConfig.CustomItemIDs.IndexOf(254);
-                    if (targetIndex != -1)
+                    var list = data.PresetConfig.CustomItemIDs;
+                    int index = list.IndexOf(oldId);
+
+                    if (index != -1)
                     {
-                        // 找到旧武器，直接替换
-                        data.PresetConfig.CustomItemIDs[targetIndex] = 258;
-                        CMDebug.Log($"  [Custom] 武器升级: 254 -> 258 (Index: {targetIndex})");
+                        list[index] = newId;
+                        CMDebug.Log($"  [Custom] 物品升级成功: {oldId} -> {newId} (Index: {index})");
                         return true;
                     }
                     else
                     {
-                        // 没找到旧武器 (可能已被其他逻辑移除)，如果还没拥有新武器，则追加
-                        if (!data.PresetConfig.CustomItemIDs.Contains(258))
+                        // 没找到旧物品 -> 保底补发
+                        if (!list.Contains(newId))
                         {
-                            data.PresetConfig.CustomItemIDs.Add(258);
-                            CMDebug.Log($"  [Custom] 未找到旧武器254，直接补发新武器258");
+                            list.Add(newId);
+                            CMDebug.Log($"  [Custom] 未找到旧物品{oldId}，已补发新物品{newId}");
                             return true;
                         }
                     }
-
                     return false;
+                }
+            }
 
+            switch (action)
+            {
+                case "UnlockEliteWeapons":
+                    return true;
+            
                 default:
-                    CMDebug.LogWarning($"  [Custom] 未知的自定义逻辑: {modifier.CustomActionID}");
+                    CMDebug.LogWarning($"  [Custom] 未知的或格式错误的 Action: {action}");
                     return false;
             }
         }
