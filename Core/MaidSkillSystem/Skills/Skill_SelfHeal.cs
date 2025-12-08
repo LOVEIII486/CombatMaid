@@ -13,7 +13,7 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
         public override float TriggerGCDDuration => 1.5f;
 
         private const float HealthThreshold = 0.8f; // 80% 血以下触发
-        private readonly HashSet<int> _medIds = new HashSet<int> { 10, 20, 17, 3, 15, 16 };
+        private readonly HashSet<int> _medIds = new HashSet<int> { 10,15,16,17,20,875,14 };
 
         protected override bool CheckTriggerCondition()
         {
@@ -38,7 +38,7 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
         }
 
         /// <summary>
-        /// 强制触发接口，忽略血量阈值和冷却
+        /// 强制触发，忽略血量阈值和冷却
         /// </summary>
         public void ForceActivate()
         {
@@ -50,7 +50,7 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
         }
 
         /// <summary>
-        /// 核心逻辑：遍历背包 -> 找药 -> 使用
+        /// 遍历背包 -> 找药 -> 使用
         /// </summary>
         private bool ExecuteHealLogic(bool isForce = false)
         {
