@@ -1,7 +1,7 @@
 ﻿{
   "ProfileName": "RoyalMaid_Bella",
   "PresetConfig": {
-    "CustomName": "皇家女仆·贝拉",
+    "CustomName": "皇家女仆·贝拉（测试）",
     "IsBossIcon": true,
     "ShowName": true,
     "ShowHealthBar": true,
@@ -101,7 +101,7 @@
     "ResistGhost": 1.0
   },
   "ExtraData": {
-    "Description": "皇家女仆·贝拉 - 战斗特化型配置",
+    "Description": "皇家女仆·贝拉 - 战斗特化型配置（测试配置不要修改！！！）",
     "BasePresetKey": "Cname_Usec",
     "CustomModelID": "10004",
     "TacticalMode": "Assault",
@@ -113,7 +113,7 @@
       {
         "SkillID": "GrenadeThrow",
         "Params": {
-          "ItemID": 67
+          "ItemIDs": [ 66, 67 ]
         }
       }
     ]

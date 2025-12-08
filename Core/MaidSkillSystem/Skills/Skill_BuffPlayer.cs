@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using CombatMaid.Core.BuffsSystem;
 
 namespace CombatMaid.Core.MaidSkillSystem.Skills
@@ -10,14 +11,12 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
         
         public override bool RespectGlobalCooldown => true;
         public override float TriggerGCDDuration => 0.5f;
-        
-        private string _buffName; // 注册在 MaidBuffRegistry 里的名字
-        private int _buffId;      // 注册在 MaidBuffFactory 里的ID
 
-        public Skill_BuffPlayer(string buffName, int buffId)
+        private readonly List<(string Name, int Id)> _buffPool;
+
+        public Skill_BuffPlayer(List<(string, int)> buffPool)
         {
-            _buffName = buffName;
-            _buffId = buffId;
+            _buffPool = buffPool ?? new List<(string, int)>();
         }
 
         protected override bool CheckTriggerCondition()
@@ -27,14 +26,26 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
 
         protected override bool TryExecute()
         {
-            // 1. 获取模板
-            var config = new MaidBuffFactory.BuffConfig(_buffName, _buffId, 30f); // 持续30秒
+            if (_buffPool.Count == 0)
+            {
+                CMDebug.LogWarning($"[{SkillName}] Buff池为空，无法施放技能");
+                return false;
+            }
+
+            // 1. 随机抽取一个 Buff 配置
+            var selection = _buffPool[Random.Range(0, _buffPool.Count)];
+            string buffName = selection.Name;
+            int buffId = selection.Id;
+
+            // 2. 获取或创建模板
+            var config = new MaidBuffFactory.BuffConfig(buffName, buffId, 30f); // 持续30秒
             var template = MaidBuffFactory.GetOrCreateSharedBuff(config);
             
-            // 2. 施加给玩家
+            // 3. 施加给玩家
             if (MaidBuffFactory.TryAddBuff(Controller.MainOwner, template, Owner))
             {
-                Owner.PopText("支援Buff!");
+                // 可以把 Buff 名也打出来方便调试
+                Owner.PopText($"支援: {buffName}!");
                 return true;
             }
             return false;

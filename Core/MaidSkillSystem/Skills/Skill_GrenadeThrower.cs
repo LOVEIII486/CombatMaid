@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using CombatMaid.Core.MaidSkillSystem;
 
 namespace CombatMaid.Core.MaidSkillSystem.Skills
@@ -11,13 +12,13 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
         public override bool RespectGlobalCooldown => true;
         public override float TriggerGCDDuration => 1.0f;
 
-        private int _grenadeItemId;
+        private readonly List<int> _grenadePool;
         private float _throwRange = 25.0f;
         private float _minRange = 5.0f;
 
-        public Skill_GrenadeThrower(int grenadeId) 
+        public Skill_GrenadeThrower(List<int> grenadeIds) 
         {
-            _grenadeItemId = grenadeId;
+            _grenadePool = grenadeIds ?? new List<int>();
         }
 
         protected override bool CheckTriggerCondition()
@@ -41,14 +42,27 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
             var target = Controller.AI.searchedEnemy;
             if (target == null) return false;
 
+            // 安全检查：池子是否为空
+            if (_grenadePool.Count == 0)
+            {
+                CMDebug.LogWarning($"[{SkillName}] 手雷配置列表为空，无法执行技能");
+                return false;
+            }
+
+            // 随机选取一个手雷 ID
+            int index = Random.Range(0, _grenadePool.Count);
+            int selectedItemId = _grenadePool[index];
+
             MaidSkillHelper.LaunchGrenade(
                 Owner, 
-                _grenadeItemId, 
+                selectedItemId, 
                 target.transform.position, 
                 delay: 2.0f, 
                 canHurtSelf: false
             );
 
+            // 可以在日志里打印具体扔了哪个，方便调试
+            CMDebug.Log($"[{SkillName}] 随机投掷手雷 (ID: {selectedItemId})");
             Owner.PopText("投掷手雷!");
             return true;
         }

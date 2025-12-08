@@ -89,7 +89,7 @@
       {
         "SkillID": "GrenadeThrow",
         "Params": {
-          "ItemID": 67
+          "ItemIDs": [ 66, 67 ]
         }
       }
     ]
