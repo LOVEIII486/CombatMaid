@@ -2,7 +2,7 @@
   "TreeID": "MaidTechTree",
   "TreeName": "SkillTree_MaidTech_Name",
   "Description": "SkillTree_MaidTech_Desc",
-  "Version": "2.2.2",
+  "Version": "1.0.0",
   "Nodes": [
     {
       "//": "--- 核心节点：酒狐女仆契约 ---",
@@ -251,7 +251,7 @@
           "Type": "AddSkill",
           "SkillID": "GrenadeThrow",
           "SkillParams": {
-            "ItemID": 67
+            "ItemIDs": [ 67 ]
           }
         }
       ]

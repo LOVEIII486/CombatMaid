@@ -13,12 +13,12 @@ namespace CombatMaid.Core.SkillTreeSystem
     {
         protected override void OnUnlocked()
         {
-            CMDebug.LogInfo($"[PerkAutoSave] ✓✓✓ 技能已解锁: {gameObject.name}");
+            CMDebug.Log($"[PerkAutoSave] ✓✓✓ 技能已解锁: {gameObject.name}");
             
             if (SkillTreeManager.Instance != null)
             {
                 SkillTreeManager.Instance.SaveProgress();
-                CMDebug.LogInfo($"[PerkAutoSave] ✓ 存档请求已发送");
+                CMDebug.Log($"[PerkAutoSave] ✓ 存档请求已发送");
             }
             else
             {

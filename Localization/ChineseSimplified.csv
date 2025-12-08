@@ -53,3 +53,4 @@ Setting_Key_Scavenge,指令: 搜刮模式,1.0,KeyBindings
 Setting_Key_Drop,指令: 吐出物资,1.0,KeyBindings
 Perk_Maid_Buffs,战术强化模块,2.2.2,Perks
 Perk_Maid_Buffs_Desc,解锁[战术强化]技能。允许女仆激活多种战术增益(Buff)来强化战斗能力。,2.2.2,Perks
+Buff_MaidBuff_Tear_Name,装甲撕裂,1.0,Buffs

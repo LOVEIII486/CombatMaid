@@ -4,7 +4,7 @@ using UnityEngine;
 namespace CombatMaid.Core.SkillTreeSystem
 {
     /// <summary>
-    /// 技能节点定义（新格式 - 已移除兼容）
+    /// 技能节点定义
     /// </summary>
     public class SkillNodeDef
     {

@@ -4,7 +4,9 @@ using UnityEngine;
 using Duckov.PerkTrees.Behaviours;
 using CombatMaid.Core.WineFox;
 using CombatMaid.Core.MaidConfigs;
+using CombatMaid.Core.MaidSkillSystem;
 using Duckov.PerkTrees;
+using Newtonsoft.Json.Linq;
 
 namespace CombatMaid.Core.SkillTreeSystem
 {
@@ -16,23 +18,23 @@ namespace CombatMaid.Core.SkillTreeSystem
     {
         public enum ModifierType
         {
-            AddAttribute,      // 增加属性（如 MaxHealth +50）
+            AddAttribute, // 增加属性（如 MaxHealth +50）
             MultiplyAttribute, // 乘法属性（如 DamageMultiplier *1.2）
-            AddSkill,          // 添加技能
-            UnlockItem,        // 解锁物品（已有，但也可以在这里统一）
-            CustomLogic        // 自定义逻辑（预留）
+            AddSkill, // 添加技能
+            UnlockItem, // 解锁物品（已有，但也可以在这里统一）
+            CustomLogic // 自定义逻辑（预留）
         }
 
         public ModifierType Type;
-        
+
         // 用于属性修改
-        public string AttributeKey;   // 例如 "Health", "MoveSpeedFactor"
-        public float AttributeValue;  // 修改值
-        
+        public string AttributeKey; // 例如 "Health", "MoveSpeedFactor"
+        public float AttributeValue; // 修改值
+
         // 用于技能添加
-        public string SkillID;        // 例如 "AutoHeal", "Grenade"
+        public string SkillID; // 例如 "AutoHeal", "Grenade"
         public Dictionary<string, object> SkillParams; // 技能参数
-        
+
         // 用于自定义逻辑
         public string CustomActionID;
     }
@@ -67,17 +69,17 @@ namespace CombatMaid.Core.SkillTreeSystem
                 CMDebug.LogError($"[ModifyWineFoxData] 酒狐数据的 PresetConfig 为 null");
                 return;
             }
-        
+
             // 确保 ExtraData 存在（兼容旧存档）
             if (data.ExtraData == null) data.ExtraData = new MaidExtraInfo();
             if (data.ExtraData.AppliedModifierKeys == null) data.ExtraData.AppliedModifierKeys = new List<string>();
 
             bool anyChangesMade = false;
-            
+
             for (int i = 0; i < Modifiers.Count; i++)
             {
                 var modifier = Modifiers[i];
-                
+
                 // [关键设计] 生成唯一 Key: "{NodeID}#{Index}"
                 // 这种格式既绑定了节点，也区分了同一节点下的多个修改项
                 string uniqueKey = $"{NodeID}#{i}";
@@ -153,7 +155,7 @@ namespace CombatMaid.Core.SkillTreeSystem
             if (field != null)
             {
                 object currentValue = field.GetValue(config);
-                
+
                 if (currentValue is float floatVal)
                 {
                     field.SetValue(config, floatVal + value);
@@ -181,7 +183,7 @@ namespace CombatMaid.Core.SkillTreeSystem
             if (field != null)
             {
                 object currentValue = field.GetValue(config);
-                
+
                 if (currentValue is float floatVal)
                 {
                     float newValue = floatVal * multiplier;
@@ -197,25 +199,20 @@ namespace CombatMaid.Core.SkillTreeSystem
 
         private bool ApplyAddSkill(SkillTreeModifier modifier, MaidProfileData data)
         {
-            if (data.ExtraData == null)
+            if (data.ExtraData == null) data.ExtraData = new MaidExtraInfo();
+            if (data.ExtraData.Skills == null) data.ExtraData.Skills = new List<MaidSkillConfig>();
+
+            // 1. 查找是否存在同名技能
+            var existingSkill = data.ExtraData.Skills.Find(s => s.SkillID == modifier.SkillID);
+
+            // 2. 如果已存在 -> 进入参数合并模式 
+            if (existingSkill != null)
             {
-                data.ExtraData = new MaidExtraInfo();
+                CMDebug.Log($"  [AddSkill] 技能 {modifier.SkillID} 已存在，尝试合并参数...");
+                return MergeSkillParams(existingSkill, modifier.SkillParams);
             }
 
-            if (data.ExtraData.Skills == null)
-            {
-                data.ExtraData.Skills = new List<MaidSkillConfig>();
-            }
-
-            // 检查是否已存在
-            bool exists = data.ExtraData.Skills.Exists(s => s.SkillID == modifier.SkillID);
-            if (exists)
-            {
-                CMDebug.LogWarning($"  [AddSkill] 技能 {modifier.SkillID} 已存在，跳过");
-                return false;
-            }
-
-            // 添加技能
+            // 3. 如果不存在 -> 创建新技能
             var skillConfig = new MaidSkillConfig
             {
                 SkillID = modifier.SkillID,
@@ -223,7 +220,7 @@ namespace CombatMaid.Core.SkillTreeSystem
             };
 
             data.ExtraData.Skills.Add(skillConfig);
-            CMDebug.Log($"  [AddSkill] 已添加技能: {modifier.SkillID}");
+            CMDebug.Log($"  [AddSkill] 已添加新技能: {modifier.SkillID}");
             return true;
         }
 
@@ -238,7 +235,7 @@ namespace CombatMaid.Core.SkillTreeSystem
 
                 // [新增] 武器升级逻辑：将 ID 254 替换为 258
                 case "Upgrade_Weapon_254_258":
-                    if (data.PresetConfig.CustomItemIDs == null) 
+                    if (data.PresetConfig.CustomItemIDs == null)
                         data.PresetConfig.CustomItemIDs = new List<int>();
 
                     int targetIndex = data.PresetConfig.CustomItemIDs.IndexOf(254);
@@ -259,12 +256,124 @@ namespace CombatMaid.Core.SkillTreeSystem
                             return true;
                         }
                     }
+
                     return false;
 
                 default:
                     CMDebug.LogWarning($"  [Custom] 未知的自定义逻辑: {modifier.CustomActionID}");
                     return false;
             }
+        }
+
+        #endregion
+
+        #region 辅助函数
+        
+        /// <summary>
+        /// 合并技能参数 (ItemIDs/BuffIDs 整数列表合并，Buffs 对象列表合并)
+        /// </summary>
+        private bool MergeSkillParams(MaidSkillConfig skill, Dictionary<string, object> newParams)
+        {
+            if (newParams == null || newParams.Count == 0) return false;
+
+            bool hasChanges = false;
+
+            foreach (var kvp in newParams)
+            {
+                string key = kvp.Key;
+                object newVal = kvp.Value;
+
+                // ---------------------------------------------------------
+                // 情况 A: 简单整数列表 (ItemIDs, BuffIDs)
+                // ---------------------------------------------------------
+                if (key == "ItemIDs" || key == "BuffIDs")
+                {
+                    // 1. 提取旧列表
+                    List<int> currentList = new List<int>();
+                    if (skill.Params.TryGetValue(key, out object oldVal))
+                    {
+                        if (oldVal is JArray jArray) currentList = jArray.ToObject<List<int>>();
+                        else if (oldVal is List<int> list) currentList = list;
+                    }
+
+                    // 2. 提取新列表
+                    List<int> newList = new List<int>();
+                    if (newVal is JArray jNewArray) newList = jNewArray.ToObject<List<int>>();
+                    else if (newVal is List<int> list) newList = list;
+
+                    // 3. 合并去重 (int 直接比较值)
+                    int addedCount = 0;
+                    foreach (int id in newList)
+                    {
+                        if (!currentList.Contains(id))
+                        {
+                            currentList.Add(id);
+                            addedCount++;
+                        }
+                    }
+
+                    if (addedCount > 0)
+                    {
+                        skill.Params[key] = currentList;
+                        hasChanges = true;
+                        CMDebug.Log($"    -> [{key}] 追加了 {addedCount} 个 ID");
+                    }
+                }
+                // ---------------------------------------------------------
+                // 情况 B: 复杂对象列表 (Buffs)
+                // ---------------------------------------------------------
+                else if (key == "Buffs")
+                {
+                    // 定义一个临时结构来辅助解析 (Name, ID)
+                    // 1. 提取旧列表
+                    var currentBuffs = new List<MaidSkillFactory.BuffParamEntry>();
+                    if (skill.Params.TryGetValue(key, out object oldVal))
+                    {
+                        if (oldVal is JArray jArray)
+                            currentBuffs = jArray.ToObject<List<MaidSkillFactory.BuffParamEntry>>();
+                        else if (oldVal is List<MaidSkillFactory.BuffParamEntry> list) currentBuffs = list;
+                    }
+
+                    // 2. 提取新列表
+                    var newBuffs = new List<MaidSkillFactory.BuffParamEntry>();
+                    if (newVal is JArray jNewArray)
+                        newBuffs = jNewArray.ToObject<List<MaidSkillFactory.BuffParamEntry>>();
+                    else if (newVal is List<MaidSkillFactory.BuffParamEntry> list) newBuffs = list;
+
+                    // 3. 合并去重 (根据 BuffName 判断是否存在)
+                    int addedCount = 0;
+                    foreach (var newEntry in newBuffs)
+                    {
+                        // 如果旧列表中不存在同名 Buff，则添加
+                        if (!currentBuffs.Exists(b => b.BuffName == newEntry.BuffName))
+                        {
+                            currentBuffs.Add(newEntry);
+                            addedCount++;
+                        }
+                    }
+
+                    if (addedCount > 0)
+                    {
+                        skill.Params[key] = currentBuffs;
+                        hasChanges = true;
+                        CMDebug.Log($"    -> [{key}] 追加了 {addedCount} 个 Buff");
+                    }
+                }
+                // ---------------------------------------------------------
+                // 情况 C: 其他参数 (直接覆盖)
+                // ---------------------------------------------------------
+                else
+                {
+                    if (!skill.Params.ContainsKey(key) || !skill.Params[key].Equals(newVal))
+                    {
+                        skill.Params[key] = newVal;
+                        hasChanges = true;
+                        CMDebug.Log($"    -> 更新参数 {key}");
+                    }
+                }
+            }
+
+            return hasChanges;
         }
 
         #endregion

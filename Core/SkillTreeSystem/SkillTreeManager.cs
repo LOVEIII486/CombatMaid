@@ -14,7 +14,7 @@ namespace CombatMaid.Core.SkillTreeSystem
 
         private const string TREE_ID = "MaidCombatSkills";
         private const string INTERACT_KEY = "Interaction_MaidSkill_Label";
-        private const string DEFAULT_CONFIG_FILE = "SkillTree_Combat.json";
+        private const string DEFAULT_CONFIG_FILE = "SkillTree_MaidTech.json";
 
         private bool _isTreeBuilt = false;
         private PerkTree _customTree;

@@ -14,8 +14,6 @@ namespace CombatMaid.Core.SkillTreeSystem
 
         protected override void OnUnlocked()
         {
-            // 直接调用游戏底层的经济系统解锁
-            // 确保你引用了正确的 EconomyManager 命名空间
             EconomyManager.Unlock(unlockItem);
             CMDebug.Log($"[Perk] 技能解锁 -> 商店商品已解锁: {unlockItem}");
         }
