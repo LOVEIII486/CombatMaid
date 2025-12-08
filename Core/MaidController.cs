@@ -27,7 +27,7 @@ namespace CombatMaid.Core
             if (ai == null) return null;
             return _maidRegistry.TryGetValue(ai, out var maid) ? maid : null;
         }
-
+        
         #region 核心
 
         public AICharacterController AI { get; private set; }
@@ -36,6 +36,9 @@ namespace CombatMaid.Core
         
         public MaidStateMachine StateMachine { get; private set; }
         public MaidSkillComponent SkillSystem { get; private set; }
+        
+        //缓存引用
+        private CharacterMainControl _cachedCharacter;
 
         #endregion
 
@@ -69,7 +72,13 @@ namespace CombatMaid.Core
 
             // 注册实例
             if (!_maidRegistry.ContainsKey(AI)) _maidRegistry.Add(AI, this);
-
+            
+            _cachedCharacter = MaidCharacter;
+            if (_cachedCharacter != null)
+            {
+                _cachedCharacter.BeforeCharacterSpawnLootOnDead += OnCheckLootBeforeDeath;
+            }
+            
             // 初始化技能系统
             SkillSystem = gameObject.GetComponent<MaidSkillComponent>() ?? gameObject.AddComponent<MaidSkillComponent>();
             SkillSystem.Initialize(this);
@@ -101,6 +110,10 @@ namespace CombatMaid.Core
 
         private void OnDestroy()
         {
+            if (_cachedCharacter != null)
+            {
+                _cachedCharacter.BeforeCharacterSpawnLootOnDead -= OnCheckLootBeforeDeath;
+            }
             if (AI != null && _maidRegistry.ContainsKey(AI))
             {
                 _maidRegistry.Remove(AI);
@@ -234,13 +247,9 @@ namespace CombatMaid.Core
             }
 
             // 5. 批量转移物品
-            int transferCount = 0;
             foreach (var item in validItems)
             {
-                if (container.Inventory.AddAndMerge(item, 0))
-                {
-                    transferCount++;
-                }
+                container.Inventory.AddAndMerge(item, 0);
             }
             LootHistory.Clear();
         }
@@ -306,6 +315,15 @@ namespace CombatMaid.Core
             // 紧急情况传送判断交给状态机，此处仅返回距离阈值
             if (dist > TeleportDistance) return true;
             return dist > ForceFollowDistance;
+        }
+        
+        /// <summary>
+        /// 在角色死亡前一刻触发物资抢救
+        /// </summary>
+        private void OnCheckLootBeforeDeath(DamageInfo info)
+        {
+            CMDebug.Log($"[{_cachedCharacter.name}] 临死前触发物资抢救...");
+            CommandDumpLoot();
         }
 
         #endregion
