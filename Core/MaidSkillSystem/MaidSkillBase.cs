@@ -34,7 +34,7 @@ namespace CombatMaid.Core.MaidSkillSystem
         public virtual void Initialize(MaidController controller)
         {
             Controller = controller;
-            _cooldownTimer = Cooldown;
+            _cooldownTimer = UnityEngine.Random.Range(0f, 5.0f);;
         }
 
         public void OnUpdate(float deltaTime)

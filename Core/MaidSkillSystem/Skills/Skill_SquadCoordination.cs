@@ -7,7 +7,7 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
     public class Skill_SquadCoordination : MaidSkillBase
     {
         public override string SkillName => "SquadCoordination";
-        public override float Cooldown => 0.2f; // 加快检测频率，让女仆反应更快
+        public override float Cooldown => 0.5f; // 检测频率
 
         protected override bool CheckTriggerCondition()
         {

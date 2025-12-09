@@ -7,10 +7,10 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
     public class Skill_SelfHeal : MaidSkillBase
     {
         public override string SkillName => "SelfHeal";
-        public override float Cooldown => 5.0f;
+        public override float Cooldown => 3.0f;
         
         public override bool RespectGlobalCooldown => true;
-        public override float TriggerGCDDuration => 1.5f;
+        public override float TriggerGCDDuration => 1.0f;
 
         private const float HealthThreshold = 0.8f; // 80% 血以下触发
         private readonly HashSet<int> _medIds = new HashSet<int> { 10,15,16,17,20,875,14 };
