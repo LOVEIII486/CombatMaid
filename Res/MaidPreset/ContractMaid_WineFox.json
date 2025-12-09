@@ -97,16 +97,7 @@
     "BasePresetKey": "Cname_Usec",
     "CustomModelID": "10004",
     "TacticalMode": "Assault",
-    "Skills": [
-      {
-        "SkillID": "Buff",
-        "Params": {
-          "Buffs": [
-            { "BuffName": "MaidBuff_Tear" }
-          ]
-        }
-      }
-    ],
+    "Skills": [],
     "//--- 存档状态追踪 ---": "",
     "AppliedModifierKeys": []
   }

@@ -52,7 +52,7 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
             }
             
             // 调试日志
-             CMDebug.Log($"[{Owner.name}] 执行集火 -> {target.name}");
+            // CMDebug.Log($"[{Owner.name}] 执行集火 -> {target.name}");
 
             return true;
         }

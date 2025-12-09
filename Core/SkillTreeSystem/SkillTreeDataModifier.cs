@@ -186,9 +186,11 @@ namespace CombatMaid.Core.SkillTreeSystem
 
                 if (currentValue is float floatVal)
                 {
-                    float newValue = floatVal * multiplier;
+                    float rawValue = floatVal * multiplier;
+                    float newValue = (float)Math.Round(rawValue, 3); // 截断到3位
+            
                     field.SetValue(config, newValue);
-                    CMDebug.Log($"  [Multiply] {key}: {floatVal} * {multiplier} = {newValue}");
+                    CMDebug.Log($"  [Multiply] {key}: {floatVal} * {multiplier} = {newValue} (Raw: {rawValue})");
                     return true;
                 }
             }
