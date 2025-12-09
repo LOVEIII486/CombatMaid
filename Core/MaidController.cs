@@ -322,7 +322,7 @@ namespace CombatMaid.Core
         /// </summary>
         private void OnCheckLootBeforeDeath(DamageInfo info)
         {
-            CMDebug.Log($"[{_cachedCharacter.name}] 临死前触发物资抢救...");
+            CMDebug.LogInfo($"[{_cachedCharacter.characterPreset.DisplayName}] 临死前触发物资抢救...");
             CommandDumpLoot();
         }
 

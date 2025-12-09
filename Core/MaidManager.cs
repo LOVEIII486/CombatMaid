@@ -117,7 +117,7 @@ namespace CombatMaid.Core
         // 集火系统变量
         public CharacterMainControl FocusTarget { get; private set; }
         private float _focusExpireTimer = 0f;
-        private const float FocusDuration = 10.0f; // 延长到 10秒
+        private const float FocusDuration = 8.0f;
         private const float RaycastDistance = 150f; 
         private int _enemyLayerMask;
 
@@ -186,11 +186,11 @@ namespace CombatMaid.Core
                 {
                     FocusTarget = target;
                     _focusExpireTimer = FocusDuration;
-                    // if (CharacterMainControl.Main != null)
-                    // {
-                    //     CharacterMainControl.Main.PopText($">>> 集火: {target.name} <<<");
-                    // }
-                    // CMDebug.Log($"[集火] 锁定目标: {target.name} (距离: {hit.distance:F1}m)");
+                    if (CharacterMainControl.Main != null)
+                    {
+                        CharacterMainControl.Main.PopText($">>> 集火: {target.name} <<<");
+                    }
+                    CMDebug.Log($"[集火] 锁定目标: {target.name} (距离: {hit.distance:F1}m)");
                 }
                 else
                 {
@@ -235,7 +235,7 @@ namespace CombatMaid.Core
             {
                 var maid = _activeMaids[i];
                 maid.ForceHeal();
-                //maid.MaidCharacter.PopText("手动治疗！");
+                CharacterMainControl.Main.PopText("手动治疗！");
             }
         }
         
