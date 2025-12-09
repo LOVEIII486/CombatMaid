@@ -34,7 +34,7 @@ namespace CombatMaid.Core.MaidSkillSystem
                         return CreateSelfHeal();
                     case "GrenadeThrow":
                         return CreateGrenadeThrower(config.Params);
-                    case "Buff":
+                    case "BuffPlayer":
                         return CreateBuffPlayer(config.Params);
                     case "VanillaBuff":
                         return CreateVanillaBuff(config.Params);

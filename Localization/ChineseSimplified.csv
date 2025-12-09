@@ -1,6 +1,4 @@
 key,value,version,sheet
-Item_MaidContract,标准女仆契约（测试物品）,1.0,MaidItemName
-Item_MaidContract_Desc,召唤皇家女仆-贝拉,1.0,MaidItemDescription
 Item_VialMaid_I,瓶中女仆·I型,1.0,MaidItemName
 Item_VialMaid_I_Desc,封存于魔法容器中的临时契约女仆。只需在危急时刻打碎契约瓶，即可短暂召唤出能协助主人撤离的应急女仆。属于一次性使用的短效支援女仆。,1.0,MaidItemDescription
 Item_VialMaid_II,瓶中女仆·II型,1.0,MaidItemName
@@ -9,32 +7,6 @@ Item_VialMaid_III,瓶中女仆·III型,1.0,MaidItemName
 Item_VialMaid_III_Desc,封存于皇家秘银容器中的特级契约女仆。拥有极高的战斗性能。极其昂贵，但在面对绝境时，她就是你最坚实的最后一道防线。,1.0,MaidItemDescription
 Item_MaidContractWineFox,酒狐女仆契约,1.0,MaidItemName
 Item_MaidContractWineFox_Desc,召唤成长型女仆-酒狐,1.0,MaidItemDescription
-Perk_Maid_Core,酒狐女仆契约,2.2.2,Perks
-Perk_Maid_Core_Desc,获得召唤酒狐女仆的能力。解锁泥巴商店中的[酒狐契约]购买权限。,2.2.2,Perks
-Perk_WineFox_Health_1,强化契约躯体 I,2.2.2,Perks
-Perk_WineFox_Health_1_Desc,通过契约强化提升酒狐的生命力。最大生命值 +20。,2.2.2,Perks
-Perk_WineFox_Health_2,强化契约躯体 II,2.2.2,Perks
-Perk_WineFox_Health_2_Desc,进一步强化酒狐的契约之躯。最大生命值 +20。,2.2.2,Perks
-Perk_WineFox_Health_3,强化契约躯体 III,2.2.2,Perks
-Perk_WineFox_Health_3_Desc,将酒狐的生命力提升至新高度。最大生命值 +40。,2.2.2,Perks
-Perk_WineFox_Dmg_1,战斗契约强化 I,2.2.2,Perks
-Perk_WineFox_Dmg_1_Desc,提升酒狐的战斗能力。全局伤害倍率 +10%。,2.2.2,Perks
-Perk_WineFox_Dmg_2,战斗契约强化 II,2.2.2,Perks
-Perk_WineFox_Dmg_2_Desc,进一步解放酒狐的战斗潜能。全局伤害倍率 +10%。,2.2.2,Perks
-Perk_WineFox_Dmg_3,战斗契约强化 III,2.2.2,Perks
-Perk_WineFox_Dmg_3_Desc,将酒狐的战斗力推向极致。全局伤害倍率 +10%。,2.2.2,Perks
-Perk_Maid_AutoHeal,自动恢复,2.2.2,Perks
-Perk_Maid_AutoHeal_Desc,赋予女仆自动使用医疗物品的能力。,2.2.2,Perks
-Perk_Maid_Grenade,手雷技能,2.2.2,Perks
-Perk_Maid_Grenade_Desc,赋予女仆投掷手雷的能力。,2.2.2,Perks
-Perk_Bottle_Lv1,瓶中女仆 I 型,2.2.2,Perks
-Perk_Bottle_Lv1_Desc,解锁最低阶瓶中女仆的临时契约召唤。该单位为独立个体，不继承酒狐女仆的任何属性加成。,2.2.2,Perks
-Perk_Bottle_Lv2,瓶中女仆 II 型,2.2.2,Perks
-Perk_Bottle_Lv2_Desc,解锁中阶强化版本的瓶中女仆，具备更高战斗能力，但依然不继承酒狐女仆的成长属性。,2.2.2,Perks
-Perk_Bottle_Lv3,瓶中女仆 III 型,2.2.2,Perks
-Perk_Bottle_Lv3_Desc,解锁最高阶封存战偶级瓶中女仆，具备接近皇家近卫的战斗能力，但不继承任何酒狐女仆的成长属性。,2.2.2,Perks
-Perk_Weapon_Upgrade_1,武器升级: 战术突击,2.2.2,Perks
-Perk_Weapon_Upgrade_1_Desc,为酒狐换装更先进的武器。将默认格力克升级为MP5，大幅提升火力压制能力。,2.2.2,Perks
 Setting_HealthMultiplier,生命倍率,1.0,GeneralSettings
 Setting_AttackMultiplier,攻击倍率,1.0,GeneralSettings
 Setting_MoveSpeedMultiplier,移速倍率,1.0,GeneralSettings
@@ -51,6 +23,68 @@ Settings_OpenSaveFolder,女仆存档目录(游戏根目录),1.0,CustomMaid
 Settings_OpenSaveFolderButton,打开女仆配置存档文件夹,1.0,CustomMaid
 Setting_Key_Scavenge,指令: 搜刮模式,1.0,KeyBindings
 Setting_Key_Drop,指令: 吐出物资,1.0,KeyBindings
-Perk_Maid_Buffs,战术强化模块,2.2.2,Perks
-Perk_Maid_Buffs_Desc,解锁[战术强化]技能。允许女仆激活多种战术增益(Buff)来强化战斗能力。,2.2.2,Perks
 Buff_MaidBuff_Tear_Name,装甲撕裂,1.0,Buffs
+Perk_Maid_Core,酒狐女仆契约,2.2.2,Perks
+Perk_Maid_Core_Desc,获得召唤酒狐女仆的能力。解锁泥巴商店中的[酒狐契约]购买权限。,2.2.2,Perks
+Perk_WineFox_Health_1,强化契约躯体 I,2.2.2,Perks
+Perk_WineFox_Health_1_Desc,通过契约强化提升酒狐的生命力。最大生命值 +20。,2.2.2,Perks
+Perk_WineFox_Health_2,强化契约躯体 II,2.2.2,Perks
+Perk_WineFox_Health_2_Desc,进一步强化酒狐的契约之躯。最大生命值 +20。,2.2.2,Perks
+Perk_WineFox_Health_3,强化契约躯体 III,2.2.2,Perks
+Perk_WineFox_Health_3_Desc,将酒狐的生命力提升至新高度。最大生命值 +40。,2.2.2,Perks
+Perk_WineFox_Dmg_1,战斗契约强化 I,2.2.2,Perks
+Perk_WineFox_Dmg_2,战斗契约强化 II,2.2.2,Perks
+Perk_WineFox_Dmg_3,战斗契约强化 III,2.2.2,Perks
+Perk_Maid_SelfHeal,自我治疗,2.2.2,Perks
+Perk_Maid_SelfHeal_Desc,赋予女仆自动使用医疗物品的能力。,2.2.2,Perks
+Perk_Maid_Grenade,手雷技能,2.2.2,Perks
+Perk_Maid_Grenade_Desc,赋予女仆投掷手雷的能力。,2.2.2,Perks
+Perk_Bottle_Lv1,瓶中女仆 I 型,2.2.2,Perks
+Perk_Bottle_Lv1_Desc,解锁最低阶瓶中女仆的临时契约召唤。该单位为独立个体，不继承酒狐女仆的属性加成。,2.2.2,Perks
+Perk_Bottle_Lv2,瓶中女仆 II 型,2.2.2,Perks
+Perk_Bottle_Lv2_Desc,解锁中阶强化版本的瓶中女仆，具备更高战斗能力，不继承酒狐女仆的成长属性。,2.2.2,Perks
+Perk_Bottle_Lv3,瓶中女仆 III 型,2.2.2,Perks
+Perk_Bottle_Lv3_Desc,解锁最高阶封存战偶级瓶中女仆，具备接近皇家近卫的战斗能力，不继承酒狐女仆的成长属性。,2.2.2,Perks
+Perk_WineFox_Health_4,强化契约躯体 IV,2.2.2,Perks
+Perk_WineFox_Health_4_Desc,在强化生命力的同时强化契约护甲。\n最大生命值 +50，受到的物理伤害 -10%。,2.2.2,Perks
+Perk_WineFox_Health_5,强化契约躯体 V,2.2.2,Perks
+Perk_WineFox_Health_5_Desc,将酒狐的契约之躯锻造成最坚实的守护者。\n最大生命值 +70，受到的物理伤害 -20%。,2.2.2,Perks
+Perk_Flexibility_1,灵活战姿 I,2.2.2,Perks
+Perk_Flexibility_1_Desc,通过基础机动训练提升酒狐的移动节奏。\n移动速度 +10%，解锁冲刺能力。,2.2.2,Perks
+Perk_Flexibility_2,灵活战姿 II,2.2.2,Perks
+Perk_Flexibility_2_Desc,进一步强化步伐与转身协调。\n移动速度 +10%，转向速度 +10%，更快对准目标。,2.2.2,Perks
+Perk_Flexibility_3,灵活战姿 III,2.2.2,Perks
+Perk_Flexibility_3_Desc,将机动训练推向高阶战术水平。\n移动速度 +10%，转向速度 +20%，并解锁移动中射击能力。,2.2.2,Perks
+Perk_Armor_Upgrade_1,护甲升级 I,2.2.2,Perks
+Perk_Armor_Upgrade_1_Desc,为酒狐更换强化护甲套装，将初始防具升级为二级护甲套装，显著提升基础防护力。,2.2.2,Perks
+Perk_Armor_Upgrade_2,护甲升级 II,2.2.2,Perks
+Perk_Armor_Upgrade_2_Desc,对酒狐的护甲进行升级，将上一档护甲升级为三级护甲套装，有效提高生存能力。,2.2.2,Perks
+Perk_Armor_Upgrade_3,护甲升级 III,2.2.2,Perks
+Perk_Armor_Upgrade_3_Desc,继续强化护甲配置，将防具整体升级四级护甲套装，进一步提高对高威胁火力的抵抗能力。,2.2.2,Perks
+Perk_Armor_Upgrade_4,护甲升级 IV,2.2.2,Perks
+Perk_Armor_Upgrade_4_Desc,将酒狐的护甲提升至准终局级别，将关键部位防具升级为五级护甲套装，大幅减少正面交火时受到的伤害。,2.2.2,Perks
+Perk_Armor_Upgrade_5,护甲升级 V,2.2.2,Perks
+Perk_Armor_Upgrade_5_Desc,完成最终护甲换装，将整套护甲更新为六级护甲套装，使酒狐在战场上的防护性能接近皇家护卫水准。,2.2.2,Perks
+Perk_WineFox_Dmg_1_Desc,初步解放酒狐的战斗潜能，提高中远距离命中效率。\n伤害 +10%。,2.2.2,Perks
+Perk_WineFox_Dmg_2_Desc,优化火力与弹道算法，提高中远距离命中效率。\n伤害 +5%，子弹速度 +10%。,2.2.2,Perks
+Perk_WineFox_Dmg_3_Desc,优化战斗弹道计算模块，在更远距离保持稳定输出。\n伤害 +5%，射程 +15%。,2.2.2,Perks
+Perk_WineFox_Dmg_4,战斗契约强化 IV,2.2.2,Perks
+Perk_WineFox_Dmg_4_Desc,将火力训练升级为精确射击课程。\n伤害 +10%，暴击率 +5%，散布 -10%，散布惩罚 -10%。,2.2.2,Perks
+Perk_WineFox_Dmg_5,战斗契约强化 V,2.2.2,Perks
+Perk_WineFox_Dmg_5_Desc,完成战斗契约的终阶强化。\n伤害 +10%，暴击率 +10%，散布 -10%，散布惩罚 -10%。,2.2.2,Perks
+Perk_Weapon_Upgrade_1,武器升级：MP7,2.2.2,Perks
+Perk_Weapon_Upgrade_1_Desc,为酒狐换装第一阶段进阶武器，显著提升持续火力与压制能力。\n将默认配枪与基础弹药升级为性能更高的MP7与S-普通弹药，,2.2.2,Perks
+Perk_Weapon_Upgrade_2,武器升级：AK-103,2.2.2,Perks
+Perk_Weapon_Upgrade_2_Desc,进一步升级酒狐的主武器与弹药配置，在中远距离战斗中拥有更强杀伤力。\n将武器替换为AK-103和AR-普通弹,2.2.2,Perks
+Perk_Maid_Flashbang,闪光弹支援,2.2.2,Perks
+Perk_Maid_Flashbang_Desc,让女仆掌握使用专用闪光弹的战术。\n解锁投掷[闪光弹]的能力，在交火中制造强力致盲效果。,2.2.2,Perks
+Perk_Maid_Buff,增益支援契约,2.2.2,Perks
+Perk_Maid_Buff_Desc,签订增益支援契约，使女仆能够定期为玩家随机施加支援Buff效果。,2.2.2,Perks
+Perk_Maid_BuffPack_1,增益支援扩展包 I,2.2.2,Perks
+Perk_Maid_BuffPack_1_Desc,扩展女仆可使用的强化Buff。\n解锁加速、负重、持久Buff包。,2.2.2,Perks
+Perk_Weapon_Upgrade_3,武器升级：DT MDR-556,2.2.2,Perks
+Perk_Weapon_Upgrade_3_Desc,将武器替换为DT MDR-556，明显提升综合火力与操控手感。,2.2.2,Perks
+Perk_Weapon_Upgrade_4,武器升级：MCX Spear,2.2.2,Perks
+Perk_Weapon_Upgrade_4_Desc,将主武器升级为MCX Spear，在伤害、后坐等方面全面压制常规制式武器。,2.2.2,Perks
+Perk_Maid_BuffPack_2,增益支援扩展包 II,2.2.2,Perks
+Perk_Maid_BuffPack_2_Desc,解锁另一组战斗增益组合。\n解锁回复、硬化、镇静、强翅Buff包。,2.2.2,Perks

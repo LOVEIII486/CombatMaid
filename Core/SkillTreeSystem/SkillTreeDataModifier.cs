@@ -264,7 +264,31 @@ namespace CombatMaid.Core.SkillTreeSystem
                     return false;
                 }
             }
+            
+            if (!string.IsNullOrEmpty(action) && action.StartsWith("SetBool_"))
+            {
+                string[] parts = action.Split('_');
+                if (parts.Length == 3)
+                {
+                    string fieldName = parts[1];
+                    bool targetValue = parts[2].Equals("True", StringComparison.OrdinalIgnoreCase);
 
+                    // 反射查找 MaidConfig 中的布尔字段
+                    var field = typeof(MaidConfig).GetField(fieldName);
+                    if (field != null && field.FieldType == typeof(bool))
+                    {
+                        field.SetValue(data.PresetConfig, targetValue);
+                        CMDebug.Log($"  [Custom] 布尔属性修改: {fieldName} -> {targetValue}");
+                        return true;
+                    }
+                    else
+                    {
+                        CMDebug.LogWarning($"  [Custom] 未找到布尔字段: {fieldName}");
+                    }
+                    return false;
+                }
+            }
+            
             switch (action)
             {
                 case "UnlockEliteWeapons":
