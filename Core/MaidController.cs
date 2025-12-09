@@ -204,7 +204,12 @@ namespace CombatMaid.Core
         /// </summary>
         public void CommandScavenge()
         {
-            // 如果已经在搜刮，取消
+            if (LevelManager.Instance != null && LevelManager.Instance.IsBaseLevel)
+            {
+                MaidCharacter?.PopText("这是家里，不可以乱拿东西！");
+                return;
+            }
+            
             if (StateMachine.CurrentState is State_Scavenge)
             {
                 StateMachine.ChangeState<State_Autonomous>(); // 再次按键取消
