@@ -969,9 +969,16 @@
       "DisplayName": "Perk_Maid_EmergencyHeal",
       "Description": "Perk_Maid_EmergencyHeal_Desc",
       "IconFileName": "default_icon.png",
-      "CostMoney": 6000,
+      "CostMoney": 10000,
+      "CostItems": {
+        "331": 1,
+        "875": 3,
+        "882": 1,
+        "89": 2,
+        "136": 2
+      },
       "RequiredLevel": 15,
-      "Position": { "x": 50, "y": 450 },
+      "Position": { "x": 0, "y": 530 },
       "PrerequisiteIDs": [ "maid_skill_buff" ],
       "PlayerStatModifiers": {},
       "MaidModifiers": [

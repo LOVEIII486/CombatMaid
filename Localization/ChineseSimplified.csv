@@ -6,7 +6,7 @@ Item_VialMaid_II_Desc,封存于强化容器中的强袭契约女仆。比I型更
 Item_VialMaid_III,瓶中女仆·III型,1.0,MaidItemName
 Item_VialMaid_III_Desc,封存于皇家秘银容器中的特级契约女仆。拥有极高的战斗性能。极其昂贵，但在面对绝境时，她就是你最坚实的最后一道防线。,1.0,MaidItemDescription
 Item_MaidContractWineFox,酒狐女仆契约,1.0,MaidItemName
-Item_MaidContractWineFox_Desc,召唤成长型女仆-酒狐,1.0,MaidItemDescription
+Item_MaidContractWineFox_Desc,召唤成长型女仆-酒狐。内置冷却2分钟。,1.0,MaidItemDescription
 Setting_HealthMultiplier,生命倍率,1.0,GeneralSettings
 Setting_AttackMultiplier,攻击倍率,1.0,GeneralSettings
 Setting_MoveSpeedMultiplier,移速倍率,1.0,GeneralSettings

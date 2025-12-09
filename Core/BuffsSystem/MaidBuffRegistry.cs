@@ -16,8 +16,9 @@ namespace CombatMaid.Core.BuffsSystem
         public void Initialize()
         {
             RegisterEffect(new CombatMaid.Core.BuffsSystem.Effects.MaidTearEffect());
+            RegisterEffect(new CombatMaid.Core.BuffsSystem.Effects.MaidSuperRegenEffect());
             
-            CMDebug.Log($"初始化完成，已注册 {_effects.Count} 个效果");
+            CMDebug.Log($"初始化完成，已注册 {_effects.Count} 个自定义Buff效果");
         }
         
         public void Cleanup()

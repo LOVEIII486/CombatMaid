@@ -78,8 +78,8 @@ namespace CombatMaid.Core.BuffsSystem.Effects
                 // 执行回复
                 _target.Health.AddHealth(healAmount);
                 
-                // 飘字提示 (可选)
-                _target.PopText($"+{healAmount:F0}");
+                // 飘字提示
+                _target.PopText($"<color=#00FF00>+{healAmount:F0}</color>");
             }
         }
     }

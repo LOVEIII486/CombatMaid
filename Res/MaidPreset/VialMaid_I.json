@@ -7,7 +7,7 @@
     "ShowHealthBar": true,
 
     "//--- 生命 ---": "",
-    "Health": 120.0,
+    "Health": 80.0,
     "MoveSpeedFactor": 1.1,
     "HasSoul": true,
     "Exp": 0,
