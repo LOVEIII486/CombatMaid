@@ -186,11 +186,11 @@ namespace CombatMaid.Core
                 {
                     FocusTarget = target;
                     _focusExpireTimer = FocusDuration;
-                    if (CharacterMainControl.Main != null)
-                    {
-                        CharacterMainControl.Main.PopText($">>> 集火: {target.name} <<<");
-                    }
-                    CMDebug.Log($"[集火] 锁定目标: {target.name} (距离: {hit.distance:F1}m)");
+                    // if (CharacterMainControl.Main != null)
+                    // {
+                    //     CharacterMainControl.Main.PopText($">>> 集火: {target.name} <<<");
+                    // }
+                    // CMDebug.Log($"[集火] 锁定目标: {target.name} (距离: {hit.distance:F1}m)");
                 }
                 else
                 {

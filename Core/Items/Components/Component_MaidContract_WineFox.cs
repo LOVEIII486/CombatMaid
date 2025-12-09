@@ -11,7 +11,7 @@ namespace CombatMaid.Core.Items.Components
 
         // 全局冷却时间戳
         private static float _nextSummonTime = 0f;
-        private const float GlobalCooldown = 5f;
+        private const float GlobalCooldown = 120f;
 
         private void Awake()
         {
