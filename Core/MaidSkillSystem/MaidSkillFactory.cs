@@ -38,6 +38,8 @@ namespace CombatMaid.Core.MaidSkillSystem
                         return CreateBuffPlayer(config.Params);
                     case "VanillaBuff":
                         return CreateVanillaBuff(config.Params);
+                    case "EmergencyHeal":
+                        return CreateEmergencyHeal(config.Params);
                     default:
                         CMDebug.LogWarning($"未知的技能类型: {config.SkillID}");
                         return null;
@@ -123,7 +125,16 @@ namespace CombatMaid.Core.MaidSkillSystem
             CMDebug.LogWarning($"[CreateVanillaBuff] 配置无效: 'BuffIDs' 列表缺失或为空");
             return null;
         }
+        
+        private static IMaidSkill CreateEmergencyHeal(Dictionary<string, object> parameters)
+        {
+            string buffName = GetParam(parameters, "BuffName", "MaidBuff_SuperRegen");
+            int buffId = GetParam(parameters, "BuffID", 888002);
+            float duration = GetParam(parameters, "Duration", 5.0f);
 
+            return new Skill_EmergencyHeal(buffName, buffId, duration);
+        }
+        
         #endregion
 
         #region 参数解析

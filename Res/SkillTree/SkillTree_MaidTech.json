@@ -965,26 +965,24 @@
       ]
     },
     {
-      "ID": "maid_skill_new_1",
-      "DisplayName": "Perk_Maid_NewSkill_1",
-      "Description": "Perk_Maid_NewSkill_1_Desc",
+      "ID": "maid_skill_emergency_heal",
+      "DisplayName": "Perk_Maid_EmergencyHeal",
+      "Description": "Perk_Maid_EmergencyHeal_Desc",
       "IconFileName": "default_icon.png",
       "CostMoney": 6000,
-      "CostItems": {},
       "RequiredLevel": 15,
-      "Position": {
-        "x": 0,
-        "y": 530
-      },
-      "PrerequisiteIDs": [
-        "maid_skill_buff"
-      ],
+      "Position": { "x": 50, "y": 450 },
+      "PrerequisiteIDs": [ "maid_skill_buff" ],
       "PlayerStatModifiers": {},
       "MaidModifiers": [
         {
           "Type": "AddSkill",
-          "SkillID": "NewSkill_Placeholder",
-          "SkillParams": {}
+          "SkillID": "EmergencyHeal",
+          "SkillParams": {
+            "BuffName": "MaidBuff_SuperRegen",
+            "BuffID": 888002,
+            "Duration": 5.0
+          }
         }
       ]
     },
