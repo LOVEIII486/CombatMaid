@@ -255,6 +255,9 @@ namespace CombatMaid.Core.Items.Logic
                 case 88001: return "maid_special_bottle_1"; // Lv1
                 case 88002: return "maid_special_bottle_2"; // Lv2
                 case 88003: return "maid_special_bottle_3"; // Lv3
+                
+                // 女仆物品
+                case 88101: return "maid_skill_selfheal"; // 治疗药
 
                 // === 默认 ===
                 default: 

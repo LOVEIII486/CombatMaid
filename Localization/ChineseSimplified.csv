@@ -96,3 +96,5 @@ Perk_Maid_Element,元素手雷支援,2.2.2,Perks
 Perk_Maid_Element_Desc,让女仆掌握多种元素手雷的投掷战术。\n解锁投掷[燃烧]、[电击]、[毒雾]等元素手雷的能力。,2.2.2,Perks
 Perk_Maid_TeaBreak,酒狐的休憩茶点,2.2.3,Perks
 Perk_Maid_TeaBreak_Desc,解锁[休憩饮食]技能。\n当脱离战斗且主人状态不佳时，女仆会自动提供茶点恢复主人的水分、能量。冷却120秒。,2.2.3,Perks
+Item_RecoveryPotion,酒狐御制回复药,2.2.3,MaidItemName
+Item_RecoveryPotion_Desc,酒狐以秘法酿造的恢复药剂，专用于快速修复受损的魔力躯体与生命核心。\n\n<color=#FFFF00>效果：</color>恢复 40% 最大生命值。,2.2.3,MaidItemDescription

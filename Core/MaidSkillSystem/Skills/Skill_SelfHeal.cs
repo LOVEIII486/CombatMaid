@@ -13,7 +13,7 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
         public override float TriggerGCDDuration => 1.0f;
 
         private const float HealthThreshold = 0.8f; // 80% 血以下触发
-        private readonly HashSet<int> _medIds = new HashSet<int> { 10,15,16,17,20,875,14 };
+        private readonly HashSet<int> _medIds = new HashSet<int> { 10,15,16,17,20,875,14,88101 };
 
         protected override bool CheckTriggerCondition()
         {

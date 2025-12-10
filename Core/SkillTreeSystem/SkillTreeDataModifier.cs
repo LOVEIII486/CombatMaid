@@ -405,7 +405,7 @@ namespace CombatMaid.Core.SkillTreeSystem
                     {
                         skill.Params[key] = newVal;
                         hasChanges = true;
-                        CMDebug.Log($"    -> 更新参数 {key}");
+                        CMDebug.Log($"    -> 覆盖更新参数 {key}");
                     }
                 }
             }
@@ -417,7 +417,7 @@ namespace CombatMaid.Core.SkillTreeSystem
     }
 
     /// <summary>
-    /// 玩家属性修改器（保持原有功能，但添加日志）
+    /// 玩家属性修改器
     /// </summary>
     public class ModifyPlayerCharacterStats : ModifyCharacterStatsBase
     {

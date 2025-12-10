@@ -11,34 +11,6 @@ namespace CombatMaid.Core.Items.Data
         {
             return new List<MaidItemInfo>
             {
-                // new MaidItemInfo // 基础女仆契约
-                // {
-                //     itemId = 88888,
-                //     spritePath = "MaidContract_icon_512.png",
-                //     localizationKey = "Item_MaidContract",
-                //     localizationDesc = "Item_MaidContract_Desc",
-                //     value = 50000,
-                //     maxStackCount = 1,
-                //     weight = 0.01f,
-                //     tags = new List<string> { "MaidItem" },
-                //     usages = new UsageData
-                //     {
-                //         useTime = 1.0f,
-                //         // useSound = "Paper", 
-                //         behaviors = new List<UsageBehaviorData>() // 空行为，由 SimpleUseBehavior 接管
-                //     },
-                //     VisualReferenceId = 73, // 信件
-                //     CustomComponentType = typeof(Component_MaidContract),
-                //     CustomConstants = new Dictionary<string, object>
-                //     {
-                //         { "ConsumeOnUse", true }
-                //     },
-                //     ShopMerchantId = MerchantIds.Mud,
-                //     ShopMaxStock = 5,
-                //     ShopPriceFactor = 1.2f,
-                //     ShopPossibility = 1f,
-                //     ShopForceUnlock = false
-                // },
                 new MaidItemInfo // 酒狐女仆契约
                 {
                     itemId = 88000,
@@ -51,7 +23,7 @@ namespace CombatMaid.Core.Items.Data
                     quality = 6,
                     displayQuality = DisplayQuality.Red,
                     weight = 0.01f,
-                    tags = new List<string> {},
+                    tags = new List<string> { },
                     usages = new UsageData
                     {
                         useTime = 1.0f,
@@ -73,7 +45,7 @@ namespace CombatMaid.Core.Items.Data
                     ShopPossibility = 1f,
                     ShopForceUnlock = false
                 },
-                new MaidItemInfo// 瓶中女仆·I型
+                new MaidItemInfo // 瓶中女仆·I型
                 {
                     itemId = 88001,
                     localizationKey = "Item_VialMaid_I",
@@ -86,7 +58,7 @@ namespace CombatMaid.Core.Items.Data
                     maxDurability = 0f,
 
                     order = 0,
-                    tags = new List<string> {},
+                    tags = new List<string> { },
 
                     quality = 4,
                     displayQuality = DisplayQuality.Purple,
@@ -116,7 +88,7 @@ namespace CombatMaid.Core.Items.Data
                     ShopPossibility = 1.0f,
                     ShopForceUnlock = false
                 },
-                new MaidItemInfo// 瓶中女仆·II型
+                new MaidItemInfo // 瓶中女仆·II型
                 {
                     itemId = 88002,
                     localizationKey = "Item_VialMaid_II",
@@ -172,7 +144,7 @@ namespace CombatMaid.Core.Items.Data
                     maxDurability = 0f,
 
                     order = 2,
-                    tags = new List<string> {},
+                    tags = new List<string> { },
 
                     quality = 6,
                     displayQuality = DisplayQuality.Red,
@@ -201,62 +173,42 @@ namespace CombatMaid.Core.Items.Data
                     ShopPriceFactor = 10f,
                     ShopPossibility = 1f,
                     ShopForceUnlock = false
+                },
+                new MaidItemInfo
+                {
+                    itemId = 88101,
+                    spritePath = "RecoveryPotion.png",
+                    localizationKey = "Item_RecoveryPotion",
+                    localizationDesc = "Item_RecoveryPotion_Desc",
+                    value = 2500,
+                    weight = 0.5f,
+                    maxStackCount = 1,
+                    maxDurability = 6f,
+                    quality = 4,
+                    displayQuality = DisplayQuality.Purple,
+                    tags = new List<string> { "Medic", "Healing"},
+                    usages = new UsageData
+                    {
+                        useTime = 1.0f,
+                        useSound = string.Empty,
+                        actionSound = "SFX/Item/use_drink",
+                        useDurability = true,
+                        durabilityUsage = 1,
+                        behaviors = new List<UsageBehaviorData>()
+                    },
+                    VisualReferenceId = 15,
+                    CustomComponentType = typeof(Component_RecoveryPotion),
+                    CustomConstants = new Dictionary<string, object>
+                    {
+                        { "ConsumeOnUse", false }
+                    },
+                    ShopMerchantId = MerchantIds.Fo,
+                    ShopMaxStock = 5,
+                    ShopPriceFactor = 2.0f,
+                    ShopPossibility = 1.0f,
+                    ShopForceUnlock = false
                 }
             };
         }
     }
 }
-
-
-//
-// // ==================== 新建物品填空模板 ====================
-// new MaidItemInfo
-// {
-//     // --- [1. 必填核心] (来自 ItemData) ---
-//     itemId = 0,                      // [必填] 唯一数字ID (不要重复)
-//     localizationKey = "Item_Key",    // [必填] 名称文本 Key (对应 CSV)
-//     localizationDesc = "Item_Desc",  // [必填] 描述文本 Key (对应 CSV)
-//     spritePath = "Icon_Name.png",    // [必填] 图标文件名 (放入 assets/textures)
-//
-//     // --- [2. 基础数值] (来自 ItemData) ---
-//     value = 100,                     // 基础价格
-//     maxStackCount = 1,               // 最大堆叠数
-//     weight = 0.1f,                   // 重量 (kg)
-//     quality = 0,                     // 品质数值 (影响排序等)
-//     displayQuality = DisplayQuality.None, // 稀有度边框: None, Common, Rare, Epic, Legendary
-//
-//     // --- [3. 分类与排序] (来自 ItemData) ---
-//     tags = new List<string> { "General", "Maid" }, // 标签
-//     order = 0,                       // 排序优先级 (越小越前)
-//
-//     // --- [4. 使用行为] (来自 ItemData) ---
-//     // 不需要使用功能则删掉此段
-//     usages = new UsageData
-//     {
-//         useTime = 1.0f,              // 使用读条时间 (秒)
-//         useSound = "Paper",          // 音效 Key
-//         // behaviors = ...           // 通常由模组脚本接管，这里留空
-//     },
-//
-//     // ==========================================
-//     // --- [5. 模组扩展设置] (MaidItemInfo) ---
-//     // ==========================================
-//
-//     // --- 视觉借用 ---
-//     VisualReferenceId = 0,           // 借用原版物品 ID (0 = 使用自己的 spritePath)
-//
-//     // --- 逻辑绑定 ---
-//     CustomComponentType = null,      // 挂载脚本类型: typeof(Component_MaidVial)
-//     CustomConstants = new Dictionary<string, object>
-//     {
-//         { "Key", "Value" }           // 自定义参数 (如 VialTier, MaidProfileID)
-//     },
-//
-//     // --- 商店设置 ---
-//     ShopMerchantId = MerchantIds.Mud,// 商人 ID (设为 null 不上架)
-//     ShopMaxStock = 5,                // 每次刷新库存
-//     ShopPriceFactor = 1.0f,          // 价格倍率
-//     ShopPossibility = 1.0f,          // 出现概率 (0.0 - 1.0)
-//     ShopForceUnlock = true           // 是否无视好感度强制解锁
-// }
-//     
