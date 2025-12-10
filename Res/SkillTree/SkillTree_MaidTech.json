@@ -786,7 +786,7 @@
       },
       "RequiredLevel": 2,
       "Position": {
-        "x": 60,
+        "x": 0,
         "y": 150
       },
       "PrerequisiteIDs": [
@@ -812,8 +812,8 @@
       },
       "RequiredLevel": 3,
       "Position": {
-        "x": 60,
-        "y": 300
+        "x": 0,
+        "y": 230
       },
       "PrerequisiteIDs": [
         "maid_skill_selfheal"
@@ -843,8 +843,8 @@
       },
       "RequiredLevel": 6,
       "Position": {
-        "x": 160,
-        "y": 380
+        "x": 90,
+        "y": 300
       },
       "PrerequisiteIDs": [
         "maid_skill_grenade"
@@ -857,6 +857,39 @@
           "SkillParams": {
             "ItemIDs": [
               66
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "//": "--- 技能升级：追加元素手雷 ---",
+      "ID": "maid_skill_grenade_element",
+      "DisplayName": "Perk_Maid_Element",
+      "Description": "Perk_Maid_Element_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 5000,
+      "CostItems": {
+        "933": 5,
+        "941": 5,
+        "942": 5
+      },
+      "RequiredLevel": 10,
+      "Position": {
+        "x": -90,
+        "y": 300
+      },
+      "PrerequisiteIDs": [
+        "maid_skill_grenade"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "AddSkill",
+          "SkillID": "GrenadeThrow",
+          "SkillParams": {
+            "ItemIDs": [
+              933,941,942
             ]
           }
         }
@@ -1007,12 +1040,10 @@
       },
       "RequiredLevel": 5,
       "Position": {
-        "x": -60,
-        "y": 150
+        "x": 450,
+        "y": 0
       },
-      "PrerequisiteIDs": [
-        "maid_core_license"
-      ],
+      "PrerequisiteIDs": [],
       "PlayerStatModifiers": {},
       "MaidModifiers": []
     },
@@ -1030,8 +1061,8 @@
       },
       "RequiredLevel": 10,
       "Position": {
-        "x": -60,
-        "y": 230
+        "x": 450,
+        "y": 80
       },
       "PrerequisiteIDs": [
         "maid_special_bottle_1"
@@ -1054,8 +1085,8 @@
       },
       "RequiredLevel": 15,
       "Position": {
-        "x": -60,
-        "y": 300
+        "x": 450,
+        "y": 160
       },
       "PrerequisiteIDs": [
         "maid_special_bottle_2"

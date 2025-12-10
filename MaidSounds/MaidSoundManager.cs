@@ -49,7 +49,7 @@ namespace CombatMaid.MaidSounds
                     // === 缓存未命中，执行磁盘扫描 ===
                     candidates = new List<string>();
                     string modPath = ModBehaviour.Instance.ModRootPath;
-                    string soundFolder = Path.Combine(modPath, "MaidSounds");
+                    string soundFolder = Path.Combine(modPath, "assets/sounds");
 
                     if (Directory.Exists(soundFolder))
                     {

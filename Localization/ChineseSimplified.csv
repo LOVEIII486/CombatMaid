@@ -92,3 +92,5 @@ Perk_Maid_EmergencyHeal,战地急救协议,2.2.2,Perks
 Perk_Maid_EmergencyHeal_Desc,解锁[紧急治疗]技能。\n 当女仆自身或主人生命值低于30%时，自动施加强效再生Buff。冷却时间60秒。,2.2.2,Perks
 SkillTree_MaidTech_Name,战斗女仆技能树,2.2.2,Perks
 SkillTree_MaidTech_Desc,永久提升女仆的属性并解锁强力契约技能,2.2.2,Perks
+Perk_Maid_Element,元素手雷支援,2.2.2,Perks
+Perk_Maid_Element_Desc,让女仆掌握多种元素手雷的投掷战术。\n解锁投掷[燃烧]、[电击]、[毒雾]等元素手雷的能力。,2.2.2,Perks

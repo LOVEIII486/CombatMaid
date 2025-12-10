@@ -9,7 +9,7 @@ namespace CombatMaid
     /// </summary>
     public static class CMDebug
     {
-        private const bool ShowDebugLogs = false; 
+        private const bool ShowDebugLogs = true; 
 
         private const string BasePrefix = "[CombatMaid]";
 

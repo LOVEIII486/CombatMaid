@@ -282,10 +282,6 @@ namespace CombatMaid.Core.SkillTreeSystem
             }
         }
 
-        // ❌ 已删除 ApplyPassiveEffectsToMaid 方法
-        // 新系统中，技能树加成直接写入酒狐存档，召唤时自动读取
-        // 无需在运行时遍历已解锁技能并应用修改器
-
         /// <summary>
         /// 查询指定 ID 的技能节点是否已解锁
         /// </summary>
