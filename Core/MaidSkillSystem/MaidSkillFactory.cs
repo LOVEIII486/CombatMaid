@@ -40,6 +40,8 @@ namespace CombatMaid.Core.MaidSkillSystem
                         return CreateVanillaBuff(config.Params);
                     case "EmergencyHeal":
                         return CreateEmergencyHeal(config.Params);
+                    case "TeaBreak":
+                        return new Skill_TeaBreak();
                     default:
                         CMDebug.LogWarning($"未知的技能类型: {config.SkillID}");
                         return null;
