@@ -9,7 +9,7 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
     public class Skill_EmergencyHeal : MaidSkillBase
     {
         public override string SkillName => "EmergencyHeal";
-        public override float Cooldown => 60.0f;
+        public override float Cooldown => 120.0f;
         
         public override bool RespectGlobalCooldown => false;
 

@@ -11,7 +11,7 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
     public class Skill_VanillaBuff : MaidSkillBase
     {
         public override string SkillName => "VanillaBuff";
-        public override float Cooldown => 40.0f;
+        public override float Cooldown => 90.0f;
         
         public override bool RespectGlobalCooldown => true;
         public override float TriggerGCDDuration => 0.5f;
