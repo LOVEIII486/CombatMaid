@@ -6,7 +6,7 @@ Item_VialMaid_II_Desc,封存于强化容器中的强袭契约女仆。比I型更
 Item_VialMaid_III,瓶中女仆·III型,1.0,MaidItemName
 Item_VialMaid_III_Desc,封存于皇家秘银容器中的特级契约女仆。拥有极高的战斗性能。极其昂贵，但在面对绝境时，她就是你最坚实的最后一道防线。,1.0,MaidItemDescription
 Item_MaidContractWineFox,酒狐女仆契约,1.0,MaidItemName
-Item_MaidContractWineFox_Desc,召唤成长型女仆-酒狐。内置冷却2分钟。,1.0,MaidItemDescription
+Item_MaidContractWineFox_Desc,召唤成长型女仆-酒狐。内置冷却2分钟。酒狐已存在时召唤会刷新状态。,1.0,MaidItemDescription
 Setting_HealthMultiplier,生命倍率,1.0,GeneralSettings
 Setting_AttackMultiplier,攻击倍率,1.0,GeneralSettings
 Setting_MoveSpeedMultiplier,移速倍率,1.0,GeneralSettings
@@ -94,5 +94,5 @@ SkillTree_MaidTech_Name,战斗女仆技能树,2.2.2,Perks
 SkillTree_MaidTech_Desc,永久提升女仆的属性并解锁强力契约技能,2.2.2,Perks
 Perk_Maid_Element,元素手雷支援,2.2.2,Perks
 Perk_Maid_Element_Desc,让女仆掌握多种元素手雷的投掷战术。\n解锁投掷[燃烧]、[电击]、[毒雾]等元素手雷的能力。,2.2.2,Perks
-Perk_Maid_TeaBreak,休憩饮食支援,2.2.3,Perks
-Perk_Maid_TeaBreak_Desc,解锁[休憩饮食]技能。\n当脱离战斗且主人状态不佳时，女仆会自动提供茶点恢复主人的水分、能量。冷却60秒。,2.2.3,Perks
+Perk_Maid_TeaBreak,酒狐的休憩茶点,2.2.3,Perks
+Perk_Maid_TeaBreak_Desc,解锁[休憩饮食]技能。\n当脱离战斗且主人状态不佳时，女仆会自动提供茶点恢复主人的水分、能量。冷却120秒。,2.2.3,Perks

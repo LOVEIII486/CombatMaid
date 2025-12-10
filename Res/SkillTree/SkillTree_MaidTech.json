@@ -1095,15 +1095,17 @@
       "MaidModifiers": []
     },
     {
-      "//": "--- [新增] 休憩饮食支援 ---",
       "ID": "maid_skill_teabreak",
       "DisplayName": "Perk_Maid_TeaBreak",
       "Description": "Perk_Maid_TeaBreak_Desc",
       "IconFileName": "default_icon.png",
       "CostMoney": 5000,
       "CostItems": {
-        "15": 5,
-        "20": 5
+        "13": 3,
+        "132": 3,
+        "68": 2,
+        "14": 1,
+        "108": 1
       },
       "RequiredLevel": 8,
       "Position": {
