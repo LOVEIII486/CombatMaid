@@ -50,8 +50,8 @@ namespace CombatMaid.Core.Items.Components
             character.AddHealth(healAmount);
 
             // 视觉反馈
-            string healText = $"+{healAmount:F0}";
-            character.PopText($"<color=#00FF00>{healText}</color>");
+            // string healText = $"+{healAmount:F0}";
+            // character.PopText($"<color=#00FF00>{healText}</color>");
         }
 
         private void OnDestroy()

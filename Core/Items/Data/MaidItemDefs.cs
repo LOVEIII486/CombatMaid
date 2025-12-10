@@ -52,7 +52,7 @@ namespace CombatMaid.Core.Items.Data
                     localizationDesc = "Item_VialMaid_I_Desc",
                     spritePath = "VialMaid_I.png",
 
-                    value = 3000,
+                    value = 2000,
                     weight = 1f,
                     maxStackCount = 3,
                     maxDurability = 0f,
@@ -95,7 +95,7 @@ namespace CombatMaid.Core.Items.Data
                     localizationDesc = "Item_VialMaid_II_Desc",
                     spritePath = "VialMaid_II.png",
 
-                    value = 6000,
+                    value = 5000,
                     weight = 1.2f,
                     maxStackCount = 2,
                     maxDurability = 0f,
@@ -127,7 +127,7 @@ namespace CombatMaid.Core.Items.Data
                     },
                     ShopMerchantId = MerchantIds.Mud,
                     ShopMaxStock = 2,
-                    ShopPriceFactor = 10f,
+                    ShopPriceFactor = 8f,
                     ShopPossibility = 1f,
                     ShopForceUnlock = false
                 },
@@ -170,7 +170,7 @@ namespace CombatMaid.Core.Items.Data
                     },
                     ShopMerchantId = MerchantIds.Mud,
                     ShopMaxStock = 1,
-                    ShopPriceFactor = 10f,
+                    ShopPriceFactor = 8f,
                     ShopPossibility = 1f,
                     ShopForceUnlock = false
                 },
@@ -191,7 +191,7 @@ namespace CombatMaid.Core.Items.Data
                     {
                         useTime = 1.0f,
                         useSound = string.Empty,
-                        actionSound = "SFX/Item/use_drink",
+                        actionSound = string.Empty,
                         useDurability = true,
                         durabilityUsage = 1,
                         behaviors = new List<UsageBehaviorData>()

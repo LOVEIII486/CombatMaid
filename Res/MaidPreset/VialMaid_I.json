@@ -103,6 +103,12 @@
       {
         "SkillID": "SelfHeal",
         "Params": {}
+      },
+      {
+        "SkillID": "GrenadeThrow",
+        "Params": {
+          "ItemIDs": [ 66 ]
+        }
       }
     ]
   }
