@@ -16,8 +16,8 @@ namespace CombatMaid.Core.MaidFSM.States
         private const float InteractionThreshold = 2.5f;// 交互距离
         
         // 搜刮耗时配置
-        private const float LootDurationPerItem = 0.8f; // 每个物品的搜刮耗时(秒)
-        private const float BoxSearchDelay = 1.5f;      // 打开箱子/开始搜索的初始延迟
+        private const float LootDurationPerItem = 0.5f; // 每个物品的搜刮耗时(秒)
+        private const float BoxSearchDelay = 1.2f;      // 打开箱子/开始搜索的初始延迟
 
         // ================= 运行时状态 =================
         private List<Collider> _scannedObjects = new List<Collider>();
