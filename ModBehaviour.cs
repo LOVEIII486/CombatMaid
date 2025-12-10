@@ -59,6 +59,12 @@ namespace CombatMaid
             
             InitializeMaidSystem();
             InitializeSkillTreeSystem();
+            
+            if (gameObject.GetComponent<CombatMaid.DebugTools.InventoryDebugger>() == null)
+            {
+                gameObject.AddComponent<CombatMaid.DebugTools.InventoryDebugger>();
+                CMDebug.LogInfo("EnemyInventoryDebugger 已挂载，按 F6 测试。");
+            }
         }
 
         private void OnDisable()

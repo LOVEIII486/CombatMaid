@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using Duckov;
 using Duckov.Scenes;
 using ItemStatsSystem;
@@ -18,7 +19,6 @@ namespace CombatMaid.Core.MaidSkillSystem
         {
             if (attacker == null) return;
             
-            // 1. 实例化物品
             Item item = ItemAssetsCollection.InstantiateSync(itemId);
             if (item == null)
             {
@@ -26,7 +26,6 @@ namespace CombatMaid.Core.MaidSkillSystem
                 return;
             }
             
-            // 2. 获取技能组件
             Skill_Grenade skill = item.GetComponent<Skill_Grenade>();
             if (skill == null)
             {
@@ -35,18 +34,16 @@ namespace CombatMaid.Core.MaidSkillSystem
                 return;
             }
             
-            // 3. 配置参数
             skill.canHurtSelf = canHurtSelf;
             skill.delay = delay;
             
-            // 4. 构建释放上下文
             SkillReleaseContext context = new SkillReleaseContext
             {
                 releasePoint = targetPos
             };
             
-            // 5. 释放技能
             skill.ReleaseSkill(context, attacker);
         }
+        
     }
 }
