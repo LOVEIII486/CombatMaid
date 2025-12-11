@@ -335,6 +335,8 @@ namespace CombatMaid.Core
                     MaidSpawner.Instance.DebugExportReferenceStats();
                 }
             }
+
+            CombatMaid.Localization.LocalizationManager.HotReloadLocalization();
         }
 
         #endregion
