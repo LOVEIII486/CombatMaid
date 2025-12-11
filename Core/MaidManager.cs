@@ -147,6 +147,11 @@ namespace CombatMaid.Core
             {
                 CommandDropItems();
             }
+            
+            if (Input.GetKeyDown(KeyCode.B))
+            {
+                CommandInventoryManage_WineFox();
+            }
         }
 
         private void UpdateFocusTarget()
@@ -256,6 +261,19 @@ namespace CombatMaid.Core
                     maid.CommandDumpLoot();
                 }
             }
+        }
+
+        private void CommandInventoryManage_WineFox()
+        {
+                var wineFox = GetActiveWineFox();
+                if (wineFox != null)
+                {
+                    wineFox.ToggleInventoryManagement();
+                }
+                else
+                {
+                    CMDebug.LogWarning("未找到酒狐，无法打开背包。");
+                }
         }
 
         private Vector3 GetMousePosition()

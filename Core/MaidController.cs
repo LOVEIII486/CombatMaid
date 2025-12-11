@@ -135,6 +135,7 @@ namespace CombatMaid.Core
             StateMachine.AddState(new State_HoldPosition());
             StateMachine.AddState(new State_PassiveFollow());
             StateMachine.AddState(new State_Scavenge());
+            StateMachine.AddState(new State_InventoryManage());
 
             StateMachine.ChangeState<State_Autonomous>();
         }
@@ -222,7 +223,6 @@ namespace CombatMaid.Core
             }
         }
         
-        
         /// <summary>
         /// 吐出物品 (K键)
         /// </summary>
@@ -259,7 +259,32 @@ namespace CombatMaid.Core
             }
             LootHistory.Clear();
         }
-
+        
+        /// <summary>
+        /// 切换库存管理模式 (B键)
+        /// </summary>
+        public void ToggleInventoryManagement()
+        {
+            if (StateMachine.CurrentState is State_InventoryManage)
+            {
+                StateMachine.ChangeState<State_Autonomous>();
+            }
+            else
+            {
+                float dist = Vector3.Distance(transform.position, MainOwner.transform.position);
+                if (dist > 5.0f) 
+                {
+                    MaidCharacter?.PopText("主人，请靠近一点...");
+                    return; 
+                }
+                
+                StateMachine.ChangeState<State_InventoryManage>();
+            }
+        }
+        #endregion
+        
+        #region 内部辅助方法
+        
         /// <summary>
         /// 生成一个临时战利品箱
         /// </summary>

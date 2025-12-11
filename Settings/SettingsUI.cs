@@ -70,6 +70,13 @@ namespace CombatMaid.Settings
                 CombatMaidConfig.Key_Bind_Drop,
                 LocalizationManager.GetText("Setting_Key_Drop"),
                 CombatMaidConfig.KeyDrop, KeyCode.K, (v) => CombatMaidConfig.KeyDrop = v);
+            
+            ModSettingAPI.AddKeybinding(
+                CombatMaidConfig.Key_Bind_InvManage,
+                LocalizationManager.GetText("Setting_Key_InvManage"),
+                CombatMaidConfig.KeyInventoryManage,KeyCode.B,
+                (v) => CombatMaidConfig.KeyInventoryManage = v
+            );
 
             // ==================== 3. 自定义女仆配置 ====================
 
@@ -119,7 +126,8 @@ namespace CombatMaid.Settings
                     CombatMaidConfig.Key_Bind_Heal,
                     CombatMaidConfig.Key_Bind_Hold,
                     CombatMaidConfig.Key_Bind_Scavenge,
-                    CombatMaidConfig.Key_Bind_Drop
+                    CombatMaidConfig.Key_Bind_Drop,
+                    CombatMaidConfig.Key_Bind_InvManage
                 },
                 0.7f, false, false
             );
