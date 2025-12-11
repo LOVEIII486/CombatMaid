@@ -6,6 +6,14 @@
     <GameDir>E:\Game\Steam\steamapps\common\Escape from Duckov\Duckov_Data\Managed</GameDir>
   </PropertyGroup>
 
+   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <DefineConstants>$(DefineConstants);COMBATMAID_DEBUG</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DefineConstants>$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Reference Include="$(GameDir)\*.dll" 
                Exclude="$(GameDir)\System.*;

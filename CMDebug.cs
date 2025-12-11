@@ -9,7 +9,12 @@ namespace CombatMaid
     /// </summary>
     public static class CMDebug
     {
-        private const bool ShowDebugLogs = false; 
+#if COMBATMAID_DEBUG
+    private const bool ShowDebugLogs = true;
+#warning CombatMaid DEBUG MODE: 调试模式已启用（COMBATMAID_DEBUG）！
+#else
+        private const bool ShowDebugLogs = false;
+#endif
 
         private const string BasePrefix = "[CombatMaid]";
 

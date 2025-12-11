@@ -31,7 +31,12 @@ namespace CombatMaid.Core
 
         private void Update()
         {
+            
+#if COMBATMAID_DEBUG
+            HandleDebugInput();
+#else
             //HandleDebugInput();
+#endif
             HandleCommandInput();
             UpdateFocusTarget();
         }
