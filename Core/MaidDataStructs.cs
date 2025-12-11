@@ -10,7 +10,7 @@ namespace CombatMaid.Core
         public string ProfileName;
         public MaidConfig PresetConfig;
         public MaidExtraInfo ExtraData;
-        public MaidInventoryData Inventory;
+        public MaidInventoryData Inventory = new MaidInventoryData();
     }
     
     [Serializable]

@@ -195,6 +195,11 @@ namespace CombatMaid.Core
                 {
                     var sync = controller.gameObject.AddComponent<WineFoxDataSync>();
                     sync.Initialize(controller, finalData);
+                    sync.LoadInventory(); 
+                    if (WineFoxDataManager.CurrentData.Inventory == null)
+                    {
+                        sync.SaveInventory();
+                    }
                     CMDebug.Log($"[Spawn] 酒狐已生成 (存档同步开启)");
                 }
 
@@ -203,6 +208,8 @@ namespace CombatMaid.Core
                 {
                     MaidManager.Instance.RegisterActiveMaid(controller);
                 }
+                
+                
 
                 onComplete?.Invoke(controller);
             });

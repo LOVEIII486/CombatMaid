@@ -50,9 +50,8 @@ namespace CombatMaid.Core.WineFox
         private void SyncAndSave()
         {
             if (_controller == null || _refData == null) return;
-
-            // [重要] 这里不需要再赋值了，因为Update里已经同步了内存数据
-            // 直接调用管理器保存内存中的 _refData 即可
+            
+            SaveInventory(); 
             WineFoxDataManager.SaveData();
         }
         
