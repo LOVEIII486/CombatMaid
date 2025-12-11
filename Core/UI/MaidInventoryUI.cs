@@ -4,7 +4,7 @@ using Duckov.UI;
 using HarmonyLib; 
 using System.Reflection;
 using ItemStatsSystem;
-using CombatMaid.Core;
+using CombatMaid.ModCompatibility;
 
 namespace CombatMaid.Core.UI
 {
@@ -45,6 +45,10 @@ namespace CombatMaid.Core.UI
             var player = CharacterMainControl.Main;
             if (player == null) return;
 
+            // [新增] 1. 在操作 UI 前，先禁用冲突模组 (QuickLoot)
+            // 防止它在 UI 数据切换瞬间读取到错误状态导致死循环/卡死
+            QuickLootCompatibility.DisableQuickLoot();
+
             CMDebug.Log($"打开物资交换面板: {player.name} <-> {maidCharacter.name}");
             
             // 初始化反射 (如果尚未初始化)
@@ -57,8 +61,6 @@ namespace CombatMaid.Core.UI
         /// <summary>
         /// 双向交互UI核心逻辑
         /// </summary>
-        /// <param name="mainSide">显示在右侧的角色（拥有装备栏权限，即女仆）</param>
-        /// <param name="otherSide">显示在左侧的角色（作为容器，即玩家）</param>
         private static void OpenDualModeUI(CharacterMainControl mainSide, CharacterMainControl otherSide)
         {
             if (LootView.Instance == null) return;
@@ -74,22 +76,21 @@ namespace CombatMaid.Core.UI
 
                 if (mainInventory == null || otherInventory == null) return;
 
-                // ==============================================================
                 // [关键修复] 步骤 A: 在 Show() 之前注入左侧数据
-                // ==============================================================
-                // 这样 OnOpen() 运行时，会认为"有目标容器"，从而自动显示左侧面板 (FadeGroup.Show)
                 _lootTargetInventoryField.SetValue(lootView, otherInventory);
 
                 // === 2. 打开界面 ===
-                // 此时 OnOpen 执行：
-                // - 左侧：自动 Setup(otherInventory) -> 显示玩家背包 (符合预期)
-                // - 右侧：自动 Setup(Player) -> 显示玩家装备 (不符预期，稍后覆盖)
                 lootView.Show();
 
-                // ==============================================================
+                // [新增] 2. 挂载关闭监听器
+                // 当 LootView 关闭时，这个组件会自动恢复 QuickLoot 并销毁自己
+                // 确保不影响其他箱子的正常交互
+                if (lootView.GetComponent<MaidUICloseObserver>() == null)
+                {
+                    lootView.gameObject.AddComponent<MaidUICloseObserver>();
+                }
+
                 // 步骤 B: 覆盖右侧面板 (Show 之后执行)
-                // ==============================================================
-                // 强行把右侧改为女仆数据
                 var rightSlotDisplay = _rightSlotDisplayField.GetValue(lootView) as ItemSlotCollectionDisplay;
                 if (rightSlotDisplay != null)
                 {
@@ -102,10 +103,7 @@ namespace CombatMaid.Core.UI
                     rightInvDisplay.Setup(mainInventory, null, null, true, null);
                 }
 
-                // ==============================================================
                 // 步骤 C: 修正标题 (Show 之后执行)
-                // ==============================================================
-                // 因为 OnOpen 会重置标题为 Inventory.DisplayName，所以我们要重新覆盖一次
                 var nameText = _lootTargetNameField.GetValue(lootView) as TMPro.TextMeshProUGUI;
                 if (nameText != null)
                 {
@@ -115,6 +113,8 @@ namespace CombatMaid.Core.UI
             catch (System.Exception e)
             {
                 CMDebug.LogError($"UI劫持失败: {e}");
+                // 如果出错，尝试恢复，避免卡在禁用状态
+                QuickLootCompatibility.RestoreQuickLoot(); 
             }
         }
 
@@ -156,6 +156,24 @@ namespace CombatMaid.Core.UI
             catch (System.Exception e)
             {
                 CMDebug.LogError($"MaidInventoryUI 反射初始化失败: {e}");
+            }
+        }
+
+        // =========================================================
+        // [新增] 内部类：用于监听 LootView 关闭事件
+        // =========================================================
+        /// <summary>
+        /// 挂载在 LootView 上，当 LootView 关闭(OnDisable)时，恢复外部模组的功能
+        /// </summary>
+        private class MaidUICloseObserver : MonoBehaviour
+        {
+            private void OnDisable()
+            {
+                // 界面关闭，恢复自动拾取功能
+                QuickLootCompatibility.RestoreQuickLoot();
+                
+                // 任务完成，销毁自己，保持 LootView 干净
+                Destroy(this);
             }
         }
     }

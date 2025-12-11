@@ -1,7 +1,7 @@
-﻿using UnityEngine;
-using ItemStatsSystem;
+﻿using ItemStatsSystem;
+using UnityEngine;
 
-namespace CombatMaid.Core.Items.DebugTools
+namespace CombatMaid.DebugTools
 {
     public class ItemDebugSpawner : MonoBehaviour
     {
