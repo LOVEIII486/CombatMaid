@@ -99,7 +99,7 @@ Perk_Maid_TeaBreak_Desc,解锁[休憩饮食]技能。\n当脱离战斗且主人�
 Item_RecoveryPotion,酒狐御制回复药,2.2.3,MaidItemName
 Item_RecoveryPotion_Desc,酒狐以秘法酿造的恢复药剂，专用于快速修复受损的魔力躯体与生命核心。\n\n<color=#FFFF00>效果：</color>恢复 40% 最大生命值并解除所有创伤状态。,2.2.3,MaidItemDescription
 Perk_Maid_BackpackAccess_Title,酒狐的战备行囊,2.2.3,Perks
-Perk_Maid_BackpackAccess_Desc,解锁关于酒狐行囊管理的战术指南。说明部分：\n靠近酒狐，<color=#FFD700>按下 B 键</color>，打开酒狐的装备和背包并手动管理，右侧为玩家背包界面。\n\n<color=#FF4500>为避免某些mod冲突错误导致物品丢失，请避免放置贵重物品！</color>\n\n<color=#00FF00>【提示】</color>\n现在酒狐的物品数据会持久化存储，即便切换场景也能保存。,2.2.3,Perks
+Perk_Maid_BackpackAccess_Desc,解锁关于酒狐行囊管理的战术指南。\n靠近酒狐，<color=#FFD700>按下 B 键</color>，打开酒狐的装备和背包并手动管理，右侧为玩家背包界面。\n\n<color=#FF4500>为避免某些mod冲突错误导致物品丢失，请避免放置贵重物品！</color>\n\n<color=#00FF00>【提示】</color>\n现在酒狐的物品数据会持久化存储，即便切换场景也能保存。,2.2.3,Perks
 Perk_Backpack_1,备用小口袋,2.2.3,Perks
 Perk_Backpack_1_Desc,主人，稍微重一点的东西就交给我吧！我在女仆装的内侧缝了几个隐蔽的小口袋哦。\n<color=#00FFFF>背包容量 +10</color>,2.2.3,Perks
 Perk_Backpack_2,特制大背包,2.2.3,Perks
