@@ -148,7 +148,7 @@ namespace CombatMaid.Core
                 CommandDropItems();
             }
             
-            if (Input.GetKeyDown(KeyCode.B))
+            if (Input.GetKeyDown(Settings.CombatMaidConfig.KeyInventoryManage))
             {
                 CommandInventoryManage_WineFox();
             }

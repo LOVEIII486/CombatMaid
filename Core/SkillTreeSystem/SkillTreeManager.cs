@@ -56,109 +56,61 @@ namespace CombatMaid.Core.SkillTreeSystem
 
         private IEnumerator InitSkillTreeRoutine()
         {
-            // 防止协程重复执行
-            if (_isInitializing)
-            {
-                CMDebug.Log("[SkillTreeManager] 初始化正在进行中，跳过");
-                yield break;
-            }
-
+            if (_isInitializing) yield break;
             _isInitializing = true;
-
+            
+            yield return new WaitForSeconds(0.5f);
             try
             {
-                yield return new WaitForSeconds(0.5f); // 等待场景完全加载
-
                 GameObject skillBuilding = FindSkillMachine();
                 if (skillBuilding == null)
                 {
-                    CMDebug.LogWarning("[SkillTreeManager] 未找到 SkillMachine 建筑，跳过加载。");
+                    CMDebug.LogWarning("[SkillTreeManager] 未找到 SkillMachine，跳过。");
                     yield break;
                 }
 
-                CMDebug.Log($"[SkillTreeManager] 找到建筑: {skillBuilding.name}");
+                // ================= 改动开始 =================
+                // 场景加载后，PerkTreeManager 肯定是新的，旧的 _customTree 即使不为null也肯定没有注册。
+                // 所以不需要调用 PerkTreeManager.GetPerkTree(TREE_ID) 来触发报错。
+                // 直接销毁旧引用，强制重建。
 
-                // 🔧 核心修复：检查技能树是否仍然有效，无效则重建
-                bool needsRebuild = false;
-                
-                if (_customTree == null)
-                {
-                    needsRebuild = true;
-                    CMDebug.Log("[SkillTreeManager] 技能树对象为 null，需要重建");
-                }
-                else
-                {
-                    // 检查技能树是否仍在 PerkTreeManager 中注册
-                    var registeredTree = PerkTreeManager.GetPerkTree(TREE_ID);
-                    if (registeredTree == null || registeredTree != _customTree)
-                    {
-                        needsRebuild = true;
-                        CMDebug.LogWarning("[SkillTreeManager] 技能树未在 PerkTreeManager 中注册或引用不一致，需要重建");
-                        
-                        // 销毁旧对象
-                        if (_customTree != null && _customTree.gameObject != null)
-                        {
-                            Destroy(_customTree.gameObject);
-                            _customTree = null;
-                        }
-                    }
-                    else
-                    {
-                        CMDebug.Log("[SkillTreeManager] 技能树状态正常，跳过重建");
-                    }
-                }
-
-                // 如果需要重建
-                if (needsRebuild)
-                {
-                    CMDebug.Log("[SkillTreeManager] 开始重建技能树");
-
-                    try
-                    {
-                        // 1. 清理旧数据
-                        _isTreeBuilt = false;
-                        _runtimePerks.Clear();
-                        _nodeDefsMap.Clear();
-
-                        // 2. 加载存档
-                        _saveData = SkillTreePersistence.Load();
-
-                        // 3. 构建技能树
-                        BuildSkillTree();
-
-                        // 4. 验证构建结果
-                        if (_customTree == null)
-                        {
-                            CMDebug.LogError("[SkillTreeManager] ✗ BuildSkillTree 失败：_customTree 仍为 null");
-                            yield break;
-                        }
-
-                        // 5. 恢复已购买状态
-                        RestorePurchasedState();
-
-                        _isTreeBuilt = true;
-                        CMDebug.LogInfo("[SkillTreeManager] ✓ 技能树重建成功");
-                    }
-                    catch (System.Exception ex)
-                    {
-                        CMDebug.LogError($"[SkillTreeManager] 重建技能树时发生异常: {ex.Message}\n{ex.StackTrace}");
-                        _isTreeBuilt = false;
-                        _customTree = null;
-                        yield break;
-                    }
-                }
-
-                // 每次进入场景都重新注册交互点
                 if (_customTree != null)
                 {
-                    CMDebug.Log($"[SkillTreeManager] 准备注册交互点到建筑: {skillBuilding.name}");
-                    SkillTreeBuilder.RegisterInteraction(skillBuilding, TREE_ID, INTERACT_KEY, "战斗女仆: 战术技能");
-                    CMDebug.Log("[SkillTreeManager] ✓ 交互点已重新注册");
+                    CMDebug.Log("[SkillTreeManager] 检测到跨场景残留的技能树，正在清理...");
+                    if (_customTree.gameObject != null) Destroy(_customTree.gameObject);
+                    _customTree = null;
                 }
-                else
+
+                // 此时 _customTree 必为 null，执行重建流程
+                CMDebug.Log("[SkillTreeManager] 开始构建新场景的技能树...");
+        
+                // 1. 清理旧数据
+                _isTreeBuilt = false;
+                _runtimePerks.Clear();
+                _nodeDefsMap.Clear();
+
+                // 2. 加载存档
+                _saveData = SkillTreePersistence.Load();
+
+                // 3. 构建
+                BuildSkillTree();
+
+                // 4. 恢复购买状态
+                RestorePurchasedState();
+        
+                // 5. 验证
+                if (_customTree != null)
                 {
-                    CMDebug.LogError("[SkillTreeManager] ✗ _customTree 为 null，无法注册交互点！");
+                    _isTreeBuilt = true;
+                    // 注册交互
+                    SkillTreeBuilder.RegisterInteraction(skillBuilding, TREE_ID, INTERACT_KEY, "战斗女仆: 战术技能");
+                    CMDebug.LogInfo("[SkillTreeManager] ✓ 技能树初始化完毕");
                 }
+                // ================= 改动结束 =================
+            }
+            catch (System.Exception ex)
+            {
+                CMDebug.LogError($"[SkillTreeManager] 初始化异常: {ex}");
             }
             finally
             {
