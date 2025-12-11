@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using CombatMaid.Core.AttributeModifiers;
 using UnityEngine;
 using Duckov.Utilities;
 using Duckov.Modding;
@@ -210,7 +211,6 @@ namespace CombatMaid.Core
                 }
                 
                 
-
                 onComplete?.Invoke(controller);
             });
         }
@@ -323,6 +323,13 @@ namespace CombatMaid.Core
                     charCtrl,
                     profileData.ExtraData.CustomModelID
                 ));
+            }
+            
+            // 3.背包扩容
+            if (profileData.PresetConfig.InventoryCapacity != 0)
+            {
+                AttributeModifier.Modify(charCtrl, "InventoryCapacity", profileData.PresetConfig.InventoryCapacity, false);
+                CMDebug.Log($"[Spawn] 已调整背包容量: +{profileData.PresetConfig.InventoryCapacity}");
             }
 
             return controller;

@@ -28,6 +28,7 @@ namespace CombatMaid.Core.MaidConfigs
         public bool DropBoxOnDead = true;
         public float HasCashChance = 0f;
         public Vector2Int CashRange = new Vector2Int(0, 0);
+        public float InventoryCapacity = 0f;
 
         [Header("--- 感知能力 ---")]
         public float SightDistance = 30f;
