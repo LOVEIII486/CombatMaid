@@ -61,38 +61,38 @@ namespace CombatMaid.Core.UI
         /// <param name="otherSide">显示在左侧的角色（作为容器，即玩家）</param>
         private static void OpenDualModeUI(CharacterMainControl mainSide, CharacterMainControl otherSide)
         {
-            if (LootView.Instance == null)
-            {
-                CMDebug.LogError("LootView 实例不存在，无法打开界面。");
-                return;
-            }
+            if (LootView.Instance == null) return;
 
             try
             {
                 var lootView = LootView.Instance;
                 
                 // === 1. 准备数据 ===
-                var mainInventory = GetInventoryFromCharacter(mainSide);
-                var mainItem = mainSide.CharacterItem; // 包含装备槽
+                var mainInventory = GetInventoryFromCharacter(mainSide); // 女仆 (右)
+                var mainItem = mainSide.CharacterItem;
+                var otherInventory = GetInventoryFromCharacter(otherSide); // 玩家 (左)
 
-                var otherInventory = GetInventoryFromCharacter(otherSide);
+                if (mainInventory == null || otherInventory == null) return;
 
-                if (mainInventory == null || otherInventory == null)
-                {
-                    CMDebug.LogError("无法获取背包数据，操作取消。");
-                    return;
-                }
+                // ==============================================================
+                // [关键修复] 步骤 A: 在 Show() 之前注入左侧数据
+                // ==============================================================
+                // 这样 OnOpen() 运行时，会认为"有目标容器"，从而自动显示左侧面板 (FadeGroup.Show)
+                _lootTargetInventoryField.SetValue(lootView, otherInventory);
 
-                // === 2. 打开并劫持 UI ===
-                
-                // 先调用 Show()，让 LootView 完成它自己的初始化（默认右侧是玩家）
+                // === 2. 打开界面 ===
+                // 此时 OnOpen 执行：
+                // - 左侧：自动 Setup(otherInventory) -> 显示玩家背包 (符合预期)
+                // - 右侧：自动 Setup(Player) -> 显示玩家装备 (不符预期，稍后覆盖)
                 lootView.Show();
 
-                // [劫持右侧] -> 设为女仆 (拥有装备栏)
+                // ==============================================================
+                // 步骤 B: 覆盖右侧面板 (Show 之后执行)
+                // ==============================================================
+                // 强行把右侧改为女仆数据
                 var rightSlotDisplay = _rightSlotDisplayField.GetValue(lootView) as ItemSlotCollectionDisplay;
                 if (rightSlotDisplay != null)
                 {
-                    // movable=true 允许脱下装备
                     rightSlotDisplay.Setup(mainItem, true);
                 }
 
@@ -102,21 +102,13 @@ namespace CombatMaid.Core.UI
                     rightInvDisplay.Setup(mainInventory, null, null, true, null);
                 }
 
-                // [劫持左侧] -> 设为玩家 (作为外部容器)
-                // 关键：设置 LootView 内部的 targetInventory，确保“全部拿取”等按钮逻辑作用于左侧
-                _lootTargetInventoryField.SetValue(lootView, otherInventory);
-
-                var leftInvDisplay = _lootTargetDisplayField.GetValue(lootView) as InventoryDisplay;
-                if (leftInvDisplay != null)
-                {
-                    leftInvDisplay.Setup(otherInventory, null, null, true, null);
-                }
-
-                // [更新标题]
+                // ==============================================================
+                // 步骤 C: 修正标题 (Show 之后执行)
+                // ==============================================================
+                // 因为 OnOpen 会重置标题为 Inventory.DisplayName，所以我们要重新覆盖一次
                 var nameText = _lootTargetNameField.GetValue(lootView) as TMPro.TextMeshProUGUI;
                 if (nameText != null)
                 {
-                    // 使用本地化或直接显示名字
                     nameText.text = $"{otherSide.name} (仓库)  <--->  {mainSide.name} (装备)";
                 }
             }
