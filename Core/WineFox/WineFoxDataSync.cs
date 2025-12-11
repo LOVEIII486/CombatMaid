@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using CombatMaid.Core;
+using CombatMaid.Core.Utilities;
 using CombatMaid.Core.WineFox;
 
 namespace CombatMaid.Core.WineFox
@@ -53,6 +54,50 @@ namespace CombatMaid.Core.WineFox
             // [重要] 这里不需要再赋值了，因为Update里已经同步了内存数据
             // 直接调用管理器保存内存中的 _refData 即可
             WineFoxDataManager.SaveData();
+        }
+        
+        public void SaveInventory()
+        {
+            // 1. [修正] 通过 _controller 获取 MaidCharacter
+            if (_controller == null || _controller.MaidCharacter == null) return;
+            var character = _controller.MaidCharacter;
+
+            // 2. 检查 CharacterItem 是否存在
+            if (character.CharacterItem == null) return;
+    
+            // CMDebug.LogInfo("正在保存女仆背包..."); // 频繁调用时建议注释掉日志
+            
+            // 3. 序列化
+            var data = InventorySerializer.SerializeCharacter(character.CharacterItem);
+    
+            // 4. 存入全局数据对象
+            if (WineFoxDataManager.CurrentData != null)
+            {
+                WineFoxDataManager.CurrentData.Inventory = data;
+                // 注意：这里只更新内存数据，实际写入磁盘由 SyncAndSave 或外部调用 WineFoxDataManager.SaveData() 触发
+            }
+        }
+
+        public async void LoadInventory() 
+        {
+            // 1. 检查存档是否存在
+            if (WineFoxDataManager.CurrentData?.Inventory == null) return;
+            
+            // 2. [修正] 通过 _controller 获取 MaidCharacter
+            if (_controller == null || _controller.MaidCharacter == null) return;
+            var character = _controller.MaidCharacter;
+
+            if (character.CharacterItem == null) return;
+
+            CMDebug.LogInfo("正在恢复女仆背包...");
+            
+            // 3. 执行异步恢复
+            await InventorySerializer.DeserializeCharacterAsync(
+                WineFoxDataManager.CurrentData.Inventory, 
+                character.CharacterItem
+            );
+            
+            CMDebug.LogInfo("女仆背包恢复完成。");
         }
     }
 }
