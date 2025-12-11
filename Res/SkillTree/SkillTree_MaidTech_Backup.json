@@ -289,6 +289,187 @@
       ]
     },
     {
+      "//": "========== 左中分支：护甲升级 (x: -180) ==========",
+      "ID": "maid_armor_upgrade_1",
+      "DisplayName": "Perk_Armor_Upgrade_1",
+      "Description": "Perk_Armor_Upgrade_1_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 3000,
+      "CostItems": {
+        "42": 1,
+        "33": 1,
+        "37": 1
+      },
+      "RequiredLevel": 5,
+      "Position": {
+        "x": -180,
+        "y": 230
+      },
+      "PrerequisiteIDs": [
+        "maid_survival_health_1"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "Custom",
+          "CustomAction": "Upgrade_32_33"
+        },
+        {
+          "Type": "Custom",
+          "CustomAction": "Upgrade_41_42"
+        },
+        {
+          "Type": "Custom",
+          "CustomAction": "Upgrade_36_37"
+        },
+        {
+          "Type": "AddAttribute",
+          "Attribute": "InventoryCapacity",
+          "Value": 10.0
+        }
+      ]
+    },
+    {
+      "ID": "maid_armor_upgrade_2",
+      "DisplayName": "Perk_Armor_Upgrade_2",
+      "Description": "Perk_Armor_Upgrade_2_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 5000,
+      "CostItems": {
+        "43": 1,
+        "1142": 1
+      },
+      "RequiredLevel": 8,
+      "Position": {
+        "x": -180,
+        "y": 380
+      },
+      "PrerequisiteIDs": [
+        "maid_armor_upgrade_1"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "Custom",
+          "CustomAction": "Upgrade_33_43"
+        },
+        {
+          "Type": "Custom",
+          "CustomAction": "Upgrade_42_1142"
+        }
+      ]
+    },
+    {
+      "ID": "maid_armor_upgrade_3",
+      "DisplayName": "Perk_Armor_Upgrade_3",
+      "Description": "Perk_Armor_Upgrade_3_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 8000,
+      "CostItems": {
+        "1147": 1,
+        "1140": 1,
+        "39": 1
+      },
+      "RequiredLevel": 12,
+      "Position": {
+        "x": -180,
+        "y": 530
+      },
+      "PrerequisiteIDs": [
+        "maid_armor_upgrade_2"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "Custom",
+          "CustomAction": "Upgrade_43_1147"
+        },
+        {
+          "Type": "Custom",
+          "CustomAction": "Upgrade_1142_1140"
+        },
+        {
+          "Type": "Custom",
+          "CustomAction": "Upgrade_37_39"
+        },
+        {
+          "Type": "AddAttribute",
+          "Attribute": "InventoryCapacity",
+          "Value": 10.0
+        }
+      ]
+    },
+    {
+      "ID": "maid_armor_upgrade_4",
+      "DisplayName": "Perk_Armor_Upgrade_4",
+      "Description": "Perk_Armor_Upgrade_4_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 12000,
+      "CostItems": {
+        "45": 1,
+        "1141": 1,
+        "40": 1
+      },
+      "RequiredLevel": 15,
+      "Position": {
+        "x": -180,
+        "y": 680
+      },
+      "PrerequisiteIDs": [
+        "maid_armor_upgrade_3"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "Custom",
+          "CustomAction": "Upgrade_1147_1149"
+        },
+        {
+          "Type": "Custom",
+          "CustomAction": "Upgrade_1140_1141"
+        },
+        {
+          "Type": "Custom",
+          "CustomAction": "Upgrade_39_40"
+        },
+        {
+          "Type": "AddAttribute",
+          "Attribute": "InventoryCapacity",
+          "Value": 10.0
+        }
+      ]
+    },
+    {
+      "ID": "maid_armor_upgrade_5",
+      "DisplayName": "Perk_Armor_Upgrade_5",
+      "Description": "Perk_Armor_Upgrade_5_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 18000,
+      "CostItems": {
+        "46": 1,
+        "885": 1
+      },
+      "RequiredLevel": 18,
+      "Position": {
+        "x": -180,
+        "y": 830
+      },
+      "PrerequisiteIDs": [
+        "maid_armor_upgrade_4"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "Custom",
+          "CustomAction": "Upgrade_1149_46"
+        },
+        {
+          "Type": "Custom",
+          "CustomAction": "Upgrade_1141_885"
+        }
+      ]
+    },
+    {
       "//": "========== 分支2：战斗能力加成 (x: 280) ==========",
       "ID": "maid_combat_dmg_1",
       "DisplayName": "Perk_WineFox_Dmg_1",
@@ -481,6 +662,127 @@
           "Type": "MultiplyAttribute",
           "Attribute": "ScatterMultiIfOffScreen",
           "Value": 0.9
+        }
+      ]
+    },
+    {
+      "//": "--- 分支2扩展：武器升级 (x: 380) ---",
+      "ID": "maid_weapon_upgrade_1",
+      "DisplayName": "Perk_Weapon_Upgrade_1",
+      "Description": "Perk_Weapon_Upgrade_1_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 3000,
+      "CostItems": {
+        "258": 1,
+        "595": 160
+      },
+      "RequiredLevel": 8,
+      "Position": {
+        "x": 380,
+        "y": 230
+      },
+      "PrerequisiteIDs": [
+        "maid_combat_dmg_1"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "Custom",
+          "CustomAction": "Upgrade_254_258"
+        },
+        {
+          "Type": "Custom",
+          "CustomAction": "Upgrade_594_595"
+        }
+      ]
+    },
+    {
+      "ID": "maid_weapon_upgrade_2",
+      "DisplayName": "Perk_Weapon_Upgrade_2",
+      "Description": "Perk_Weapon_Upgrade_2_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 6000,
+      "CostItems": {
+        "238": 1,
+        "604": 120
+      },
+      "RequiredLevel": 12,
+      "Position": {
+        "x": 380,
+        "y": 380
+      },
+      "PrerequisiteIDs": [
+        "maid_weapon_upgrade_1"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "Custom",
+          "CustomAction": "Upgrade_258_238"
+        },
+        {
+          "Type": "Custom",
+          "CustomAction": "Upgrade_595_604"
+        }
+      ]
+    },
+    {
+      "ID": "maid_weapon_upgrade_3",
+      "DisplayName": "Perk_Weapon_Upgrade_3",
+      "Description": "Perk_Weapon_Upgrade_3_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 9000,
+      "CostItems": {
+        "682": 1,
+        "606": 120
+      },
+      "RequiredLevel": 16,
+      "Position": {
+        "x": 380,
+        "y": 530
+      },
+      "PrerequisiteIDs": [
+        "maid_weapon_upgrade_2"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "Custom",
+          "CustomAction": "Upgrade_238_682"
+        },
+        {
+          "Type": "Custom",
+          "CustomAction": "Upgrade_604_606"
+        }
+      ]
+    },
+    {
+      "ID": "maid_weapon_upgrade_4",
+      "DisplayName": "Perk_Weapon_Upgrade_4",
+      "Description": "Perk_Weapon_Upgrade_4_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 12000,
+      "CostItems": {
+        "788": 1,
+        "616": 120
+      },
+      "RequiredLevel": 20,
+      "Position": {
+        "x": 380,
+        "y": 680
+      },
+      "PrerequisiteIDs": [
+        "maid_weapon_upgrade_3"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "Custom",
+          "CustomAction": "Upgrade_682_788"
+        },
+        {
+          "Type": "Custom",
+          "CustomAction": "Upgrade_606_616"
         }
       ]
     },
@@ -841,9 +1143,13 @@
       "DisplayName": "Perk_Maid_BackpackAccess_Title",
       "Description": "Perk_Maid_BackpackAccess_Desc",
       "IconFileName": "default_icon.png",
-      "CostMoney": 2000,
-      "CostItems": {},
-      "RequiredLevel": 1,
+      "CostMoney": 20000,
+      "CostItems": {
+        "119": 1,
+        "135": 1,
+        "1255": 2
+      },
+      "RequiredLevel": 20,
       "Position": {
         "x": -450,
         "y": 80
@@ -851,79 +1157,6 @@
       "PrerequisiteIDs": [],
       "PlayerStatModifiers": {},
       "MaidModifiers": []
-    },
-    {
-      "//": "========== 左中分支：背包扩容  ==========",
-      "ID": "maid_backpack_upgrade_1",
-      "DisplayName": "Perk_Backpack_1",
-      "Description": "Perk_Backpack_1_Desc",
-      "IconFileName": "default_icon.png",
-      "CostMoney": 3000,
-      "CostItems": {"38": 1},
-      "RequiredLevel": 5,
-      "Position": {
-        "x": -180,
-        "y": 230
-      },
-      "PrerequisiteIDs": [
-        "maid_survival_health_1"
-      ],
-      "PlayerStatModifiers": {},
-      "MaidModifiers": [
-        {
-          "Type": "AddAttribute",
-          "Attribute": "InventoryCapacity",
-          "Value": 10.0
-        }
-      ]
-    },
-    {
-      "ID": "maid_backpack_upgrade_2",
-      "DisplayName": "Perk_Backpack_2",
-      "Description": "Perk_Backpack_2_Desc",
-      "IconFileName": "default_icon.png",
-      "CostMoney": 5000,
-      "CostItems": {"39": 1},
-      "RequiredLevel": 8,
-      "Position": {
-        "x": -180,
-        "y": 380
-      },
-      "PrerequisiteIDs": [
-        "maid_backpack_upgrade_1"
-      ],
-      "PlayerStatModifiers": {},
-      "MaidModifiers": [
-        {
-          "Type": "AddAttribute",
-          "Attribute": "InventoryCapacity",
-          "Value": 10.0
-        }
-      ]
-    },
-    {
-      "ID": "maid_backpack_upgrade_3",
-      "DisplayName": "Perk_Backpack_3",
-      "Description": "Perk_Backpack_3_Desc",
-      "IconFileName": "default_icon.png",
-      "CostMoney": 8000,
-      "CostItems": {"40": 1},
-      "RequiredLevel": 12,
-      "Position": {
-        "x": -180,
-        "y": 530
-      },
-      "PrerequisiteIDs": [
-        "maid_backpack_upgrade_2"
-      ],
-      "PlayerStatModifiers": {},
-      "MaidModifiers": [
-        {
-          "Type": "AddAttribute",
-          "Attribute": "InventoryCapacity",
-          "Value": 10.0
-        }
-      ]
     }
   ]
 }

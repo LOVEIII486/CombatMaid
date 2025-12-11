@@ -230,42 +230,40 @@ namespace CombatMaid.Core.SkillTreeSystem
         {
             string action = modifier.CustomActionID;
 
-            // --- 通用升级逻辑：解析 "Upgrade_..._{OldID}_{NewID}" ---
-            // 示例: "Upgrade_254_258" 或 "Upgrade_Weapon_254_258"
-            if (!string.IsNullOrEmpty(action) && action.StartsWith("Upgrade_"))
-            {
-                string[] parts = action.Split('_');
-        
-                // 确保至少有3部分 (Upgrade, OldID, NewID)，并解析最后两个为整数
-                if (parts.Length >= 3 &&
-                    int.TryParse(parts[parts.Length - 2], out int oldId) &&
-                    int.TryParse(parts[parts.Length - 1], out int newId))
-                {
-                    if (data.PresetConfig.CustomItemIDs == null) 
-                        data.PresetConfig.CustomItemIDs = new List<int>();
-
-                    var list = data.PresetConfig.CustomItemIDs;
-                    int index = list.IndexOf(oldId);
-
-                    if (index != -1)
-                    {
-                        list[index] = newId;
-                        CMDebug.Log($"  [Custom] 物品升级成功: {oldId} -> {newId} (Index: {index})");
-                        return true;
-                    }
-                    else
-                    {
-                        // 没找到旧物品 -> 保底补发
-                        if (!list.Contains(newId))
-                        {
-                            list.Add(newId);
-                            CMDebug.Log($"  [Custom] 未找到旧物品{oldId}，已补发新物品{newId}");
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-            }
+            // if (!string.IsNullOrEmpty(action) && action.StartsWith("Upgrade_"))
+            // {
+            //     string[] parts = action.Split('_');
+            //
+            //     // 确保至少有3部分 (Upgrade, OldID, NewID)，并解析最后两个为整数
+            //     if (parts.Length >= 3 &&
+            //         int.TryParse(parts[parts.Length - 2], out int oldId) &&
+            //         int.TryParse(parts[parts.Length - 1], out int newId))
+            //     {
+            //         if (data.PresetConfig.CustomItemIDs == null) 
+            //             data.PresetConfig.CustomItemIDs = new List<int>();
+            //
+            //         var list = data.PresetConfig.CustomItemIDs;
+            //         int index = list.IndexOf(oldId);
+            //
+            //         if (index != -1)
+            //         {
+            //             list[index] = newId;
+            //             CMDebug.Log($"  [Custom] 物品升级成功: {oldId} -> {newId} (Index: {index})");
+            //             return true;
+            //         }
+            //         else
+            //         {
+            //             // 没找到旧物品 -> 保底补发
+            //             if (!list.Contains(newId))
+            //             {
+            //                 list.Add(newId);
+            //                 CMDebug.Log($"  [Custom] 未找到旧物品{oldId}，已补发新物品{newId}");
+            //                 return true;
+            //             }
+            //         }
+            //         return false;
+            //     }
+            // }
             
             if (!string.IsNullOrEmpty(action) && action.StartsWith("SetBool_"))
             {
@@ -289,6 +287,27 @@ namespace CombatMaid.Core.SkillTreeSystem
                     }
                     return false;
                 }
+            }
+            
+            if (!string.IsNullOrEmpty(action) && action == "SyncInventoryCapacity")
+            {
+                // 如果是运行时立即生效，我们需要找到当前活跃的女仆并强制设置。
+                if (MaidManager.Instance != null)
+                {
+                    var activeMaid = MaidManager.Instance.GetActiveWineFox();
+                    if (activeMaid != null && activeMaid.MaidCharacter != null)
+                    {
+                        // 计算新的容量 (Base + Modifiers)
+                        // 注意：这里 data.PresetConfig.InventoryCapacity 已经是修改后的值（因为 AddAttribute 先执行）
+                        int newCap = Mathf.RoundToInt(data.PresetConfig.InventoryCapacity);
+                        if (newCap > 0 && activeMaid.MaidCharacter.CharacterItem?.Inventory != null)
+                        {
+                            activeMaid.MaidCharacter.CharacterItem.Inventory.SetCapacity(newCap);
+                            CMDebug.Log($"[Custom] 运行时背包扩容已应用: {newCap}");
+                        }
+                    }
+                }
+                return true; 
             }
             
             switch (action)
