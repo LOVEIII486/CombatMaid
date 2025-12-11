@@ -118,7 +118,15 @@ namespace CombatMaid.Core.CustomModel
                 _loadMethod.Invoke(handler, new object[] { bundle, model });
                 _changeMethod.Invoke(handler, null);
 
-                HideOriginalEquipment(target);
+                // [优化] 挂载高性能装备隐藏器
+                var hider = target.GetComponent<MaidEquipmentHider>();
+                if (hider == null) hider = target.gameObject.AddComponent<MaidEquipmentHider>();
+                
+                if (target.characterModel != null)
+                {
+                    hider.Initialize(target.characterModel);
+                }
+
                 CMDebug.Log($"模型应用成功: {GetModelID(model)}");
             }
             catch(Exception ex)
@@ -180,17 +188,6 @@ namespace CombatMaid.Core.CustomModel
             catch { }
         }
 
-        private static void HideOriginalEquipment(CharacterMainControl c)
-        {
-            if (c?.characterModel == null) return;
-            Transform[] sockets = { c.characterModel.HelmatSocket, c.characterModel.ArmorSocket };
-            foreach (var s in sockets)
-            {
-                if (s == null) continue;
-                foreach (var r in s.GetComponentsInChildren<Renderer>(true)) r.enabled = false;
-            }
-        }
-
         private static string GetModelID(object obj)
         {
             if (obj == null) return "null";
@@ -199,5 +196,95 @@ namespace CombatMaid.Core.CustomModel
 
         private static string GetPropString(object obj, PropertyInfo prop) => prop?.GetValue(obj)?.ToString();
         private static IList GetList(object obj, PropertyInfo prop) => prop?.GetValue(obj) as IList;
+    }
+
+    // ===================================================================================
+    //  高性能装备隐藏组件 (Watcher 模式)
+    // ===================================================================================
+
+    /// <summary>
+    /// 挂载在角色身上，持续监测并强制隐藏原版装备（头盔、护甲、面罩、背包）
+    /// 采用缓存比对机制，极大降低每帧开销
+    /// </summary>
+    public class MaidEquipmentHider : MonoBehaviour
+    {
+        // 内部类：负责监控单个插槽
+        private class SocketWatcher
+        {
+            private Transform _socket;
+            private Transform _cachedChild; // 缓存当前装备的物体引用
+            private Renderer[] _cachedRenderers; // 缓存渲染器列表
+
+            public SocketWatcher(Transform socket)
+            {
+                _socket = socket;
+            }
+
+            public void Update()
+            {
+                if (_socket == null) return;
+
+                // 1. 检查插槽是否为空
+                if (_socket.childCount == 0)
+                {
+                    _cachedChild = null;
+                    _cachedRenderers = null;
+                    return;
+                }
+
+                // 2. 检查装备是否更换 (核心优化点)
+                // 只有当插槽下的物体发生变化时，才重新执行昂贵的 GetComponentsInChildren
+                // 通常装备模型是 socket 的第一个子物体
+                Transform currentChild = _socket.GetChild(0);
+                if (currentChild != _cachedChild)
+                {
+                    _cachedChild = currentChild;
+                    _cachedRenderers = currentChild.GetComponentsInChildren<Renderer>(true);
+                    // CMDebug.Log($"[{_socket.name}] 检测到装备变更，更新缓存");
+                }
+
+                // 3. 强制关闭渲染器
+                // 这里只遍历缓存数组，不再遍历场景图层级，速度极快且零GC
+                if (_cachedRenderers != null)
+                {
+                    for (int i = 0; i < _cachedRenderers.Length; i++)
+                    {
+                        var r = _cachedRenderers[i];
+                        // 判空是因为在切换场景或销毁时 Renderer 可能已被回收
+                        if (r != null && r.enabled)
+                        {
+                            r.enabled = false;
+                        }
+                    }
+                }
+            }
+        }
+
+        private SocketWatcher[] _watchers;
+
+        public void Initialize(CharacterModel model)
+        {
+            if (model == null) return;
+            
+            // 为每个需要隐藏的部位创建一个观察者
+            _watchers = new SocketWatcher[] 
+            {
+                new SocketWatcher(model.HelmatSocket),      // 头盔
+                new SocketWatcher(model.ArmorSocket),       // 护甲
+                new SocketWatcher(model.FaceMaskSocket),    // 面罩
+                new SocketWatcher(model.BackpackSocket)     // 背包
+            };
+        }
+
+        private void LateUpdate()
+        {
+            if (_watchers == null) return;
+
+            // 轮询所有观察者
+            for (int i = 0; i < _watchers.Length; i++)
+            {
+                _watchers[i].Update();
+            }
+        }
     }
 }
