@@ -209,11 +209,17 @@ namespace CombatMaid.Core.CustomModel
     public class MaidEquipmentHider : MonoBehaviour
     {
         // 内部类：负责监控单个插槽
+        // 内部类：负责监控单个插槽
         private class SocketWatcher
         {
             private Transform _socket;
-            private Transform _cachedChild; // 缓存当前装备的物体引用
-            private Renderer[] _cachedRenderers; // 缓存渲染器列表
+            
+            // 缓存状态用于检测变化
+            private int _lastChildCount = -1;
+            private Transform _lastFirstChild = null;
+            
+            // 缓存渲染器列表
+            private Renderer[] _cachedRenderers;
 
             public SocketWatcher(Transform socket)
             {
@@ -224,33 +230,41 @@ namespace CombatMaid.Core.CustomModel
             {
                 if (_socket == null) return;
 
-                // 1. 检查插槽是否为空
-                if (_socket.childCount == 0)
+                int currentCount = _socket.childCount;
+
+                // 1. 如果插槽为空，清理缓存
+                if (currentCount == 0)
                 {
-                    _cachedChild = null;
                     _cachedRenderers = null;
+                    _lastChildCount = 0;
+                    _lastFirstChild = null;
                     return;
                 }
 
-                // 2. 检查装备是否更换 (核心优化点)
-                // 只有当插槽下的物体发生变化时，才重新执行昂贵的 GetComponentsInChildren
-                // 通常装备模型是 socket 的第一个子物体
-                Transform currentChild = _socket.GetChild(0);
-                if (currentChild != _cachedChild)
+                Transform currentFirst = _socket.GetChild(0);
+
+                // 2. 检测变化 (核心修复点)
+                // 只要子物体数量变了，或者第一个子物体换了，就视为装备发生了变动
+                // 这比之前只盯着 GetChild(0) 更稳健
+                if (currentCount != _lastChildCount || currentFirst != _lastFirstChild)
                 {
-                    _cachedChild = currentChild;
-                    _cachedRenderers = currentChild.GetComponentsInChildren<Renderer>(true);
-                    // CMDebug.Log($"[{_socket.name}] 检测到装备变更，更新缓存");
+                    _lastChildCount = currentCount;
+                    _lastFirstChild = currentFirst;
+
+                    // [关键修改] 直接从 _socket 本身获取所有层级的渲染器
+                    // 这样无论头盔由几个物体组成，或者模型在第几个子级，都能被抓取到
+                    _cachedRenderers = _socket.GetComponentsInChildren<Renderer>(true);
+                    
+                    // CMDebug.Log($"[{_socket.name}] 装备更新，重新缓存 {(_cachedRenderers?.Length ?? 0)} 个渲染器");
                 }
 
-                // 3. 强制关闭渲染器
-                // 这里只遍历缓存数组，不再遍历场景图层级，速度极快且零GC
+                // 3. 强制关闭渲染器 (极低开销)
                 if (_cachedRenderers != null)
                 {
                     for (int i = 0; i < _cachedRenderers.Length; i++)
                     {
                         var r = _cachedRenderers[i];
-                        // 判空是因为在切换场景或销毁时 Renderer 可能已被回收
+                        // 必须判空，因为切换场景时 Renderer 可能被销毁但缓存还在
                         if (r != null && r.enabled)
                         {
                             r.enabled = false;
