@@ -1121,6 +1121,23 @@
           "SkillParams": {}
         }
       ]
+    },
+    {
+      "//": "========== 提示节点：酒狐操作指南 ==========",
+      "ID": "maid_backpack_access",
+      "DisplayName": "Perk_Maid_BackpackAccess_Title",
+      "Description": "Perk_Maid_BackpackAccess_Desc",
+      "IconFileName": "default_icon.png",
+      "CostMoney": 1000,
+      "CostItems": {},
+      "RequiredLevel": 1,
+      "Position": {
+        "x": -450,
+        "y": 150
+      },
+      "PrerequisiteIDs": [],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": []
     }
   ]
 }

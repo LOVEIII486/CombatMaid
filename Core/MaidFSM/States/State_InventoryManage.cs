@@ -35,7 +35,7 @@ namespace CombatMaid.Core.MaidFSM.States
             _uiOpened = true;
             
             Controller.MaidCharacter?.PopText("整理装备中...");
-            CMDebug.LogInfo($"[{Controller.name}] 进入装备管理状态");
+            CMDebug.Log($"[{Controller.name}] 进入装备管理状态");
         }
 
         public override void Update()
@@ -65,7 +65,7 @@ namespace CombatMaid.Core.MaidFSM.States
             }
             
             // 恢复 AI 在 State_Autonomous.Enter 中会自动处理，这里不需要显式恢复
-            CMDebug.LogInfo($"[{Controller.name}] 退出装备管理状态");
+            CMDebug.Log($"[{Controller.name}] 退出装备管理状态");
         }
 
         // --- 辅助方法 ---

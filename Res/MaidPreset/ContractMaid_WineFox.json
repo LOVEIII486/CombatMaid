@@ -12,7 +12,7 @@
     "Exp": 0,
     "PushCharacter": true,
     "//--- 物品配置 ---": "",
-    "InventoryCapacity": 20.0,
+    "InventoryCapacity": 15.0,
     "CustomItemIDs": [
       254,
       594,

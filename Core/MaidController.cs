@@ -6,6 +6,7 @@ using CombatMaid.Core.MaidFSM;
 using CombatMaid.Core.MaidFSM.States;
 using CombatMaid.Core.MaidSkillSystem;
 using CombatMaid.Core.MaidSkillSystem.Skills;
+using CombatMaid.Core.SkillTreeSystem;
 using Duckov.Scenes;
 using ItemStatsSystem;
 using UnityEngine.SceneManagement;
@@ -265,6 +266,12 @@ namespace CombatMaid.Core
         /// </summary>
         public void ToggleInventoryManagement()
         {
+            if (!SkillTreeManager.Instance.IsSkillUnlocked("maid_backpack_access"))
+            {
+                MaidCharacter?.PopText("不许看人家的私人物品！");
+                return;
+            }
+            
             if (StateMachine.CurrentState is State_InventoryManage)
             {
                 StateMachine.ChangeState<State_Autonomous>();
