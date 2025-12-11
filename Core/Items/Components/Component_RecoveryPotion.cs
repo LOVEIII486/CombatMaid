@@ -48,7 +48,10 @@ namespace CombatMaid.Core.Items.Components
             float healAmount = Mathf.Max(maxHp * HealPercent, MinHealValue);
 
             character.AddHealth(healAmount);
-
+            character.RemoveBuff(1001,false);
+            character.RemoveBuff(1002,false);
+            character.RemoveBuff(1003,false);
+            character.RemoveBuff(1004,false);
             // 视觉反馈
             // string healText = $"+{healAmount:F0}";
             // character.PopText($"<color=#00FF00>{healText}</color>");

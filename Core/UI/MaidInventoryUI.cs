@@ -4,7 +4,7 @@ using Duckov.UI;
 using HarmonyLib; 
 using System.Reflection;
 using ItemStatsSystem;
-using CombatMaid.Core; // 引用核心
+using CombatMaid.Core;
 
 namespace CombatMaid.Core.UI
 {
@@ -109,7 +109,7 @@ namespace CombatMaid.Core.UI
                 var nameText = _lootTargetNameField.GetValue(lootView) as TMPro.TextMeshProUGUI;
                 if (nameText != null)
                 {
-                    nameText.text = $"{otherSide.name} (仓库)  <--->  {mainSide.name} (装备)";
+                    nameText.text = $"{mainSide.characterPreset.DisplayName} (女仆背包) <---> 玩家背包";
                 }
             }
             catch (System.Exception e)
