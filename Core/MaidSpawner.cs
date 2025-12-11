@@ -328,8 +328,25 @@ namespace CombatMaid.Core
             // 3.背包扩容
             if (profileData.PresetConfig.InventoryCapacity != 0)
             {
+                // (1) 修改数值统计 (Stat)，这确保了数据的正确性（例如UI显示上限）
                 AttributeModifier.Modify(charCtrl, "InventoryCapacity", profileData.PresetConfig.InventoryCapacity, false);
-                CMDebug.Log($"[Spawn] 已调整背包容量: +{profileData.PresetConfig.InventoryCapacity}");
+        
+                // (2) 手动应用到 Inventory 对象
+                // 原生 CharacterMainControl.UpdateInventoryCapacity 会跳过 NPC，所以必须手动设置
+                if (charCtrl.CharacterItem != null && charCtrl.CharacterItem.Inventory != null)
+                {
+                    // 获取修改后的最终值 (Base + Modifiers)
+                    int newCapacity = Mathf.RoundToInt(charCtrl.InventoryCapacity);
+            
+                    // 强制设置容量
+                    charCtrl.CharacterItem.Inventory.SetCapacity(newCapacity);
+            
+                    CMDebug.Log($"[Spawn] 背包扩容成功: Stat增加 {profileData.PresetConfig.InventoryCapacity} -> 实际容量已同步为 {newCapacity}");
+                }
+                else
+                {
+                    CMDebug.LogWarning($"[Spawn] 背包扩容失败: {charCtrl.name} 的 Inventory 为空");
+                }
             }
 
             return controller;
