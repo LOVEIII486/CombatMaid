@@ -89,3 +89,4 @@ Perk_Backpack_2_Desc,进一步增加背包容量。\n为了在长时间探险中
 Perk_Backpack_3,神奇战备行囊,2.2.3,Perks
 Perk_Backpack_3_Desc,大幅增加背包容量。\n嘿嘿~ 主人你看，只要稍微施一点小小的术式，把大量战利品塞进去也完全没问题♪\n背包容量：<color=#F3D38A>+10</color>,2.2.3,Perks
 Setting_Key_InvManage,指令: 管理女仆背包,2.2.3,KeyBindings
+Settings_BuffBlockList,禁用Buff列表 (ID用逗号隔开),2.2.3,GeneralSettings

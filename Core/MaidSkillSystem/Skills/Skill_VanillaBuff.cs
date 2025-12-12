@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using CombatMaid.Core.BuffsSystem;
+using CombatMaid.Settings;
 using Duckov.Buffs;
 
 namespace CombatMaid.Core.MaidSkillSystem.Skills
@@ -41,16 +43,27 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
 
             if (_buffPool.Count > 0)
             {
-                int index = Random.Range(0, _buffPool.Count);
-                int randomBuffId = _buffPool[index];
-                if (MaidBuffUtils.ApplyBuffByID(Controller.MainOwner, randomBuffId, out string name, Owner))
+                var validBuffs = _buffPool
+                    .Where(id => !CombatMaidConfig.BlockedBuffIDs.Contains(id))
+                    .ToList();
+                if (validBuffs.Count > 0)
                 {
-                    randomBuffName = name;
-                    anySuccess = true;
+                    int index = Random.Range(0, validBuffs.Count);
+                    int randomBuffId = validBuffs[index]; // 使用过滤后的列表
+            
+                    if (MaidBuffUtils.ApplyBuffByID(Controller.MainOwner, randomBuffId, out string name, Owner))
+                    {
+                        randomBuffName = name;
+                        anySuccess = true;
+                    }
+                    else
+                    {
+                        CMDebug.LogWarning($"[{SkillName}] 随机 Buff 施加失败 (ID: {randomBuffId})");
+                    }
                 }
                 else
                 {
-                    CMDebug.LogWarning($"[{SkillName}] 随机 Buff 施加失败 (ID: {randomBuffId})");
+                    CMDebug.LogWarning($"[{SkillName}] 所有随机 Buff 均被黑名单禁用或池为空。");
                 }
             }
 

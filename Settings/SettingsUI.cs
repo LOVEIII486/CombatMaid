@@ -95,6 +95,14 @@ namespace CombatMaid.Settings
                 10,
                 OnCustomMaidModelIDChanged
             );
+            
+            ModSettingAPI.AddInput(
+                CombatMaidConfig.Key_BuffBlockList,
+                LocalizationManager.GetText(CombatMaidConfig.LocalKey_BuffBlockList), 
+                CombatMaidConfig.BuffBlockListString,
+                100,
+                (value) => CombatMaidConfig.ParseBuffBlockList(value)
+            );
 
             ModSettingAPI.AddButton(
                 "OpenSaveFolder",
@@ -139,6 +147,7 @@ namespace CombatMaid.Settings
                 {
                     CombatMaidConfig.Key_CustomMaidName,
                     CombatMaidConfig.Key_CustomMaidModelID,
+                    CombatMaidConfig.Key_BuffBlockList,
                     "OpenSaveFolder"
                 },
                 0.7f, false, false

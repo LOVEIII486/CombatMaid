@@ -27,6 +27,7 @@ namespace CombatMaid.Settings
         // 自定义女仆配置
         public const string Key_CustomMaidName = "CustomMaidName";
         public const string Key_CustomMaidModelID = "CustomMaidModelID";
+        public const string Key_BuffBlockList = "BuffBlockList";
         
         // ==================== 本地化 Key ====================
         
@@ -40,6 +41,7 @@ namespace CombatMaid.Settings
         public const string LocalKey_CustomMaidModelID = "Settings_CustomMaidModelID";
         public const string LocalKey_OpenSaveFolder = "Settings_OpenSaveFolder";
         public const string LocalKey_OpenSaveFolderButton = "Settings_OpenSaveFolderButton";
+        public const string LocalKey_BuffBlockList = "Settings_BuffBlockList";
 
         // ==================== 默认值 ====================
         
@@ -49,6 +51,7 @@ namespace CombatMaid.Settings
         
         private const string Default_CustomMaidName = "";
         private const string Default_CustomMaidModelID = "";
+        private const string Default_BuffBlockList = "";
 
         // ==================== 静态变量 ====================
         
@@ -67,7 +70,12 @@ namespace CombatMaid.Settings
         // 自定义女仆配置
         public static string CustomMaidName { get; set; } = Default_CustomMaidName;
         public static string CustomMaidModelID { get; set; } = Default_CustomMaidModelID;
-
+        
+        
+        public static string BuffBlockListString { get; set; } = Default_BuffBlockList;
+    
+        // [新增] 解析后的黑名单集合，用于游戏逻辑快速查询
+        public static HashSet<int> BlockedBuffIDs { get; private set; } = new HashSet<int>();
         // ==================== 独立更新函数 ====================
         
         /// <summary>
@@ -224,6 +232,25 @@ namespace CombatMaid.Settings
             CMDebug.Log($"[Config] 已从存档加载配置: 名称={CustomMaidName}, 模型={CustomMaidModelID}");
         }
         
+        public static void ParseBuffBlockList(string input)
+        {
+            BuffBlockListString = input; // 更新原始字符串
+            BlockedBuffIDs.Clear();
+        
+            if (string.IsNullOrWhiteSpace(input)) return;
+
+            // 按逗号分隔并解析
+            var segments = input.Split(new[] { ',', '，', ';' }, System.StringSplitOptions.RemoveEmptyEntries);
+            foreach (var seg in segments)
+            {
+                if (int.TryParse(seg.Trim(), out int id))
+                {
+                    BlockedBuffIDs.Add(id);
+                }
+            }
+            CMDebug.Log($"[Config] 已更新Buff黑名单，共 {BlockedBuffIDs.Count} 个禁用项");
+        }
+        
         /// <summary>
         /// 加载配置
         /// </summary>
@@ -254,6 +281,15 @@ namespace CombatMaid.Settings
             {
                 CustomMaidModelID = savedModelId;
                 hasModSettingValues = true;
+            }
+            
+            if (ModSettingAPI.GetSavedValue(Key_BuffBlockList, out string savedBlockList))
+            {
+                ParseBuffBlockList(savedBlockList);
+            }
+            else
+            {
+                ParseBuffBlockList(Default_BuffBlockList);
             }
             
             if (!hasModSettingValues || 
