@@ -107,6 +107,8 @@ namespace CombatMaid.Core.SkillTreeSystem
                         RequiredLevel = nodeConfig.RequiredLevel,
                         CostItems = nodeConfig.CostItems ?? new Dictionary<int, int>(),
                         
+                        UnlockTime = nodeConfig.UnlockTime,
+                        
                         // 位置和前置
                         Position = nodeConfig.Position,
                         PrerequisiteIDs = nodeConfig.PrerequisiteIDs ?? new List<string>(),

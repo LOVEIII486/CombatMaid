@@ -168,7 +168,16 @@ namespace CombatMaid.Core.SkillTreeSystem
             PerkRequirement req = new PerkRequirement();
             req.level = def.RequiredLevel;
             req.cost = new Cost { money = def.CostMoney };
-
+            
+            if (def.UnlockTime > 0)
+            {
+                // 将秒转为 TimeSpan，再提取 Ticks 赋值给字段
+                req.requireTime = System.TimeSpan.FromSeconds(def.UnlockTime).Ticks;
+            }
+            else
+            {
+                req.requireTime = 0;
+            }
             if (def.CostItems != null && def.CostItems.Count > 0)
             {
                 req.cost.items = def.CostItems.Select(x => new Cost.ItemEntry { id = x.Key, amount = x.Value })

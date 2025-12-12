@@ -23,6 +23,7 @@ namespace CombatMaid.Core.SkillTreeSystem
         public int RequiredLevel = 1;
         public Dictionary<int, int> CostItems = new Dictionary<int, int>(); 
         public List<string> PrerequisiteIDs = new List<string>();
+        public float UnlockTime = 1f;
         
         // 玩家获得的属性
         public Dictionary<string, float> PlayerStatModifiers = new Dictionary<string, float>();

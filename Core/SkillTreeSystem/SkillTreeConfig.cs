@@ -32,6 +32,7 @@ namespace CombatMaid.Core.SkillTreeSystem
         public int CostMoney = 0;                  // 金钱成本
         public int RequiredLevel = 1;              // 等级需求
         public Dictionary<int, int> CostItems;     // 物品成本 {物品ID: 数量}
+        public float UnlockTime = 1f;
         
         // 位置和前置
         public Vector2 Position;                   // UI位置
