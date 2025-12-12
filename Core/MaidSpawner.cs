@@ -506,14 +506,24 @@ namespace CombatMaid.Core
                 list.Clear();
                 foreach (int id in itemIDs)
                 {
+                    // 修复：显式初始化所有引用类型字段，防止其他模组或游戏逻辑访问空对象报错
                     var desc = new RandomItemGenerateDescription
                     {
                         chance = 1f,
                         randomCount = new Vector2Int(1, 1),
                         randomFromPool = true,
-                        itemPool = new RandomContainer<RandomItemGenerateDescription.Entry>()
+                        itemPool = new RandomContainer<RandomItemGenerateDescription.Entry>(),
+                
+                        // === 必须初始化的字段 ===
+                        tags = new RandomContainer<Tag>(),           // 初始化标签容器
+                        addtionalRequireTags = new List<Tag>(),      // 初始化额外需求标签列表
+                        excludeTags = new List<Tag>(),               // 初始化排除标签列表
+                        qualities = new RandomContainer<int>(),      // 初始化品质容器
                     };
+
+                    // 添加物品到池中
                     desc.itemPool.AddEntry(new RandomItemGenerateDescription.Entry { itemTypeID = id }, 100f);
+            
                     list.Add(desc);
                 }
             }
