@@ -32,12 +32,26 @@ namespace CombatMaid.Core
         
         public int Count;            // 堆叠数量
         public float Durability;     // 耐久度
+        public float DurabilityLoss;
+        public float MaxDurability;
+        public string FromInfoKey;
         public bool Inspected;       // 是否已鉴定
+        // [新增] 自定义变量列表 (直接存储原始二进制数据)
+        public List<MaidCustomVarData> CustomVariables;
         
         // 递归数据
         public List<MaidItemData> Attachments;     // 枪械配件 (Slots)
         public List<MaidItemData> InnerContainer;  // 容器内容 (如背包装的东西)
     }
+    
+    [Serializable]
+    public class MaidCustomVarData
+    {
+        public string Key;
+        public int TypeEnumVal; // 存储 CustomDataType 的枚举整数值
+        public byte[] RawBytes; // 存储原始字节数据
+    }
+    
 
     [Serializable]
     public class MaidExtraInfo

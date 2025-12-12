@@ -3,6 +3,7 @@ using UnityEngine;
 using ItemStatsSystem;
 using ItemStatsSystem.Items;
 using Cysharp.Threading.Tasks;
+using Duckov.Utilities;
 
 namespace CombatMaid.Core.Utilities
 {
@@ -80,12 +81,42 @@ namespace CombatMaid.Core.Utilities
                 TypeID = item.TypeID,
                 Count = item.StackCount,
                 Durability = item.Durability,
+                DurabilityLoss = item.DurabilityLoss,
                 Inspected = item.Inspected,
-                // 预先初始化列表，避免 JSON 中出现 null
+                FromInfoKey = item.FromInfoKey,
+                MaxDurability = item.MaxDurability,
+                CustomVariables = new List<MaidCustomVarData>(),
                 Attachments = new List<MaidItemData>(),
                 InnerContainer = new List<MaidItemData>()
             };
+            
+            if (item.Variables != null)
+            {
+                // 定义不需要重复保存的黑名单 (因为我们已经显式保存了这些属性)
+                var ignoredKeys = new HashSet<string> 
+                { 
+                    "Count", "Durability", "DurabilityLoss", "Inspected", "ItemFromInfo" 
+                };
 
+                foreach (CustomData variable in item.Variables)
+                {
+                    if (variable != null && !string.IsNullOrEmpty(variable.Key) && !ignoredKeys.Contains(variable.Key))
+                    {
+                        var varData = new MaidCustomVarData
+                        {
+                            Key = variable.Key,
+                            // 假设 CustomData 有 Type 属性暴露枚举。
+                            // 如果 Type 属性名不同 (例如 DataType)，请在此处修改。
+                            TypeEnumVal = (int)variable.DataType, 
+                            
+                            // 直接获取原始字节，这是最安全的做法
+                            RawBytes = variable.GetRawCopied()
+                        };
+                        data.CustomVariables.Add(varData);
+                    }
+                }
+            }
+            
             // A. 递归保存配件
             if (item.Slots != null)
             {
@@ -193,7 +224,6 @@ namespace CombatMaid.Core.Utilities
         /// </summary>
         private static async UniTask<Item> CreateItemFromDataAsync(MaidItemData data)
         {
-            // 使用游戏原生的异步工厂创建物品
             Item item = await ItemAssetsCollection.InstantiateAsync(data.TypeID);
 
             if (item == null)
@@ -202,20 +232,49 @@ namespace CombatMaid.Core.Utilities
                 return null;
             }
 
-            // 必须先初始化，确保 Slots/Inventory 组件就绪
             item.Initialize(); 
 
-            // 恢复基础属性
-            if (item.Stackable) item.StackCount = data.Count; 
-            if (item.UseDurability) item.Durability = data.Durability;
-            item.Inspected = data.Inspected;
+            // 1. 恢复自定义变量 (Raw 模式)
+            // 必须在设置具体属性(如 Durability)之前恢复，因为具体属性可能依赖底层变量
+            if (data.CustomVariables != null)
+            {
+                foreach (var varData in data.CustomVariables)
+                {
+                    if (!string.IsNullOrEmpty(varData.Key) && varData.RawBytes != null)
+                    {
+                        // 强制转换 int 为枚举
+                        var typeEnum = (CustomDataType)varData.TypeEnumVal;
+                        
+                        // 使用 SetRaw 无损恢复
+                        item.Variables.SetRaw(varData.Key, typeEnum, varData.RawBytes);
+                    }
+                }
+            }
 
-            // A. 递归恢复配件 (Attachments) -> 枪械改装
+            // 2. 恢复显式属性 (这些会覆盖 Variables 中同名的 Key)
+            if (item.Stackable) item.StackCount = data.Count; 
+            item.Inspected = data.Inspected;
+            
+            if (!string.IsNullOrEmpty(data.FromInfoKey))
+            {
+                item.FromInfoKey = data.FromInfoKey;
+            }
+
+            // 恢复耐久度
+            // 此时 MaxDurability 常量可能已经被 CustomVariables 恢复了，但为了保险我们再显式设置一次
+            if (item.UseDurability)
+            {
+                if (data.MaxDurability > 0) item.MaxDurability = data.MaxDurability;
+                
+                item.DurabilityLoss = data.DurabilityLoss;
+                item.Durability = data.Durability;
+            }
+
+            // A. 递归恢复配件
             if (data.Attachments != null && item.Slots != null)
             {
                 foreach (var attData in data.Attachments)
                 {
-                    // 查找子槽位
                     Slot subSlot = null;
                     foreach (var s in item.Slots)
                     {
@@ -231,16 +290,14 @@ namespace CombatMaid.Core.Utilities
                         Item attachment = await CreateItemFromDataAsync(attData);
                         if (attachment != null)
                         {
-                            // 递归安装配件
                             subSlot.Plug(attachment, out Item oldAtt);
-                            // 销毁被顶替的默认配件（如果有）
                             if (oldAtt != null) Object.Destroy(oldAtt.gameObject);
                         }
                     }
                 }
             }
 
-            // B. 递归恢复内部容器 (InnerContainer) -> 弹挂/背包里的东西
+            // B. 递归恢复容器
             if (data.InnerContainer != null && item.Inventory != null)
             {
                 foreach (var innerData in data.InnerContainer)
