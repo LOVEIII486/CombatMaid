@@ -2,7 +2,8 @@
 using System.IO;
 using UnityEngine;
 using FMOD;
-using CombatMaid.Core; 
+using CombatMaid.Core;
+using CombatMaid.Settings;
 
 namespace CombatMaid.MaidSounds
 {
@@ -37,6 +38,9 @@ namespace CombatMaid.MaidSounds
         /// </summary>
         public static bool TryPlayMaidSound(GameObject source, string soundKey)
         {
+            float volume = CombatMaidConfig.MaidAlertVolume;
+            if (volume <= 0.001f) return true;
+            
             try
             {
                 // 统一转换为小写作为 Cache Key，防止大小写不一致导致缓存失效
@@ -82,7 +86,7 @@ namespace CombatMaid.MaidSounds
 
                 // 4. 执行播放
                 // CMDebug.Log($"[MaidSounds] 播放: {Path.GetFileName(selectedFile)}"); // 调试时可开启
-                PlayCustomSound3D(selectedFile, source.transform.position);
+                PlayCustomSound3D(selectedFile, source.transform.position, volume);
                 return true;
             }
             catch (System.Exception ex)
@@ -102,7 +106,7 @@ namespace CombatMaid.MaidSounds
         }
 
         // FMOD 播放逻辑保持不变
-        private static void PlayCustomSound3D(string filePath, Vector3 position)
+        private static void PlayCustomSound3D(string filePath, Vector3 position, float volume)
         {
             var coreSystem = FMODUnity.RuntimeManager.CoreSystem;
             MODE mode = MODE._3D | MODE._3D_LINEARROLLOFF | MODE.LOOP_OFF | MODE.CREATESTREAM;
@@ -124,6 +128,10 @@ namespace CombatMaid.MaidSounds
                 var fPos = new FMOD.VECTOR { x = position.x, y = position.y, z = position.z };
                 var fVel = new FMOD.VECTOR { x = 0, y = 0, z = 0 };
                 channel.set3DAttributes(ref fPos, ref fVel);
+                
+                // === 设置音量 ===
+                channel.setVolume(volume); 
+                
                 channel.setMode(mode);
                 channel.setPaused(false);
             }

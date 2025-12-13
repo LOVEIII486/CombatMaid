@@ -127,6 +127,18 @@ namespace CombatMaid.Settings
                 OnCustomMaidModelIDChanged
             );
             
+            ModSettingAPI.AddSlider(
+                CombatMaidConfig.Key_MaidAlertVolume,
+                LocalizationManager.GetText(CombatMaidConfig.LocalKey_MaidAlertVolume),
+                CombatMaidConfig.MaidAlertVolume,
+                new Vector2(0f, 1.0f),
+                (value) => 
+                {
+                    CombatMaidConfig.MaidAlertVolume = value;
+                },
+                2
+            );
+            
             ModSettingAPI.AddInput(
                 CombatMaidConfig.Key_BuffBlockList,
                 LocalizationManager.GetText(CombatMaidConfig.LocalKey_BuffBlockList), 
@@ -190,6 +202,7 @@ namespace CombatMaid.Settings
                 {
                     CombatMaidConfig.Key_CustomMaidName,
                     CombatMaidConfig.Key_CustomMaidModelID,
+                    CombatMaidConfig.Key_MaidAlertVolume,
                     CombatMaidConfig.Key_BuffBlockList,
                     "OpenSaveFolder"
                 },
