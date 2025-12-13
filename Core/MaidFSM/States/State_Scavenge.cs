@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using CombatMaid.Settings;
 using UnityEngine;
 using ItemStatsSystem; 
 using Duckov.ItemUsage; 
@@ -114,17 +116,22 @@ namespace CombatMaid.Core.MaidFSM.States
         /// </summary>
         private void StartLooting(Collider target)
         {
-            ResetLootingState(); //以此为基准重置
+            ResetLootingState();
+
+            int minVal = CombatMaidConfig.LootMinVal; // 获取配置的阈值
 
             // 1. 解析目标内的物品
             if (target.TryGetComponent<InteractableLootbox>(out var box))
             {
                 if (box.Inventory != null && box.Inventory.Content != null)
                 {
-                    // 将箱子里的东西加入队列
+                    // 将箱子里的东西加入队列 (增加价值判断)
                     foreach (var item in box.Inventory.Content)
                     {
-                        _pendingLootQueue.Enqueue(item);
+                        if (item != null && item.GetTotalRawValue() >= minVal)
+                        {
+                            _pendingLootQueue.Enqueue(item);
+                        }
                     }
                 }
             }
@@ -132,7 +139,11 @@ namespace CombatMaid.Core.MaidFSM.States
             {
                 if (pickup.ItemAgent != null && pickup.ItemAgent.Item != null)
                 {
-                    _pendingLootQueue.Enqueue(pickup.ItemAgent.Item);
+                    // 地面物品判断
+                    if (pickup.ItemAgent.Item.GetTotalRawValue() >= minVal)
+                    {
+                        _pendingLootQueue.Enqueue(pickup.ItemAgent.Item);
+                    }
                 }
             }
 
@@ -140,13 +151,12 @@ namespace CombatMaid.Core.MaidFSM.States
             if (_pendingLootQueue.Count > 0)
             {
                 _isLooting = true;
-                // 第一个物品额外增加一点“翻找”的延迟时间
                 _actionTimer = -BoxSearchDelay + LootDurationPerItem; 
-                Controller.MaidCharacter?.PopText("正在搜索...");
+                Controller.MaidCharacter?.PopText("正在搜刮...");
             }
             else
             {
-                // 空箱子，直接结束
+                Controller.MaidCharacter?.PopText("没有什么值得搜刮的...");
                 FinishCurrentLooting();
             }
         }
@@ -183,7 +193,7 @@ namespace CombatMaid.Core.MaidFSM.States
                 }
                 else
                 {
-                    // 持续更新移动目标 (防止物理推挤导致位置偏移)
+                    // 持续更新移动目标
                     Controller.AI?.MoveToPos(_currentTarget.transform.position);
                 }
             }
@@ -222,7 +232,6 @@ namespace CombatMaid.Core.MaidFSM.States
             Machine.ChangeState<State_Autonomous>();
         }
 
-        // 以下保持原有逻辑不变，略微整理
         private void AcquireNextTarget()
         {
             ScanEnvironment();
@@ -235,7 +244,7 @@ namespace CombatMaid.Core.MaidFSM.States
 
         private bool TryPickItem(Item item)
         {
-            // 增加校验：如果物品已经被别人捡走了(Inventory变为null或易主)，则跳过
+            // 增加校验：如果物品已经被别人捡走了，则跳过
             if (item == null || item.GetTotalRawValue() < 0) return false;
             
             // 尝试拾取
@@ -247,7 +256,6 @@ namespace CombatMaid.Core.MaidFSM.States
             return success;
         }
         
-        // 为了完整性，补充省略的辅助方法
         private void ScanEnvironment()
         {
             _scannedObjects.Clear();
@@ -264,11 +272,23 @@ namespace CombatMaid.Core.MaidFSM.States
             float distToOwner = Vector3.Distance(col.transform.position, Controller.MainOwner.transform.position);
             if (distToOwner > OwnerTetherRadius) return false;
 
-            bool isBox = col.TryGetComponent<InteractableLootbox>(out var box) && 
-                         box.Inventory != null && box.Inventory.Content.Count > 0;
-            bool isItem = col.TryGetComponent<InteractablePickup>(out var pickup) && 
-                          pickup.ItemAgent != null && pickup.ItemAgent.Item != null;
-            return isBox || isItem;
+            int minVal = CombatMaidConfig.LootMinVal;
+
+            bool isValidBox = false;
+            if (col.TryGetComponent<InteractableLootbox>(out var box) && 
+                box.Inventory != null && box.Inventory.Content.Count > 0)
+            {
+                isValidBox = box.Inventory.Content.Any(item => item != null && item.GetTotalRawValue() >= minVal);
+            }
+
+            bool isValidItem = false;
+            if (col.TryGetComponent<InteractablePickup>(out var pickup) && 
+                pickup.ItemAgent != null && pickup.ItemAgent.Item != null)
+            {
+                isValidItem = pickup.ItemAgent.Item.GetTotalRawValue() >= minVal;
+            }
+
+            return isValidBox || isValidItem;
         }
 
         private Collider GetClosestValidTarget()

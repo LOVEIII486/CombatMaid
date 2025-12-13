@@ -29,6 +29,7 @@ namespace CombatMaid.Settings
         public const string Key_CustomMaidName = "CustomMaidName";
         public const string Key_CustomMaidModelID = "CustomMaidModelID";
         public const string Key_BuffBlockList = "BuffBlockList";
+        public const string Key_LootMinVal = "LootMinValue";
         
         // ==================== 本地化 Key ====================
         
@@ -43,6 +44,7 @@ namespace CombatMaid.Settings
         public const string LocalKey_OpenSaveFolder = "Settings_OpenSaveFolder";
         public const string LocalKey_OpenSaveFolderButton = "Settings_OpenSaveFolderButton";
         public const string LocalKey_BuffBlockList = "Settings_BuffBlockList";
+        public const string LocalKey_LootMinVal = "Settings_LootMinValue";
 
         // ==================== 默认值 ====================
         
@@ -53,6 +55,7 @@ namespace CombatMaid.Settings
         private const string Default_CustomMaidName = "";
         private const string Default_CustomMaidModelID = "";
         private const string Default_BuffBlockList = "";
+        private const int Default_LootMinVal = 0;
 
         // ==================== 静态变量 ====================
         
@@ -71,9 +74,8 @@ namespace CombatMaid.Settings
         // 自定义女仆配置
         public static string CustomMaidName { get; set; } = Default_CustomMaidName;
         public static string CustomMaidModelID { get; set; } = Default_CustomMaidModelID;
-        
-        
         public static string BuffBlockListString { get; set; } = Default_BuffBlockList;
+        public static int LootMinVal { get; set; } = Default_LootMinVal;
     
         // [新增] 解析后的黑名单集合，用于游戏逻辑快速查询
         public static HashSet<int> BlockedBuffIDs { get; private set; } = new HashSet<int>();
@@ -292,6 +294,11 @@ namespace CombatMaid.Settings
             else
             {
                 ParseBuffBlockList(Default_BuffBlockList);
+            }
+            
+            if (ModSettingAPI.GetSavedValue(Key_LootMinVal, out int savedVal)) 
+            {
+                LootMinVal = savedVal;
             }
             
             if (!hasModSettingValues || 

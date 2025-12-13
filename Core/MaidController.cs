@@ -18,38 +18,38 @@ namespace CombatMaid.Core
     /// </summary>
     public class MaidController : MonoBehaviour
     {
-        private static readonly Dictionary<AICharacterController, MaidController> _maidRegistry 
+        private static readonly Dictionary<AICharacterController, MaidController> _maidRegistry
             = new Dictionary<AICharacterController, MaidController>();
 
         public List<Item> LootHistory { get; private set; } = new List<Item>();
-            
+
         public static MaidController GetMaid(AICharacterController ai)
         {
             if (ai == null) return null;
             return _maidRegistry.TryGetValue(ai, out var maid) ? maid : null;
         }
-        
+
         #region 核心
 
         public AICharacterController AI { get; private set; }
         public CharacterMainControl MaidCharacter => AI != null ? AI.CharacterMainControl : null;
         public CharacterMainControl MainOwner { get; private set; }
-        
+
         public MaidStateMachine StateMachine { get; private set; }
         public MaidSkillComponent SkillSystem { get; private set; }
-        
+
         //缓存引用
         private CharacterMainControl _cachedCharacter;
 
         #endregion
 
         #region 默认设置
-        
-        public float HoldMaxDistance = 25.0f;            // 驻守模式最大宽容距离
-        public float TeleportDistance = 30.0f;           // 强制传送距离
-        public float TeleportTimeout = 5.0f;             // 强制跟随卡死超时时间
-        
-        public float ForceFollowDistance = 20.0f;        // 强制跟随触发距离
+
+        public float HoldMaxDistance = 25.0f; // 驻守模式最大宽容距离
+        public float TeleportDistance = 30.0f; // 强制传送距离
+        public float TeleportTimeout = 5.0f; // 强制跟随卡死超时时间
+
+        public float ForceFollowDistance = 20.0f; // 强制跟随触发距离
         public float SafeDistanceToResumeCombat = 5.0f; // 恢复自主战斗的安全距离
 
         /// <summary>
@@ -61,10 +61,11 @@ namespace CombatMaid.Core
 
         #region 基础
 
-        public void Initialize(MaidProfileData profileData, CharacterMainControl player, AICharacterController preCachedAI = null)
+        public void Initialize(MaidProfileData profileData, CharacterMainControl player,
+            AICharacterController preCachedAI = null)
         {
             MainOwner = player;
-            
+
             AI = preCachedAI != null ? preCachedAI : GetComponentInChildren<AICharacterController>();
             if (AI == null)
             {
@@ -74,20 +75,21 @@ namespace CombatMaid.Core
 
             // 注册实例
             if (!_maidRegistry.ContainsKey(AI)) _maidRegistry.Add(AI, this);
-            
+
             _cachedCharacter = MaidCharacter;
             if (_cachedCharacter != null)
             {
                 _cachedCharacter.BeforeCharacterSpawnLootOnDead += OnCheckLootBeforeDeath;
             }
-            
+
             // 初始化技能系统
-            SkillSystem = gameObject.GetComponent<MaidSkillComponent>() ?? gameObject.AddComponent<MaidSkillComponent>();
+            SkillSystem = gameObject.GetComponent<MaidSkillComponent>() ??
+                          gameObject.AddComponent<MaidSkillComponent>();
             SkillSystem.Initialize(this);
-            
+
             // 固有技能：小队协同
             SkillSystem.AddSkill(new Skill_SquadCoordination());
-            
+
             // 加载配置技能
             if (profileData.ExtraData?.Skills != null)
             {
@@ -97,10 +99,10 @@ namespace CombatMaid.Core
                     if (skill != null) SkillSystem.AddSkill(skill);
                 }
             }
-    
+
             // 初始化状态机
             InitializeStateMachine();
-    
+
             CMDebug.Log($"女仆控制器初始化完成。主人: {player.name}, 技能数: {SkillSystem.SkillCount}");
         }
 
@@ -116,6 +118,7 @@ namespace CombatMaid.Core
             {
                 _cachedCharacter.BeforeCharacterSpawnLootOnDead -= OnCheckLootBeforeDeath;
             }
+
             if (AI != null && _maidRegistry.ContainsKey(AI))
             {
                 _maidRegistry.Remove(AI);
@@ -158,18 +161,15 @@ namespace CombatMaid.Core
                 // 2. 强制“重入”状态
                 // 重新触发 Enter() 里的 AI.MoveToPos 逻辑
                 // 从而打断当前的卡死状态，执行新的移动
-                tacticalState.Enter(); 
+                tacticalState.Enter();
                 CMDebug.Log($"[MaidController] 刷新战术移动目标 -> {position}");
                 return;
             }
 
             // 如果是其他状态，走正常流程切换
-            StateMachine.ChangeState<State_TacticalMove>(state => 
-            {
-                state.TargetPosition = position;
-            });
+            StateMachine.ChangeState<State_TacticalMove>(state => { state.TargetPosition = position; });
         }
-        
+
         /// <summary>
         /// 强制治疗指令 (H键)
         /// </summary>
@@ -181,10 +181,10 @@ namespace CombatMaid.Core
             if (healSkill != null)
             {
                 // CMDebug.Log($"{MaidCharacter.name} 收到强制治疗指令...");
-                healSkill.ForceActivate(); 
+                healSkill.ForceActivate();
             }
         }
-        
+
         /// <summary>
         /// 切换驻守状态 (J键)
         /// </summary>
@@ -201,7 +201,7 @@ namespace CombatMaid.Core
                 StateMachine.ChangeState<State_HoldPosition>();
             }
         }
-        
+
         /// <summary>
         /// 指挥搜刮 (L键)
         /// </summary>
@@ -212,7 +212,7 @@ namespace CombatMaid.Core
                 MaidCharacter?.PopText("这是家里，不可以乱拿东西！");
                 return;
             }
-            
+
             if (StateMachine.CurrentState is State_Scavenge)
             {
                 StateMachine.ChangeState<State_Autonomous>(); // 再次按键取消
@@ -223,7 +223,7 @@ namespace CombatMaid.Core
                 StateMachine.ChangeState<State_Scavenge>();
             }
         }
-        
+
         /// <summary>
         /// 吐出物品 (K键)
         /// </summary>
@@ -258,9 +258,10 @@ namespace CombatMaid.Core
             {
                 container.Inventory.AddAndMerge(item, 0);
             }
+
             LootHistory.Clear();
         }
-        
+
         /// <summary>
         /// 切换库存管理模式 (B键)
         /// </summary>
@@ -271,7 +272,7 @@ namespace CombatMaid.Core
                 MaidCharacter?.PopText("不许看人家的私人物品！");
                 return;
             }
-            
+
             if (StateMachine.CurrentState is State_InventoryManage)
             {
                 StateMachine.ChangeState<State_Autonomous>();
@@ -279,16 +280,16 @@ namespace CombatMaid.Core
             else
             {
                 float dist = Vector3.Distance(transform.position, MainOwner.transform.position);
-                if (dist > 5.0f) 
+                if (dist > 5.0f)
                 {
                     MaidCharacter?.PopText("主人，请靠近一点...");
-                    return; 
+                    return;
                 }
-                
+
                 StateMachine.ChangeState<State_InventoryManage>();
             }
         }
-        
+
         public void TogglePassiveFollow()
         {
             if (StateMachine.CurrentState is State_PassiveFollow)
@@ -303,13 +304,12 @@ namespace CombatMaid.Core
             }
         }
 
-        
         #endregion
-        
+
         #region 感官屏蔽系统
 
         private bool _isSensorySuppressed = false;
-        
+
         // 缓存原始感官数据
         private float _cachedSightDistance;
         private float _cachedHearingAbility;
@@ -337,7 +337,7 @@ namespace CombatMaid.Core
                 AI.sightAngle = 0f;
                 AI.hearingAbility = 0f;
                 AI.forceTracePlayerDistance = 0f;
-                
+
                 ClearImmediateThreats();
 
                 _isSensorySuppressed = true;
@@ -362,9 +362,9 @@ namespace CombatMaid.Core
         public void ClearImmediateThreats()
         {
             if (AI == null) return;
-            
+
             bool hadTarget = AI.searchedEnemy != null || AI.noticed;
-            
+
             AI.searchedEnemy = null;
             AI.aimTarget = null;
             AI.noticed = false;
@@ -372,32 +372,54 @@ namespace CombatMaid.Core
         }
 
         #endregion
-        
+
         #region 内部辅助方法
-        
+
         /// <summary>
         /// 生成一个临时战利品箱
         /// </summary>
         private InteractableLootbox SpawnDropContainer(int requiredCapacity)
         {
             var prefab = MaidCharacter.deadLootBoxPrefab;
-            if (prefab == null) return null;
+            if (prefab == null)
+            {
+                CMDebug.LogError("[MaidController] 无法生成战利品箱：未配置 deadLootBoxPrefab！");
+                return null;
+            }
 
-            Vector3 spawnPos = MaidCharacter.transform.position + Vector3.up * 1.5f + MaidCharacter.transform.forward * 0.5f;
+            // 1. 计算基础位置：角色正前方 0.6 米处
+            Vector3 forwardOffset = MaidCharacter.transform.forward * 0.6f;
+            Vector3 basePos = MaidCharacter.transform.position + forwardOffset;
 
+            // 2. 地面检测
+            Vector3 spawnPos;
+            if (Physics.Raycast(basePos + Vector3.up * 1.5f, Vector3.down, out RaycastHit hit, 2.5f))
+            {
+                spawnPos = hit.point + Vector3.up * 0.05f;
+            }
+            else
+            {
+                spawnPos = basePos + Vector3.up * 0.2f;
+                CMDebug.LogWarning($"前方未检测到地面，使用备用位置生成战利品箱: {spawnPos}");
+            }
+
+            // 3. 实例化对象
             var boxInstance = Instantiate(prefab, spawnPos, MaidCharacter.transform.rotation);
 
+            // 4. 场景管理
             MultiSceneCore.MoveToActiveWithScene(boxInstance.gameObject, SceneManager.GetActiveScene().buildIndex);
 
+            // 5. 物理行为控制
             var rb = boxInstance.GetComponent<Rigidbody>();
             if (rb != null)
             {
                 rb.isKinematic = false;
-                rb.useGravity = true; 
-                Vector3 throwForce = MaidCharacter.transform.forward * 3.0f + Vector3.up * 2.0f;
-                rb.velocity = throwForce;
-                rb.angularVelocity = Random.insideUnitSphere * 5f;
+                rb.useGravity = true; // 保持重力
+                rb.drag = 10f;
+                rb.angularDrag = 10f;
             }
+
+            // 6. 碰撞器设置
             if (boxInstance.interactCollider != null)
             {
                 boxInstance.interactCollider.isTrigger = false;
@@ -407,12 +429,14 @@ namespace CombatMaid.Core
                 var col = boxInstance.GetComponent<Collider>();
                 if (col != null) col.isTrigger = false;
             }
+
+            // 7. 容量设置
             if (boxInstance.Inventory != null)
             {
                 int safeCapacity = Mathf.Max(20, requiredCapacity + 10);
                 boxInstance.Inventory.SetCapacity(safeCapacity);
             }
-
+            
             return boxInstance;
         }
 
@@ -423,21 +447,21 @@ namespace CombatMaid.Core
         {
             return MaidCharacter.CharacterItem.Inventory.Contains(item);
         }
-        
+
         /// <summary>
         /// 检查是否距离主人过远
         /// </summary>
         public bool IsTooFarFromOwner()
         {
             if (MainOwner == null) return false;
-            
+
             float dist = Vector3.Distance(transform.position, MainOwner.transform.position);
-            
+
             // 紧急情况传送判断交给状态机，此处仅返回距离阈值
             if (dist > TeleportDistance) return true;
             return dist > ForceFollowDistance;
         }
-        
+
         /// <summary>
         /// 在角色死亡前一刻触发物资抢救
         /// </summary>
