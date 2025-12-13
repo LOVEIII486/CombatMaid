@@ -15,7 +15,7 @@ namespace CombatMaid.Core.MaidFSM.States
         // ================= 参数配置 =================
         private const float SearchRadius = 10.0f;       // 略微增大搜索范围
         private const float OwnerTetherRadius = 15.0f;  // 允许在主人附近稍微远一点的地方搜刮
-        private const float InteractionThreshold = 1f;// 交互距离
+        private const float InteractionThreshold = 1f;  // 交互距离
         
         // 搜刮耗时配置
         private const float LootDurationPerItem = 0.5f; // 每个物品的搜刮耗时(秒)
@@ -156,6 +156,7 @@ namespace CombatMaid.Core.MaidFSM.States
             }
             else
             {
+                // 虽然箱子是空的或者全是垃圾，但也需要结束流程并标记
                 Controller.MaidCharacter?.PopText("没有什么值得搜刮的...");
                 FinishCurrentLooting();
             }
@@ -163,6 +164,24 @@ namespace CombatMaid.Core.MaidFSM.States
 
         private void FinishCurrentLooting()
         {
+            // === 新增标记功能 ===
+            // 只有当目标仍然存在时才尝试标记
+            if (_currentTarget != null && _currentTarget.gameObject != null)
+            {
+                // 如果是战利品箱，手动触发“已搜索”标记
+                if (_currentTarget.TryGetComponent<InteractableLootbox>(out var box))
+                {
+                    // 1. 设置库存内部标志位（防止逻辑上重复搜索）
+                    if (box.Inventory != null)
+                    {
+                        box.Inventory.hasBeenInspectedInLootBox = true;
+                    }
+                    
+                    // 2. 调用 UI 标记方法（使世界图标变灰，给玩家视觉反馈）
+                    box.SetMarkerUsed();
+                }
+            }
+
             ResetLootingState();
             _currentTarget = null; // 置空当前目标，触发 UpdateMovementLogic 寻找下一个
         }
@@ -271,7 +290,18 @@ namespace CombatMaid.Core.MaidFSM.States
             if (col == null) return false;
             float distToOwner = Vector3.Distance(col.transform.position, Controller.MainOwner.transform.position);
             if (distToOwner > OwnerTetherRadius) return false;
-
+        
+            if (CombatMaidConfig.IgnoreSearched)
+            {
+                if (col.TryGetComponent<InteractableLootbox>(out var checkBox))
+                {
+                    if (checkBox.Inventory != null && checkBox.Inventory.hasBeenInspectedInLootBox)
+                    {
+                        return false; 
+                    }
+                }
+            }
+            
             int minVal = CombatMaidConfig.LootMinVal;
 
             bool isValidBox = false;

@@ -29,7 +29,10 @@ namespace CombatMaid.Settings
         public const string Key_CustomMaidName = "CustomMaidName";
         public const string Key_CustomMaidModelID = "CustomMaidModelID";
         public const string Key_BuffBlockList = "BuffBlockList";
+        
+        // 高级AI配置
         public const string Key_LootMinVal = "LootMinValue";
+        public const string Key_IgnoreSearched = "IgnoreSearched";
         
         // ==================== 本地化 Key ====================
         
@@ -55,6 +58,7 @@ namespace CombatMaid.Settings
         private const string Default_CustomMaidModelID = "";
         private const string Default_BuffBlockList = "";
         private const int Default_LootMinVal = 0;
+        public static bool IgnoreSearched { get; set; } = true;
 
         // ==================== 静态变量 ====================
         
@@ -298,6 +302,10 @@ namespace CombatMaid.Settings
             if (ModSettingAPI.GetSavedValue(Key_LootMinVal, out int savedVal)) 
             {
                 LootMinVal = savedVal;
+            }
+            if (ModSettingAPI.GetSavedValue(Key_IgnoreSearched, out bool savedIgnore))
+            {
+                IgnoreSearched = savedIgnore;
             }
             
             if (!hasModSettingValues || 

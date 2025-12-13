@@ -86,6 +86,8 @@ namespace CombatMaid.Settings
                 (v) => CombatMaidConfig.KeyPassive = v
             );
             
+            // ==================== 高级AI配置 ====================
+            
             ModSettingAPI.AddSlider(
                 CombatMaidConfig.Key_LootMinVal,
                 LocalizationManager.GetText("Settings_LootMinValue"),
@@ -96,6 +98,15 @@ namespace CombatMaid.Settings
                     CombatMaidConfig.LootMinVal = value;
                 },
                 7
+            );
+            ModSettingAPI.AddToggle(
+                CombatMaidConfig.Key_IgnoreSearched,
+                LocalizationManager.GetText("Settings_IgnoreSearched"),
+                CombatMaidConfig.IgnoreSearched,
+                (value) => 
+                {
+                    CombatMaidConfig.IgnoreSearched = value;
+                }
             );
 
             // ==================== 3. 自定义女仆配置 ====================
@@ -166,7 +177,8 @@ namespace CombatMaid.Settings
                 LocalizationManager.GetText("Settings_Group_AI"),
                 new List<string>
                 {
-                    CombatMaidConfig.Key_LootMinVal
+                    CombatMaidConfig.Key_LootMinVal,
+                    CombatMaidConfig.Key_IgnoreSearched
                 },
                 0.7f, false, false
             );
