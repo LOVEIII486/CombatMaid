@@ -288,6 +288,89 @@ namespace CombatMaid.Core
                 StateMachine.ChangeState<State_InventoryManage>();
             }
         }
+        
+        public void TogglePassiveFollow()
+        {
+            if (StateMachine.CurrentState is State_PassiveFollow)
+            {
+                StateMachine.ChangeState<State_Autonomous>();
+                MaidCharacter?.PopText("进入自由模式");
+            }
+            else
+            {
+                StateMachine.ChangeState<State_PassiveFollow>();
+                MaidCharacter?.PopText("进入和平模式");
+            }
+        }
+
+        
+        #endregion
+        
+        #region 感官屏蔽系统
+
+        private bool _isSensorySuppressed = false;
+        
+        // 缓存原始感官数据
+        private float _cachedSightDistance;
+        private float _cachedHearingAbility;
+        private float _cachedSightAngle;
+        private float _cachedForceTraceDist;
+
+        /// <summary>
+        /// 设置是否屏蔽索敌感知能力
+        /// </summary>
+        /// <param name="shouldSuppress">true=致盲(屏蔽索敌), false=恢复正常</param>
+        public void SetSensorySuppression(bool shouldSuppress)
+        {
+            if (AI == null) return;
+
+            if (shouldSuppress)
+            {
+                if (_isSensorySuppressed) return;
+
+                _cachedSightDistance = AI.sightDistance;
+                _cachedHearingAbility = AI.hearingAbility;
+                _cachedSightAngle = AI.sightAngle;
+                _cachedForceTraceDist = AI.forceTracePlayerDistance;
+
+                AI.sightDistance = 0f;
+                AI.sightAngle = 0f;
+                AI.hearingAbility = 0f;
+                AI.forceTracePlayerDistance = 0f;
+                
+                ClearImmediateThreats();
+
+                _isSensorySuppressed = true;
+            }
+            else
+            {
+                if (!_isSensorySuppressed) return;
+
+                // 还原数据
+                AI.sightDistance = _cachedSightDistance;
+                AI.sightAngle = _cachedSightAngle;
+                AI.hearingAbility = _cachedHearingAbility;
+                AI.forceTracePlayerDistance = _cachedForceTraceDist;
+
+                _isSensorySuppressed = false;
+            }
+        }
+
+        /// <summary>
+        /// 强制清除当前的仇恨目标和警觉状态
+        /// </summary>
+        public void ClearImmediateThreats()
+        {
+            if (AI == null) return;
+            
+            bool hadTarget = AI.searchedEnemy != null || AI.noticed;
+            
+            AI.searchedEnemy = null;
+            AI.aimTarget = null;
+            AI.noticed = false;
+            AI.alert = false;
+        }
+
         #endregion
         
         #region 内部辅助方法

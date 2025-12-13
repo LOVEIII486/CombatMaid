@@ -5,93 +5,91 @@ using ItemStatsSystem.Stats;
 
 namespace CombatMaid.Core.MaidFSM.States
 {
-    /// <summary>
-    /// 强制跟随模式：防卡死、传送
-    /// </summary>
     public class State_ForceFollow : MaidStateBase
     {
-        private float _checkTimer;
         private float _stuckTimer;
         
         // 缓存临时的速度修改器
         private List<Modifier> _speedBuffs = new List<Modifier>();
-        // 强制跟随时的速度倍率
-        private const float SpeedMultiplier = 3f;
+        private const float SpeedMultiplier = 2.5f;
+
+        // 【新增】存储“归队后该切回哪个状态”的逻辑
+        public System.Action NextStateAction; 
 
         public override void Enter()
         {
-            // 1. 暂停 AI
-            SetNativeBrainActive(false);
-            
-            // 2. 清除战斗目标
+            SetNativeBrainActive(true);
+            Controller.SetSensorySuppression(true);
+
             if (Controller.AI != null)
             {
-                Controller.AI.searchedEnemy = null;
-                Controller.AI.aimTarget = null;
-                Controller.AI.StopMove();
+                Controller.AI.leader = Controller.MainOwner;
+                Controller.AI.PutBackWeapon();
             }
             
-            // 3. 添加临时移速加成
+            // 【新增】保险逻辑：如果没有指定返回状态，默认回自主模式
+            // 这样旧的代码调用这个状态也不会报错
+            if (NextStateAction == null)
+            {
+                NextStateAction = () => Machine.ChangeState<State_Autonomous>();
+            }
+            
             AttributeModifier.Quick.RevertSpeedModifiers(Controller.MaidCharacter, _speedBuffs);
             _speedBuffs = AttributeModifier.Quick.ModifySpeed(Controller.MaidCharacter, SpeedMultiplier);
             
             Controller.MaidCharacter?.PopText("主人等等我！！！");
             _stuckTimer = 0f;
-            
-            // 立即触发一次移动
-            MoveToOwner();
         }
 
         public override void Update()
         {
-            if (Controller.MainOwner == null) return;
+            if (Controller.MainOwner == null || Controller.AI == null) return;
 
             float dist = Vector3.Distance(Controller.transform.position, Controller.MainOwner.transform.position);
             
-            // 1. 检查是否需要传送
+            if (Controller.AI.searchedEnemy != null || Controller.AI.noticed)
+            {
+                Controller.ClearImmediateThreats();
+            }
+            
+            if (Controller.AI.leader != Controller.MainOwner)
+            {
+                Controller.AI.leader = Controller.MainOwner;
+            }
+
+            _stuckTimer += Time.deltaTime;
+            
             if (dist > Controller.TeleportDistance || _stuckTimer > Controller.TeleportTimeout)
             {
                 Teleport();
-                Machine.ChangeState<State_Autonomous>();
+                // 【修改】调用存储的下一步逻辑，而不是写死 Autonomous
+                NextStateAction?.Invoke();
                 return;
             }
 
-            // 2. 检查是否已经回到了安全距离
             if (dist < Controller.SafeDistanceToResumeCombat)
             {
                 Controller.MaidCharacter?.PopText("回来啦~");
-                Machine.ChangeState<State_Autonomous>();
+                // 【修改】同上
+                NextStateAction?.Invoke();
                 return;
-            }
-
-            // 3. 移动
-            _checkTimer += Time.deltaTime;
-            _stuckTimer += Time.deltaTime;
-            
-            if (_checkTimer > 1.0f)
-            {
-                MoveToOwner();
-                _checkTimer = 0f;
             }
         }
 
-        // 状态退出时清理 Buff
         public override void Exit()
         {
+            Controller.SetSensorySuppression(false);
+
             AttributeModifier.Quick.RevertSpeedModifiers(Controller.MaidCharacter, _speedBuffs);
+            _speedBuffs.Clear();
             
             if (Controller.AI != null)
             {
                 Controller.AI.StopMove();
             }
-        }
-
-        private void MoveToOwner()
-        {
-            if (Controller.AI != null)
-            {
-                Controller.AI.MoveToPos(Controller.MainOwner.transform.position);
-            }
+            
+            // 【新增】清理回调，防止状态复用时污染下一次调用
+            NextStateAction = null;
         }
 
         private void Teleport()
@@ -102,6 +100,7 @@ namespace CombatMaid.Core.MaidFSM.States
                 Controller.AI.transform.position = Controller.MainOwner.transform.position;
             }
             Controller.MaidCharacter?.PopText("强制传送");
+            if (Controller.AI != null) Controller.AI.StopMove();
         }
     }
 }

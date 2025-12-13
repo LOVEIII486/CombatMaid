@@ -13,7 +13,7 @@ namespace CombatMaid.Core.MaidFSM.States
         // ================= 参数配置 =================
         private const float SearchRadius = 10.0f;       // 略微增大搜索范围
         private const float OwnerTetherRadius = 15.0f;  // 允许在主人附近稍微远一点的地方搜刮
-        private const float InteractionThreshold = 2.5f;// 交互距离
+        private const float InteractionThreshold = 1f;// 交互距离
         
         // 搜刮耗时配置
         private const float LootDurationPerItem = 0.5f; // 每个物品的搜刮耗时(秒)
@@ -246,8 +246,6 @@ namespace CombatMaid.Core.MaidFSM.States
             }
             return success;
         }
-
-        // ... (ScanEnvironment, IsValidLootTarget, GetClosestValidTarget, IsBagFull 等代码保持原样即可) ...
         
         // 为了完整性，补充省略的辅助方法
         private void ScanEnvironment()

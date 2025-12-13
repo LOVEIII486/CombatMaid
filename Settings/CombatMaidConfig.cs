@@ -23,6 +23,7 @@ namespace CombatMaid.Settings
         public const string Key_Bind_Scavenge = "KeyBind_Scavenge";
         public const string Key_Bind_Drop = "KeyBind_Drop";
         public const string Key_Bind_InvManage = "KeyBind_InvManage";
+        public const string Key_Bind_Passive = "KeyBind_Passive";
         
         // 自定义女仆配置
         public const string Key_CustomMaidName = "CustomMaidName";
@@ -64,8 +65,8 @@ namespace CombatMaid.Settings
         public static KeyCode KeyHold { get; set; } = KeyCode.J;
         public static KeyCode KeyScavenge { get; set; } = KeyCode.L;
         public static KeyCode KeyDrop { get; set; } = KeyCode.K;
-        
         public static KeyCode KeyInventoryManage { get; set; } = KeyCode.B;
+        public static KeyCode KeyPassive { get; set; } = KeyCode.N;
         
         // 自定义女仆配置
         public static string CustomMaidName { get; set; } = Default_CustomMaidName;
@@ -269,6 +270,7 @@ namespace CombatMaid.Settings
             if (ModSettingAPI.GetSavedValue(Key_Bind_Scavenge, out KeyCode k4)) KeyScavenge = k4;
             if (ModSettingAPI.GetSavedValue(Key_Bind_Drop, out KeyCode k5)) KeyDrop = k5;
             if (ModSettingAPI.GetSavedValue(Key_Bind_InvManage, out KeyCode kInv)) KeyInventoryManage = kInv;
+            if (ModSettingAPI.GetSavedValue(Key_Bind_Passive, out KeyCode kPassive)) KeyPassive = kPassive;
             
             bool hasModSettingValues = false;
             

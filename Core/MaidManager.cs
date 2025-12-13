@@ -157,6 +157,11 @@ namespace CombatMaid.Core
             {
                 CommandInventoryManage_WineFox();
             }
+            
+            if (Input.GetKeyDown(Settings.CombatMaidConfig.KeyPassive))
+            {
+                CommandTogglePassiveFollow();
+            }
         }
 
         private void UpdateFocusTarget()
@@ -279,6 +284,18 @@ namespace CombatMaid.Core
                 {
                     CMDebug.LogWarning("未找到酒狐，无法打开背包。");
                 }
+        }
+        
+        private void CommandTogglePassiveFollow()
+        {
+            for (int i = _activeMaids.Count - 1; i >= 0; i--)
+            {
+                var maid = _activeMaids[i];
+                if (maid != null)
+                {
+                    maid.TogglePassiveFollow();
+                }
+            }
         }
 
         private Vector3 GetMousePosition()
