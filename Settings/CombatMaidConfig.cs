@@ -44,7 +44,6 @@ namespace CombatMaid.Settings
         public const string LocalKey_OpenSaveFolder = "Settings_OpenSaveFolder";
         public const string LocalKey_OpenSaveFolderButton = "Settings_OpenSaveFolderButton";
         public const string LocalKey_BuffBlockList = "Settings_BuffBlockList";
-        public const string LocalKey_LootMinVal = "Settings_LootMinValue";
 
         // ==================== 默认值 ====================
         

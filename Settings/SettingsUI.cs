@@ -86,20 +86,16 @@ namespace CombatMaid.Settings
                 (v) => CombatMaidConfig.KeyPassive = v
             );
             
-            ModSettingAPI.AddInput(
+            ModSettingAPI.AddSlider(
                 CombatMaidConfig.Key_LootMinVal,
-                LocalizationManager.GetText(CombatMaidConfig.LocalKey_LootMinVal),
-                CombatMaidConfig.LootMinVal.ToString(),
-                10,
+                LocalizationManager.GetText("Settings_LootMinValue"),
+                CombatMaidConfig.LootMinVal,
+                0, 500000,
                 (value) => 
                 {
-                    // 尝试解析输入内容，如果不是数字则不生效，或者设为0
-                    if (int.TryParse(value, out int result))
-                    {
-                        CombatMaidConfig.LootMinVal = Mathf.Max(0, result);
-                    }
-                    //CMDebug.Log($"最低搜刮价值更新为: {CombatMaidConfig.LootMinVal}");
-                }
+                    CombatMaidConfig.LootMinVal = value;
+                },
+                7
             );
 
             // ==================== 3. 自定义女仆配置 ====================
