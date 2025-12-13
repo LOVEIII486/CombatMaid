@@ -7,6 +7,7 @@ namespace CombatMaid.Core.MaidFSM.States
 {
     /// <summary>
     /// 战术移动模式：响应 G 键指令
+    /// 优化：强制面朝移动方向，防止倒退滑步
     /// </summary>
     public class State_TacticalMove : MaidStateBase
     {
@@ -16,18 +17,21 @@ namespace CombatMaid.Core.MaidFSM.States
         private const float MaxDuration = 10.0f;
         
         // 战术移动的移速倍率
-        private const float TacticalSpeedMultiplier = 1.5f;
+        private const float TacticalSpeedMultiplier = 1.3f;
         private List<Modifier> _speedBuffs = new List<Modifier>();
 
         public override void Enter()
         {
-            // 1. 暂停原生AI
+            // 1. 暂停原生AI决策
             SetNativeBrainActive(false);
 
-            // 2. 清除瞄准锁定并执行移动
             if (Controller.AI != null)
             {
-                Controller.AI.aimTarget = null;
+                Controller.AI.searchedEnemy = null;
+                //Controller.AI.aimTarget = null;
+                Controller.AI.SetTarget(null); // 这是一个显式清除目标的方法
+
+                // 2. 执行移动指令
                 Controller.AI.StopMove();
                 Controller.AI.MoveToPos(TargetPosition);
                 
@@ -35,8 +39,11 @@ namespace CombatMaid.Core.MaidFSM.States
             }
             
             // 3. 应用战术移速加成
-            AttributeModifier.Quick.RevertSpeedModifiers(Controller.MaidCharacter, _speedBuffs);
-            _speedBuffs = AttributeModifier.Quick.ModifySpeed(Controller.MaidCharacter, TacticalSpeedMultiplier);
+            if (Controller.MaidCharacter != null)
+            {
+                AttributeModifier.Quick.RevertSpeedModifiers(Controller.MaidCharacter, _speedBuffs);
+                _speedBuffs = AttributeModifier.Quick.ModifySpeed(Controller.MaidCharacter, TacticalSpeedMultiplier);
+            }
 
             _timeoutTimer = MaxDuration;
         }
@@ -44,6 +51,13 @@ namespace CombatMaid.Core.MaidFSM.States
         public override void Update()
         {
             _timeoutTimer -= Time.deltaTime;
+
+            if (Controller.MaidCharacter != null)
+            {
+                // 抬高视线高度
+                Vector3 lookAtPos = TargetPosition + Vector3.up * 1.5f;
+                Controller.MaidCharacter.SetAimPoint(lookAtPos);
+            }
 
             if (HasArrived() || _timeoutTimer <= 0)
             {
@@ -57,7 +71,11 @@ namespace CombatMaid.Core.MaidFSM.States
         /// </summary>
         public override void Exit()
         {
-            AttributeModifier.Quick.RevertSpeedModifiers(Controller.MaidCharacter, _speedBuffs);
+            if (Controller.MaidCharacter != null)
+            {
+                AttributeModifier.Quick.RevertSpeedModifiers(Controller.MaidCharacter, _speedBuffs);
+            }
+            
             if (Controller.AI != null)
             {
                 Controller.AI.StopMove();
@@ -66,12 +84,12 @@ namespace CombatMaid.Core.MaidFSM.States
 
         private void HandleArrivalLogic()
         {
-            // 如果移动后离敌人太远，就清除仇恨
             var ai = Controller.AI;
             if (ai != null && ai.searchedEnemy != null)
             {
                 float dist = Vector3.Distance(ai.transform.position, ai.searchedEnemy.transform.position);
-                if (dist > 25.0f)
+                // 15米以上脱离
+                if (dist > 15.0f)
                 {
                     ai.searchedEnemy = null;
                     ai.aimTarget = null;
@@ -85,9 +103,14 @@ namespace CombatMaid.Core.MaidFSM.States
         {
             var ai = Controller.AI;
             if (ai == null) return true;
+            
             if (ai.WaitingForPathResult()) return false;
-            // 如果不在移动且有路径，或者已经到达终点
+      
+            float distToTarget = Vector3.Distance(ai.transform.position, TargetPosition);
+            if (distToTarget < 1.5f) return true;
+
             if ((!ai.IsMoving() && ai.HasPath()) || ai.ReachedEndOfPath()) return true;
+            
             return false;
         }
     }
