@@ -102,7 +102,7 @@ namespace CombatMaid.Core
 
             // 初始化状态机
             InitializeStateMachine();
-
+            //DebugPrintAllLayers();
             CMDebug.Log($"女仆控制器初始化完成。主人: {player.name}, 技能数: {SkillSystem.SkillCount}");
         }
 
@@ -470,7 +470,22 @@ namespace CombatMaid.Core
             CMDebug.LogInfo($"[{_cachedCharacter.characterPreset.DisplayName}] 临死前触发物资抢救...");
             CommandDumpLoot();
         }
-
+        
         #endregion
+        
+        private void DebugPrintAllLayers()
+        {
+            CMDebug.Log("========== [Layer List Dump] ==========");
+            for (int i = 0; i < 32; i++)
+            {
+                string layerName = LayerMask.LayerToName(i);
+                // 如果名字不为空，说明该 Layer 被定义了
+                if (!string.IsNullOrEmpty(layerName))
+                {
+                    CMDebug.Log($"Layer ID: {i} | Name: \"{layerName}\"");
+                }
+            }
+            CMDebug.Log("=======================================");
+        }
     }
 }

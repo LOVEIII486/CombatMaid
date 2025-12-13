@@ -19,7 +19,7 @@ namespace CombatMaid.Core
                 Instance = this;
                 DontDestroyOnLoad(gameObject);
 
-                _enemyLayerMask = LayerMask.GetMask("Default", "Terrain", "Character", "Hitbox", "Enemy");
+                _enemyLayerMask = LayerMask.GetMask("DamageReceiver", "Character", "HeadCollider");
 
                 CMDebug.LogInfo("MaidManager (指挥官) 初始化完成。");
             }
@@ -301,16 +301,57 @@ namespace CombatMaid.Core
         private Vector3 GetMousePosition()
         {
             if (Camera.main == null) return Vector3.zero;
+
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit, 1000f, LayerMask.GetMask("Default", "Ground", "Terrain")))
-                return hit.point;
+    
+            LayerMask mask = LayerMask.GetMask(
+                "Default",          // Layer 0: 默认层，通常包含大部分未分类的静态物体
+                "Wall",             // Layer 6: 墙壁，核心障碍物
+                "Ground",           // Layer 7: 地面，核心行走层
+                "Interactable",     // Layer 8: 交互物（如箱子、工作台），防止点到箱子后面去
+                "Door",             // Layer 13: 门，防止穿门
+                "HalfObsticle",     // Layer 14: 半身掩体（注意日志里的拼写是 Obsticle）
+                "Wall_FowBlock"     // Layer 19: 战争迷雾阻挡墙，通常也是实体墙
+            );
+
+            float maxDistFromPlayer = 25.0f; // 最大指挥距离
+            float maxRayDist = 100f;       // 射线最大检测距离
+            Vector3 rawTargetPos;
+
+            if (Physics.Raycast(ray, out RaycastHit hit, maxRayDist, mask))
+            {
+                rawTargetPos = hit.point;
+            }
+            else
+            {
+                rawTargetPos = ray.GetPoint(50.0f);
+            }
+
+            Vector3 playerPos = CharacterMainControl.Main.transform.position;
+            Vector3 toTarget = rawTargetPos - playerPos;
+    
+            Vector3 flatDirection = new Vector3(toTarget.x, 0, toTarget.z).normalized;
+            float currentDist = new Vector3(toTarget.x, 0, toTarget.z).magnitude;
+
+            if (currentDist > maxDistFromPlayer)
+            {
+                rawTargetPos = playerPos + flatDirection * maxDistFromPlayer;
+            }
+
+            float castHeight = Mathf.Max(playerPos.y, rawTargetPos.y) + 5.0f;
+            Vector3 castOrigin = new Vector3(rawTargetPos.x, castHeight, rawTargetPos.z);
+
+            if (Physics.Raycast(castOrigin, Vector3.down, out RaycastHit groundHit, 20.0f, mask))
+            {
+                return groundHit.point;
+            }
             return Vector3.zero;
         }
 
         #endregion
 
         #region Debug Input
-
+        
         private void HandleDebugInput()
         {
             // F5 测试: 调用 Spawner 生成酒狐
