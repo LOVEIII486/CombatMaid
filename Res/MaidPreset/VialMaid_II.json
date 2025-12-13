@@ -55,7 +55,7 @@
     "ScatterMultiIfTargetRunning": 2.0,
     "ScatterMultiIfOffScreen": 3.0,
     "GunCritRateGain": 0.1,
-    "AiCombatFactor": 2.0,
+    "AiCombatFactor": 1.5,
 
     "//--- 索敌逻辑 ---": "",
     "SetActiveByPlayerDistance": true,

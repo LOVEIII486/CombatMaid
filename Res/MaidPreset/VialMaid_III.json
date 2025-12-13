@@ -7,7 +7,7 @@
     "ShowHealthBar": true,
 
     "//--- 生命 ---": "",
-    "Health": 280.0,
+    "Health": 300.0,
     "MoveSpeedFactor": 1.3,
     "HasSoul": true,
     "Exp": 0,
@@ -48,14 +48,14 @@
     "CanTalk": true,
 
     "//--- 战斗数值修正 ---": "",
-    "DamageMultiplier": 1.1,
+    "DamageMultiplier": 1.2,
     "BulletSpeedMultiplier": 1.1,
     "GunDistanceMultiplier": 1.2,
     "GunScatterMultiplier": 0.2,
     "ScatterMultiIfTargetRunning": 1.2,
     "ScatterMultiIfOffScreen": 1.5,
     "GunCritRateGain": 0.25,
-    "AiCombatFactor": 2.5,
+    "AiCombatFactor": 1.5,
 
     "//--- 索敌逻辑 ---": "",
     "SetActiveByPlayerDistance": true,

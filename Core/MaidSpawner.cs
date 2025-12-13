@@ -61,7 +61,7 @@ namespace CombatMaid.Core
 
         // 自定义 JSON 配置库
         private Dictionary<string, MaidProfileData> _maidProfiles = new Dictionary<string, MaidProfileData>();
-        
+
         // 缓存的倍率快照
         private Vector3 _cachedMultipliers = Vector3.one;
 
@@ -111,40 +111,49 @@ namespace CombatMaid.Core
             _maidProfiles.Clear();
 
             string modAssemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            string presetDir = Path.Combine(modAssemblyDir, "MaidPreset");
+            string sourceDir = Path.Combine(modAssemblyDir, "MaidPreset");
+            
+            string gameRootDir = Directory.GetCurrentDirectory(); 
+            string saveRootDir = Path.Combine(gameRootDir, "CombatMaidSaves");
+            string vialSaveDir = Path.Combine(saveRootDir, "VialMaid");
 
-            if (!Directory.Exists(presetDir))
+            // 2. 确保文件夹结构存在
+            if (!Directory.Exists(saveRootDir)) Directory.CreateDirectory(saveRootDir);
+            if (!Directory.Exists(vialSaveDir)) Directory.CreateDirectory(vialSaveDir);
+
+            // 3. 遍历源文件进行分流处理
+            try
             {
-                Directory.CreateDirectory(presetDir);
-                CMDebug.LogWarning($"创建了配置文件夹: {presetDir}");
-                return;
-            }
-
-            string[] files = Directory.GetFiles(presetDir, "*.json");
-            CMDebug.Log($"找到 {files.Length} 个配置文件，开始加载...");
-
-            foreach (string file in files)
-            {
-                try
+                string[] sourceFiles = Directory.GetFiles(sourceDir, "*.json");
+                foreach (string sourcePath in sourceFiles)
                 {
-                    string jsonContent = File.ReadAllText(file);
-                    var data = JsonConvert.DeserializeObject<MaidProfileData>(jsonContent);
+                    string fileName = Path.GetFileName(sourcePath);
 
-                    if (data != null && !string.IsNullOrEmpty(data.ProfileName))
+                    // 只处理 Vial 系列文件
+                    if (fileName.StartsWith("Vial", StringComparison.OrdinalIgnoreCase))
                     {
-                        if (_maidProfiles.ContainsKey(data.ProfileName))
+                        string userPath = Path.Combine(vialSaveDir, fileName);
+
+                        // 如果玩家存档里没有这个文件，才从源复制
+                        if (!File.Exists(userPath))
                         {
-                            CMDebug.LogWarning($"检测到重复的 ProfileName: {data.ProfileName}，将覆盖旧配置。");
+                            File.Copy(sourcePath, userPath);
+                            CMDebug.Log($"[初始化] 创建用户数据副本: {fileName} -> CombatMaidSaves/VialMaid");
                         }
 
-                        _maidProfiles[data.ProfileName] = data;
-                        CMDebug.Log($"已加载预设: {data.ProfileName}");
+                        // 优先加载玩家存档中的版本
+                        LoadSinglePreset(userPath);
+                    }
+                    else
+                    {
+                        // 其他非 Vial 预设：直接加载源文件 (保持随模组更新)
+                        LoadSinglePreset(sourcePath);
                     }
                 }
-                catch (System.Exception ex)
-                {
-                    CMDebug.LogError($"加载配置文件失败 {Path.GetFileName(file)}: {ex.Message}");
-                }
+            }
+            catch (Exception ex)
+            {
+                CMDebug.LogError($"[初始化] 加载预设失败: {ex.Message}");
             }
         }
 
@@ -196,11 +205,12 @@ namespace CombatMaid.Core
                 {
                     var sync = controller.gameObject.AddComponent<WineFoxDataSync>();
                     sync.Initialize(controller, finalData);
-                    sync.LoadInventory(); 
+                    sync.LoadInventory();
                     if (WineFoxDataManager.CurrentData.Inventory == null)
                     {
                         sync.SaveInventory();
                     }
+
                     CMDebug.Log($"[Spawn] 酒狐已生成 (存档同步开启)");
                 }
 
@@ -209,8 +219,8 @@ namespace CombatMaid.Core
                 {
                     MaidManager.Instance.RegisterActiveMaid(controller);
                 }
-                
-                
+
+
                 onComplete?.Invoke(controller);
             });
         }
@@ -230,14 +240,14 @@ namespace CombatMaid.Core
                 CombatMaidConfig.AttackMultiplier,
                 CombatMaidConfig.MoveSpeedMultiplier
             );
-            
+
             if (_cachedMultipliers != currentMultipliers)
             {
                 CMDebug.Log($"检测到倍率变化: {_cachedMultipliers} -> {currentMultipliers}，刷新预设缓存");
                 _generatedPresetsCache.Clear();
                 _cachedMultipliers = currentMultipliers;
             }
-            
+
             var spawnConfig = profileData.PresetConfig;
             var extraData = profileData.ExtraData;
             string baseKey = extraData?.BasePresetKey ?? "Cname_Usec";
@@ -324,24 +334,26 @@ namespace CombatMaid.Core
                     profileData.ExtraData.CustomModelID
                 ));
             }
-            
+
             // 3.背包扩容
             if (profileData.PresetConfig.InventoryCapacity != 0)
             {
                 // (1) 修改数值统计 (Stat)，这确保了数据的正确性（例如UI显示上限）
-                AttributeModifier.Modify(charCtrl, "InventoryCapacity", profileData.PresetConfig.InventoryCapacity, false);
-        
+                AttributeModifier.Modify(charCtrl, "InventoryCapacity", profileData.PresetConfig.InventoryCapacity,
+                    false);
+
                 // (2) 手动应用到 Inventory 对象
                 // 原生 CharacterMainControl.UpdateInventoryCapacity 会跳过 NPC，所以必须手动设置
                 if (charCtrl.CharacterItem != null && charCtrl.CharacterItem.Inventory != null)
                 {
                     // 获取修改后的最终值 (Base + Modifiers)
                     int newCapacity = Mathf.RoundToInt(charCtrl.InventoryCapacity);
-            
+
                     // 强制设置容量
                     charCtrl.CharacterItem.Inventory.SetCapacity(newCapacity);
-            
-                    CMDebug.Log($"[Spawn] 背包扩容成功: Stat增加 {profileData.PresetConfig.InventoryCapacity} -> 实际容量已同步为 {newCapacity}");
+
+                    CMDebug.Log(
+                        $"[Spawn] 背包扩容成功: Stat增加 {profileData.PresetConfig.InventoryCapacity} -> 实际容量已同步为 {newCapacity}");
                 }
                 else
                 {
@@ -492,7 +504,7 @@ namespace CombatMaid.Core
             {
                 SetupInventory(preset, config.CustomItemIDs);
             }
-            
+
             preset.health *= CombatMaidConfig.HealthMultiplier;
             preset.damageMultiplier *= CombatMaidConfig.AttackMultiplier;
             preset.moveSpeedFactor *= CombatMaidConfig.MoveSpeedMultiplier;
@@ -513,22 +525,43 @@ namespace CombatMaid.Core
                         randomCount = new Vector2Int(1, 1),
                         randomFromPool = true,
                         itemPool = new RandomContainer<RandomItemGenerateDescription.Entry>(),
-                
+
                         // === 必须初始化的字段 ===
-                        tags = new RandomContainer<Tag>(),           // 初始化标签容器
-                        addtionalRequireTags = new List<Tag>(),      // 初始化额外需求标签列表
-                        excludeTags = new List<Tag>(),               // 初始化排除标签列表
-                        qualities = new RandomContainer<int>(),      // 初始化品质容器
+                        tags = new RandomContainer<Tag>(), // 初始化标签容器
+                        addtionalRequireTags = new List<Tag>(), // 初始化额外需求标签列表
+                        excludeTags = new List<Tag>(), // 初始化排除标签列表
+                        qualities = new RandomContainer<int>(), // 初始化品质容器
                     };
 
                     // 添加物品到池中
                     desc.itemPool.AddEntry(new RandomItemGenerateDescription.Entry { itemTypeID = id }, 100f);
-            
+
                     list.Add(desc);
                 }
             }
         }
+        
+        private void LoadSinglePreset(string path)
+        {
+            try
+            {
+                string jsonContent = File.ReadAllText(path);
+                var data = JsonConvert.DeserializeObject<MaidProfileData>(jsonContent);
 
+                if (data != null && !string.IsNullOrEmpty(data.ProfileName))
+                {
+                    if (!_maidProfiles.ContainsKey(data.ProfileName))
+                    {
+                        _maidProfiles.Add(data.ProfileName, data);
+                        CMDebug.Log($"已加载预设: {data.ProfileName} (来源: {Path.GetFileName(Path.GetDirectoryName(path))})");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                CMDebug.LogError($"解析失败 {Path.GetFileName(path)}: {ex.Message}");
+            }
+        }
         #endregion
 
         #region Debug函数
