@@ -41,7 +41,7 @@ namespace CombatMaid.Core.Items.Data
                     },
                     ShopMerchantId = MerchantIds.Mud,
                     ShopMaxStock = 2,
-                    ShopPriceFactor = 1.2f,
+                    ShopPriceFactor = 1f,
                     ShopPossibility = 1f,
                     ShopForceUnlock = false
                 },
@@ -52,7 +52,7 @@ namespace CombatMaid.Core.Items.Data
                     localizationDesc = "Item_VialMaid_I_Desc",
                     spritePath = "VialMaid_I.png",
 
-                    value = 2000,
+                    value = 5000,
                     weight = 1f,
                     maxStackCount = 3,
                     maxDurability = 0f,
@@ -84,7 +84,7 @@ namespace CombatMaid.Core.Items.Data
                     },
                     ShopMerchantId = MerchantIds.Mud,
                     ShopMaxStock = 6,
-                    ShopPriceFactor = 10f,
+                    ShopPriceFactor = 2f,
                     ShopPossibility = 1.0f,
                     ShopForceUnlock = false
                 },
@@ -95,7 +95,7 @@ namespace CombatMaid.Core.Items.Data
                     localizationDesc = "Item_VialMaid_II_Desc",
                     spritePath = "VialMaid_II.png",
 
-                    value = 5000,
+                    value = 15000,
                     weight = 1.2f,
                     maxStackCount = 2,
                     maxDurability = 0f,
@@ -127,7 +127,7 @@ namespace CombatMaid.Core.Items.Data
                     },
                     ShopMerchantId = MerchantIds.Mud,
                     ShopMaxStock = 2,
-                    ShopPriceFactor = 8f,
+                    ShopPriceFactor = 2f,
                     ShopPossibility = 1f,
                     ShopForceUnlock = false
                 },
@@ -138,7 +138,7 @@ namespace CombatMaid.Core.Items.Data
                     localizationDesc = "Item_VialMaid_III_Desc",
                     spritePath = "VialMaid_III.png",
 
-                    value = 10000,
+                    value = 40000,
                     weight = 1.5f,
                     maxStackCount = 1,
                     maxDurability = 0f,
@@ -170,7 +170,7 @@ namespace CombatMaid.Core.Items.Data
                     },
                     ShopMerchantId = MerchantIds.Mud,
                     ShopMaxStock = 1,
-                    ShopPriceFactor = 8f,
+                    ShopPriceFactor = 2f,
                     ShopPossibility = 1f,
                     ShopForceUnlock = false
                 },
