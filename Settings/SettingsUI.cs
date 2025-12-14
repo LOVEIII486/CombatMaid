@@ -82,7 +82,7 @@ namespace CombatMaid.Settings
                 CombatMaidConfig.Key_Bind_Passive,
                 LocalizationManager.GetText("Settings_Key_Passive"),
                 CombatMaidConfig.KeyPassive, 
-                KeyCode.N, 
+                KeyCode.Z, 
                 (v) => CombatMaidConfig.KeyPassive = v
             );
             

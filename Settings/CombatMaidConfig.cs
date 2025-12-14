@@ -77,7 +77,7 @@ namespace CombatMaid.Settings
         public static KeyCode KeyScavenge { get; set; } = KeyCode.L;
         public static KeyCode KeyDrop { get; set; } = KeyCode.K;
         public static KeyCode KeyInventoryManage { get; set; } = KeyCode.B;
-        public static KeyCode KeyPassive { get; set; } = KeyCode.N;
+        public static KeyCode KeyPassive { get; set; } = KeyCode.Z;
         
         // 自定义女仆配置
         public static string CustomMaidName { get; set; } = Default_CustomMaidName;
