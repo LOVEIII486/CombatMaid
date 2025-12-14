@@ -1,0 +1,98 @@
+key,value,version,sheet
+Item_VialMaid_I,Vial Maid Type-I,1.0,MaidItemName
+Item_VialMaid_I_Desc,"A temporary contract maid sealed in a magic container. Shatter the bottle in critical moments to summon emergency support for evacuation. A disposable, short-duration support unit.",1.0,MaidItemDescription
+Item_VialMaid_II,Vial Maid Type-II,1.0,MaidItemName
+Item_VialMaid_II_Desc,"A strike-force contract maid sealed in a reinforced container. More aggressive than Type-I, capable of rapidly cutting into the battlefield with high mobility. A reliable military-grade individual support unit.",1.0,MaidItemDescription
+Item_VialMaid_III,Vial Maid Type-III,1.0,MaidItemName
+Item_VialMaid_III_Desc,"A special-grade contract maid sealed in a Royal Mithril container. Boasts extremely high combat performance. Exorbitantly expensive, but in desperate situations, she is your solid last line of defense.",1.0,MaidItemDescription
+Item_MaidContractWineFox,Wine Fox Maid Contract,1.0,MaidItemName
+Item_MaidContractWineFox_Desc,"Summons the growth-type maid: Wine Fox. Built-in 2-minute cooldown. Summoning while Wine Fox is active refreshes her status.",1.0,MaidItemDescription
+Setting_HealthMultiplier,Health Multiplier,1.0,GeneralSettings
+Setting_AttackMultiplier,Attack Multiplier,1.0,GeneralSettings
+Setting_MoveSpeedMultiplier,Move Speed Multiplier,1.0,GeneralSettings
+Setting_Key_Move,Command: Tactical Move,1.0,KeyBindings
+Setting_Key_Heal,Command: Force Heal,1.0,KeyBindings
+Setting_Key_Hold,Command: Hold/Follow,1.0,KeyBindings
+Settings_CombatMaid_Group,Combat Maid Core Settings,1.0,Groups
+Settings_CombatMaid_Stats,Stat Multipliers,1.0,Groups
+Settings_CombatMaid_Keys,Key Bindings,1.0,Groups
+Settings_CombatMaid_Customize,"Customize Maid (Generate Wine Fox at least once first!)",1.0,Groups
+Settings_CustomMaidName,Custom Maid Name,1.0,CustomMaid
+Settings_CustomMaidModelID,"Custom Model ID (Digits only, leave empty for default)",1.0,CustomMaid
+Settings_OpenSaveFolder,"Maid Save Directory (Game Root)",1.0,CustomMaid
+Settings_OpenSaveFolderButton,Open Maid Config Folder,1.0,CustomMaid
+Setting_Key_Scavenge,Command: Scavenge Mode,1.0,KeyBindings
+Setting_Key_Drop,Command: Dump Loot,1.0,KeyBindings
+Buff_MaidBuff_Tear_Name,Armor Tear,1.0,Buffs
+Perk_Maid_Core,Wine Fox Maid Contract,2.2.2,Perks
+Perk_Maid_Core_Desc,"Grants the ability to summon the Wine Fox Maid.\nAfter forming a formal contract, Wine Fox will accompany the Master as a long-term tactical partner, sharing growth and fighting together, unlocking the exclusive Maid Tactical Tech Tree.\nUnlock Item: <color=#F3D38A>Wine Fox Contract</color> (Sold at Mud Shop).",2.2.2,Perks
+Perk_WineFox_Health_1,Reinforced Contract Body I,2.2.2,Perks
+Perk_WineFox_Health_1_Desc,"Strengthens Wine Fox's life core with contract power, giving her more stable battlefield endurance.\nMax Health <color=#FF8A8A>+20</color>.",2.2.2,Perks
+Perk_WineFox_Health_2,Reinforced Contract Body II,2.2.2,Perks
+Perk_WineFox_Health_2_Desc,"Further stabilizes the contract body, making Wine Fox's vitality more reliable during prolonged combat.\nMax Health <color=#FF8A8A>+20</color>.",2.2.2,Perks
+Perk_WineFox_Health_3,Reinforced Contract Body III,2.2.2,Perks
+Perk_WineFox_Health_3_Desc,"Enhances Wine Fox's core structure, elevating her vitality to a higher level.\nMax Health <color=#FF8A8A>+40</color>.",2.2.2,Perks
+Perk_WineFox_Dmg_1,Combat Contract Enhancement I,2.2.2,Perks
+Perk_WineFox_Dmg_2,Combat Contract Enhancement II,2.2.2,Perks
+Perk_WineFox_Dmg_3,Combat Contract Enhancement III,2.2.2,Perks
+Perk_Maid_SelfHeal,Self Heal,2.2.2,Perks
+Perk_Maid_SelfHeal_Desc,"Enables the maid to assess injuries and use medical items autonomously.\nAllows Wine Fox to self-repair based on tactical priority when injured.\nUnlock Item: <color=#F3D38A>Wine Fox Recovery Potion</color> (Sold at Frog Shop).",2.2.2,Perks
+Perk_Maid_Grenade,Grenade Skill,2.2.2,Perks
+Perk_Maid_Grenade_Desc,"Grants the maid tactical capability to use basic fragmentation grenades.\nCan throw grenades in combat to suppress target areas.\nUnlock Ability: <color=#F3D38A>Grenade Throw</color>.",2.2.2,Perks
+Perk_Bottle_Lv1,Vial Maid Type I,2.2.2,Perks
+Perk_Bottle_Lv1_Desc,"Unlocks the summoning of lowest-tier temporary contract Vial Maids.\nThis unit is an independent entity and does not inherit Wine Fox's stat bonuses.\nUnlock Item: <color=#F3D38A>Vial Maid Type I</color> (Sold at Mud Shop).",2.2.2,Perks
+Perk_Bottle_Lv2,Vial Maid Type II,2.2.2,Perks
+Perk_Bottle_Lv2_Desc,"Unlocks the mid-tier reinforced Vial Maid with higher combat capabilities.\nIndependent entity, does not inherit Wine Fox's growth stats.\nUnlock Item: <color=#F3D38A>Vial Maid Type II</color> (Sold at Mud Shop).",2.2.2,Perks
+Perk_Bottle_Lv3,Vial Maid Type III,2.2.2,Perks
+Perk_Bottle_Lv3_Desc,"Unlocks the highest-tier Puppet-class Vial Maid, possessing combat capabilities near the Royal Guard level.\nIndependent entity, does not inherit Wine Fox's growth stats.\nUnlock Item: <color=#F3D38A>Vial Maid Type III</color> (Sold at Mud Shop).",2.2.2,Perks
+Perk_WineFox_Health_4,Reinforced Contract Body IV,2.2.2,Perks
+Perk_WineFox_Health_4_Desc,"Expands the contract armor's protection range, synchronizing vitality and resistance improvements.\nMax Health <color=#FF8A8A>+50</color>, Physical Damage Reduction <color=#FF8A8A>-10%</color>.",2.2.2,Perks
+Perk_WineFox_Health_5,Reinforced Contract Body V,2.2.2,Perks
+Perk_WineFox_Health_5_Desc,"Forges the contract body into a high-tier Guardian form, allowing Wine Fox to fight steadily even in extreme environments.\nMax Health <color=#FF8A8A>+70</color>, Physical Damage Reduction <color=#FF8A8A>-20%</color>.",2.2.2,Perks
+Perk_Flexibility_1,Flexible Stance I,2.2.2,Perks
+Perk_Flexibility_1_Desc,"Improves basic movement rhythm.\nMaster~ I've started mobility training! This way I can follow you nimbly on the battlefield without getting left behind!\nMove Speed: <color=#7FE8D8>+10%</color>, unlocks Dash ability.",2.2.2,Perks
+Perk_Flexibility_2,Flexible Stance II,2.2.2,Perks
+Perk_Flexibility_2_Desc,"Enhances pace rhythm and turning coordination.\nI can run faster now, and my turning aim has become much smoother!\nMove Speed: <color=#7FE8D8>+10%</color>, Turn Speed: <color=#7FE8D8>+10%</color>.",2.2.2,Perks
+Perk_Flexibility_3,Flexible Stance III,2.2.2,Perks
+Perk_Flexibility_3_Desc,"Elevates mobility training to a tactical level.\nHehe~ Master, now I can maintain a steady posture even during high-speed movement!\nMove Speed: <color=#7FE8D8>+10%</color>, Turn Speed: <color=#7FE8D8>+20%</color>, unlocks Move & Shoot ability.",2.2.2,Perks
+Perk_WineFox_Dmg_1_Desc,"Initially releases Wine Fox's combat potential, improving hit efficiency at medium-to-long ranges.\nDamage <color=#FFC572>+10%</color>.",2.2.2,Perks
+Perk_WineFox_Dmg_2_Desc,"Optimizes firepower and ballistic calculations for more stable output at medium-to-long ranges.\nDamage <color=#FFC572>+5%</color>, Bullet Speed <color=#FFC572>+10%</color>.",2.2.2,Perks
+Perk_WineFox_Dmg_3_Desc,"Upgrades combat ballistic modules to maintain reliable output at greater distances.\nDamage <color=#FFC572>+5%</color>, Range <color=#FFC572>+15%</color>.",2.2.2,Perks
+Perk_WineFox_Dmg_4,Combat Contract Enhancement IV,2.2.2,Perks
+Perk_WineFox_Dmg_4_Desc,"Elevates overall firepower training to Precision Shooting Course level.\nDamage <color=#FFC572>+10%</color>, Crit Rate <color=#FFC572>+5%</color>, Spread <color=#FFC572>-10%</color>, Spread Penalty <color=#FFC572>-10%</color>.",2.2.2,Perks
+Perk_WineFox_Dmg_5,Combat Contract Enhancement V,2.2.2,Perks
+Perk_WineFox_Dmg_5_Desc,"Completes the final stage of combat contract enhancement, allowing Wine Fox to achieve high-tier shooting performance.\nDamage <color=#FFC572>+10%</color>, Crit Rate <color=#FFC572>+10%</color>, Spread <color=#FFC572>-10%</color>, Spread Penalty <color=#FFC572>-10%</color>.",2.2.2,Perks
+Perk_Maid_Flashbang,Flashbang Support,2.2.2,Perks
+Perk_Maid_Flashbang_Desc,"Grants the maid tactics for using dedicated flashbangs.\nCan rapidly disrupt enemy vision during firefights, helping the Master create safe windows for attacking or retreating.\nUnlock Ability: <color=#F3D38A>Flashbang Throw</color>.",2.2.2,Perks
+Perk_Maid_Buff,Buff Support Contract,2.2.2,Perks
+Perk_Maid_Buff_Desc,"Automatically applies random support Buff effects.\nAfter signing the Buff Support Contract, Wine Fox will periodically cast random enhancement spells on the Master to make the adventure easier~",2.2.2,Perks
+Perk_Maid_BuffPack_1,Buff Expansion Pack I,2.2.2,Perks
+Perk_Maid_BuffPack_1_Desc,"Expands the combination of buffs the maid can cast.\nWine Fox can now provide more mobility assistance when supporting the Master.\nUnlock Support Buffs: <color=#F3D38A>Haste, Carry Weight, Stamina</color>.",2.2.2,Perks
+Perk_Maid_BuffPack_2,Buff Expansion Pack II,2.2.2,Perks
+Perk_Maid_BuffPack_2_Desc,"Further expands the maid's combat buff spells.\nWine Fox can cast more recovery and defensive bonuses for the Master.\nUnlock Support Buffs: <color=#F3D38A>Regen, Harden, Calm, Strong Wing</color>.",2.2.2,Perks
+Perk_Maid_EmergencyHeal,Field Emergency Aid Protocol,2.2.2,Perks
+Perk_Maid_EmergencyHeal_Desc,"Unlocks [Emergency Heal] skill.\nWhen the Master or Wine Fox's HP drops below 30%, she will immediately activate emergency protocols to apply a powerful regeneration effect.\nCooldown: <color=#7FE8D8>120s</color>.",2.2.2,Perks
+SkillTree_MaidTech_Name,Combat Maid Skill Tree,2.2.2,Perks
+SkillTree_MaidTech_Desc,"Permanently enhance maid attributes and unlock powerful contract skills.",2.2.2,Perks
+Perk_Maid_Element,Elemental Grenade Support,2.2.2,Perks
+Perk_Maid_Element_Desc,"Unlocks Elemental Grenade throwing ability.\nWine Fox will master multi-element tactical throwing spells, enabling the use of [Fire], [Shock], and [Poison] grenades.",2.2.2,Perks
+Perk_Maid_TeaBreak,Wine Fox's Tea Break,2.2.3,Perks
+Perk_Maid_TeaBreak_Desc,"Unlocks [Tea Break] skill.\nWhen out of combat, I will prepare tea and snacks to calm the Master's mind and replenish hydration and energy!\nCooldown: <color=#F3D38A>120s</color>.",2.2.3,Perks
+Item_RecoveryPotion,Wine Fox Royal Recovery Potion,2.2.3,MaidItemName
+Item_RecoveryPotion_Desc,"A recovery potion brewed by Wine Fox using secret arts, designed to rapidly repair damaged magical bodies and life cores.\n\n<color=#FFFF00>Effect:</color> Restores 40% Max HP and removes all trauma statuses.",2.2.3,MaidItemDescription
+Perk_Maid_BackpackAccess_Title,Wine Fox's Tactical Backpack,2.2.3,Perks
+Perk_Maid_BackpackAccess_Desc,"Unlocks [Wine Fox Inventory Management].\nMaster~ Come closer and press <color=#F3D38A>B</color>, I'll open my bag for you to organize right away~\n<color=#FF6A4A>Warning! Mod conflicts may cause valuable items to vanish... so please don't store precious items on me...</color>\n<color=#7FFFB5>Tip: My inventory is now persistent and won't be lost when changing scenes!</color>",2.2.3,Perks
+Perk_Backpack_1,Spare Pocket,2.2.3,Perks
+Perk_Backpack_1_Desc,"Increases inventory capacity.\nMaster~ You can trust me with slightly heavier things now! I've quietly sewn a few cute secret pockets on the inside of my maid outfit!\nBackpack Capacity: <color=#F3D38A>+10</color>",2.2.3,Perks
+Perk_Backpack_2,Custom Large Backpack,2.2.3,Perks
+Perk_Backpack_2_Desc,"Further increases inventory capacity.\nTo be more helpful to Master during long adventures, I've switched to a custom backpack with larger capacity!\nBackpack Capacity: <color=#F3D38A>+10</color>",2.2.3,Perks
+Perk_Backpack_3,Magical Tactical Bag,2.2.3,Perks
+Perk_Backpack_3_Desc,"Significantly increases inventory capacity.\nHehe~ Look Master, with just a tiny bit of magic, fitting lots of loot inside is absolutely no problem♪\nBackpack Capacity: <color=#F3D38A>+10</color>",2.2.3,Perks
+Setting_Key_InvManage,Command: Manage Inventory,2.2.3,KeyBindings
+Settings_BuffBlockList,"Banned Buff List (IDs separated by commas)",2.2.3,GeneralSettings
+Settings_Key_Passive,Command: Toggle Passive Mode,2.2.3,KeyBindings
+Settings_LootMinValue,Min Scavenge Value,2.2.3,GeneralSettings
+Settings_Group_AI,AI Intelligence Settings,2.2.3,Groups
+Settings_IgnoreSearched,Ignore Searched Containers,2.2.3,GeneralSettings
+Settings_MaidAlertVolume,Maid Alert Voice Volume,2.2.3,GeneralSettings
+Settings_EnableElementalGrenades,Enable Elemental Grenades,2.2.3,GeneralSettings
