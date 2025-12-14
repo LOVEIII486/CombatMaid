@@ -416,17 +416,42 @@ namespace CombatMaid.Core
             preset.nameKey = finalKey;
             preset.team = Teams.player;
 
-            // 动态注册本地化名称
+            // 注册本地化名称
             string displayName = !string.IsNullOrEmpty(config.CustomName) ? config.CustomName : "战斗女仆";
-            if (LocalizationManager.overrideTexts != null)
-            {
-                LocalizationManager.overrideTexts[finalKey] = displayName;
-            }
+            LocalizationManager.SetOverrideText(finalKey,displayName);
 
             ApplyConfigToPreset(preset, config);
+            // 给瓶中女仆默认强制加一个医疗箱
+            if (profileName.IndexOf("Vial", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                AppendItemToPreset(preset, 15);
+            }
             _generatedPresetsCache.Add(finalKey, preset);
 
             return preset;
+        }
+        
+        private void AppendItemToPreset(CharacterRandomPreset preset, int itemId)
+        {
+            var list = ReflectionHelper.GetPrivateField<IList>(preset, "itemsToGenerate");
+            if (list == null) return;
+
+            // 构建物品生成描述
+            var desc = new RandomItemGenerateDescription
+            {
+                chance = 1f,
+                randomCount = new Vector2Int(1, 1),
+                randomFromPool = true,
+                itemPool = new RandomContainer<RandomItemGenerateDescription.Entry>(),
+                tags = new RandomContainer<Tag>(), 
+                addtionalRequireTags = new List<Tag>(),
+                excludeTags = new List<Tag>(),
+                qualities = new RandomContainer<int>(),
+            };
+            desc.itemPool.AddEntry(new RandomItemGenerateDescription.Entry { itemTypeID = itemId }, 100f);
+            list.Add(desc);
+            
+            CMDebug.Log($"[MaidSpawner] 已强制为 {preset.name} 追加物品 ID: {itemId}");
         }
 
         private void ApplyConfigToPreset(CharacterRandomPreset preset, MaidConfig config)
