@@ -140,7 +140,6 @@ namespace CombatMaid
         private void InitializeMaidBuffSystem()
         {
             MaidBuffRegistry.Instance.Initialize();
-            // MaidBuffModifierManager.Instance.Initialize(); // 目前它是懒加载的，不强制调用
         }
 
         private void CleanupMaidBuffSystem()

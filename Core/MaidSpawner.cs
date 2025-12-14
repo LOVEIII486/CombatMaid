@@ -87,6 +87,9 @@ namespace CombatMaid.Core
 
             // 获取游戏原生预设数据
             while (GameplayDataSettings.CharacterRandomPresetData == null) yield return null;
+            
+            CMDebug.LogInfo("正在预热 Buff 系统缓存...");
+            CombatMaid.Core.BuffsSystem.MaidBuffUtils.Initialize();
 
             var allPresets = GameplayDataSettings.CharacterRandomPresetData.presets;
             _gameNativePresetMap.Clear();
