@@ -34,6 +34,7 @@ namespace CombatMaid.Settings
         // 高级AI配置
         public const string Key_LootMinVal = "LootMinValue";
         public const string Key_IgnoreSearched = "IgnoreSearched";
+        public const string Key_EnableElementalGrenades = "EnableElementalGrenades";
         
         // ==================== 本地化 Key ====================
         
@@ -62,6 +63,7 @@ namespace CombatMaid.Settings
         private const string Default_BuffBlockList = "";
         
         private const int Default_LootMinVal = 0;
+        private const bool Default_EnableElementalGrenades = true;
 
         // ==================== 静态变量 ====================
         
@@ -86,6 +88,7 @@ namespace CombatMaid.Settings
         // 高级AI配置
         public static int LootMinVal { get; set; } = Default_LootMinVal;
         public static bool IgnoreSearched { get; set; } = true;
+        public static bool EnableElementalGrenades { get; set; } = Default_EnableElementalGrenades;
     
         // [新增] 解析后的黑名单集合，用于游戏逻辑快速查询
         public static HashSet<int> BlockedBuffIDs { get; private set; } = new HashSet<int>();
@@ -313,6 +316,10 @@ namespace CombatMaid.Settings
             if (ModSettingAPI.GetSavedValue(Key_IgnoreSearched, out bool savedIgnore))
             {
                 IgnoreSearched = savedIgnore;
+            }
+            if (ModSettingAPI.GetSavedValue(Key_EnableElementalGrenades, out bool savedEnableElem))
+            {
+                EnableElementalGrenades = savedEnableElem;
             }
             
             if (ModSettingAPI.GetSavedValue(Key_MaidAlertVolume, out float savedVol))

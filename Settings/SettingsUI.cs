@@ -108,6 +108,15 @@ namespace CombatMaid.Settings
                     CombatMaidConfig.IgnoreSearched = value;
                 }
             );
+            ModSettingAPI.AddToggle(
+                CombatMaidConfig.Key_EnableElementalGrenades,
+                LocalizationManager.GetText("Settings_EnableElementalGrenades"), 
+                CombatMaidConfig.EnableElementalGrenades,
+                (value) => 
+                {
+                    CombatMaidConfig.EnableElementalGrenades = value;
+                }
+            );
 
             // ==================== 3. 自定义女仆配置 ====================
 
@@ -190,7 +199,8 @@ namespace CombatMaid.Settings
                 new List<string>
                 {
                     CombatMaidConfig.Key_LootMinVal,
-                    CombatMaidConfig.Key_IgnoreSearched
+                    CombatMaidConfig.Key_IgnoreSearched,
+                    CombatMaidConfig.Key_EnableElementalGrenades
                 },
                 0.7f, false, false
             );

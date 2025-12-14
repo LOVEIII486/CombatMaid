@@ -95,3 +95,4 @@ Settings_LootMinValue,最低搜刮价值,2.2.3,GeneralSettings
 Settings_Group_AI,AI 智能设置,2.2.3,Groups
 Settings_IgnoreSearched,忽略已搜索容器,2.2.3,GeneralSettings
 Settings_MaidAlertVolume,女仆警觉语音音量,2.2.3,GeneralSettings
+Settings_EnableElementalGrenades,允许投掷元素手雷,2.2.3,GeneralSettings

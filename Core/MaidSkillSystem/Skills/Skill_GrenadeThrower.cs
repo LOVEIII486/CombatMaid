@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using CombatMaid.Core.MaidSkillSystem;
+using CombatMaid.Settings;
 
 namespace CombatMaid.Core.MaidSkillSystem.Skills
 {
@@ -15,6 +16,8 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
         private readonly List<int> _grenadePool;
         private float _throwRange = 25.0f;
         private float _minRange = 5.0f;
+        
+        private readonly HashSet<int> _elementalGrenadeIds = new HashSet<int> { 933, 941, 942 };
 
         public Skill_GrenadeThrower(List<int> grenadeIds) 
         {
@@ -48,7 +51,29 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
                 CMDebug.LogWarning($"[{SkillName}] 手雷配置列表为空，无法执行技能");
                 return false;
             }
-
+            
+            List<int> validGrenades;
+            if (CombatMaidConfig.EnableElementalGrenades)
+            {
+                validGrenades = _grenadePool;
+            }
+            else
+            {
+                validGrenades = new List<int>();
+                foreach (var id in _grenadePool)
+                {
+                    if (!_elementalGrenadeIds.Contains(id))
+                    {
+                        validGrenades.Add(id);
+                    }
+                }
+            }
+            
+            if (validGrenades.Count == 0)
+            {
+                return false; 
+            }
+            
             // 随机选取一个手雷 ID
             int index = Random.Range(0, _grenadePool.Count);
             int selectedItemId = _grenadePool[index];
