@@ -288,7 +288,7 @@ namespace CombatMaid.Localization
                 case SystemLanguage.ChineseSimplified:
                     return "ChineseSimplified.csv";
                 case SystemLanguage.ChineseTraditional:
-                    return "ChineseTraditional.csv";
+                    return "ChineseSimplified.csv"; // 临时使用中文简体
                 case SystemLanguage.English:
                     return "English.csv";
                 case SystemLanguage.Japanese:
