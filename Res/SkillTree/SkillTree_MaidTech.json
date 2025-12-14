@@ -485,6 +485,226 @@
       ]
     },
     {
+      "//": "========== 右侧子分支：精准射击 (x: 380) ==========",
+      "ID": "maid_combat_scatter_1",
+      "DisplayName": "Perk_Combat_Scatter_1",
+      "Description": "Perk_Combat_Scatter_1_Desc",
+      "IconFileName": "perk_scatter.png",
+      "CostMoney": 3000,
+      "CostItems": {
+        "509": 1,
+        "515": 1,
+        "85": 3
+      },
+      "RequiredLevel": 8,
+      "Position": {
+        "x": 380,
+        "y": 230
+      },
+      "PrerequisiteIDs": [
+        "maid_combat_dmg_1"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "MultiplyAttribute",
+          "Attribute": "GunScatterMultiplier",
+          "Value": 0.8
+        },
+        {
+          "Type": "MultiplyAttribute",
+          "Attribute": "ScatterMultiIfTargetRunning",
+          "Value": 0.8
+        },
+        {
+          "Type": "MultiplyAttribute",
+          "Attribute": "ScatterMultiIfOffScreen",
+          "Value": 0.8
+        }
+      ]
+    },
+    {
+      "ID": "maid_combat_scatter_2",
+      "DisplayName": "Perk_Combat_Scatter_2",
+      "Description": "Perk_Combat_Scatter_2_Desc",
+      "IconFileName": "perk_scatter.png",
+      "CostMoney": 6000,
+      "CostItems": {
+        "457": 1,
+        "510": 1,
+        "872": 2
+      },
+      "RequiredLevel": 14,
+      "Position": {
+        "x": 380,
+        "y": 380
+      },
+      "PrerequisiteIDs": [
+        "maid_combat_scatter_1"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "MultiplyAttribute",
+          "Attribute": "GunScatterMultiplier",
+          "Value": 0.8
+        },
+        {
+          "Type": "MultiplyAttribute",
+          "Attribute": "ScatterMultiIfTargetRunning",
+          "Value": 0.8
+        },
+        {
+          "Type": "MultiplyAttribute",
+          "Attribute": "ScatterMultiIfOffScreen",
+          "Value": 0.8
+        }
+      ]
+    },
+    {
+      "ID": "maid_combat_scatter_3",
+      "DisplayName": "Perk_Combat_Scatter_3",
+      "Description": "Perk_Combat_Scatter_3_Desc",
+      "IconFileName": "perk_scatter.png",
+      "CostMoney": 10000,
+      "CostItems": {
+        "977": 1,
+        "459": 1,
+        "458": 2
+      },
+      "RequiredLevel": 17,
+      "Position": {
+        "x": 380,
+        "y": 530
+      },
+      "PrerequisiteIDs": [
+        "maid_combat_scatter_2"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "MultiplyAttribute",
+          "Attribute": "GunScatterMultiplier",
+          "Value": 0.7
+        },
+        {
+          "Type": "MultiplyAttribute",
+          "Attribute": "ScatterMultiIfTargetRunning",
+          "Value": 0.7
+        },
+        {
+          "Type": "MultiplyAttribute",
+          "Attribute": "ScatterMultiIfOffScreen",
+          "Value": 0.7
+        }
+      ]
+    },
+    {
+      "//": "========== 左侧子分支：侦察视野 (x: -380) ==========",
+      "ID": "maid_combat_sight_1",
+      "DisplayName": "Perk_Combat_Sight_1",
+      "Description": "Perk_Combat_Sight_1_Desc",
+      "IconFileName": "perk_sight.png",
+      "CostMoney": 3000,
+      "CostItems": {
+        "133": 5,
+        "99": 2,
+        "138": 1
+      },
+      "RequiredLevel": 8,
+      "Position": {
+        "x": 180,
+        "y": 230
+      },
+      "PrerequisiteIDs": [
+        "maid_combat_dmg_1"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "AddAttribute",
+          "Attribute": "SightDistance",
+          "Value": 5.0
+        },
+        {
+          "Type": "AddAttribute",
+          "Attribute": "SightAngle",
+          "Value": 15.0
+        }
+      ]
+    },
+    {
+      "ID": "maid_combat_sight_2",
+      "DisplayName": "Perk_Combat_Sight_2",
+      "Description": "Perk_Combat_Sight_2_Desc",
+      "IconFileName": "perk_sight.png",
+      "CostMoney": 6000,
+      "CostItems": {
+        "758": 1,
+        "339": 5,
+        "973": 1
+      },
+      "RequiredLevel": 14,
+      "Position": {
+        "x": 180,
+        "y": 380
+      },
+      "PrerequisiteIDs": [
+        "maid_combat_sight_1"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "AddAttribute",
+          "Attribute": "SightDistance",
+          "Value": 6.0
+        },
+        {
+          "Type": "AddAttribute",
+          "Attribute": "SightAngle",
+          "Value": 25.0
+        }
+      ]
+    },
+    {
+      "ID": "maid_combat_sight_3",
+      "DisplayName": "Perk_Combat_Sight_3",
+      "Description": "Perk_Combat_Sight_3_Desc",
+      "IconFileName": "perk_sight.png",
+      "CostMoney": 10000,
+      "CostItems": {
+        "718": 1,
+        "1233": 3,
+        "1236": 3
+      },
+      "RequiredLevel": 17,
+      "Position": {
+        "x": 180,
+        "y": 530
+      },
+      "PrerequisiteIDs": [
+        "maid_combat_sight_2"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "AddAttribute",
+          "Attribute": "SightDistance",
+          "Value": 7.0
+        },
+        {
+          "Type": "AddAttribute",
+          "Attribute": "SightAngle",
+          "Value": 35.0
+        },
+        {
+          "Type": "AddAttribute",
+          "Attribute": "NightVisionAbility",
+          "Value": 0.5
+        }
+      ]
+    },
+    {
       "//": "========== 分支3：主动技能 (x: 60) ==========",
       "ID": "maid_skill_selfheal",
       "DisplayName": "Perk_Maid_SelfHeal",

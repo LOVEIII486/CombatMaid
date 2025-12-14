@@ -96,3 +96,15 @@ Settings_Group_AI,AI Intelligence Settings,2.2.3,Groups
 Settings_IgnoreSearched,Ignore Searched Containers,2.2.3,GeneralSettings
 Settings_MaidAlertVolume,Maid Alert Voice Volume,2.2.3,GeneralSettings
 Settings_EnableElementalGrenades,Enable Elemental Grenades,2.2.3,GeneralSettings
+Perk_Combat_Scatter_1,Precision Shooting I,2.2.3,Perks
+Perk_Combat_Scatter_1_Desc,Improves Wine Fox's firearm precision  reducing firing spread.\n\nSpread <color=#FFC572>-20%</color>\nMoving Spread <color=#FFC572>-20%</color>\nBlind Fire Spread <color=#FFC572>-20%</color>,2.2.3,Perks
+Perk_Combat_Scatter_2,Precision Shooting II,2.2.3,Perks
+Perk_Combat_Scatter_2_Desc,Further improves firearm precision  stabilizing long-range shots.\n\nSpread <color=#FFC572>Extra -20%</color>\nMoving Spread <color=#FFC572>Extra -20%</color>\nBlind Fire Spread <color=#FFC572>Extra -20%</color>,2.2.3,Perks
+Perk_Combat_Scatter_3,Precision Shooting III,2.2.3,Perks
+Perk_Combat_Scatter_3_Desc,Precision reaches its peak; bullets fly accurately like lasers.\n\nSpread <color=#FFC572>Extra -30%</color>\nMoving Spread <color=#FFC572>Extra -30%</color>\nBlind Fire Spread <color=#FFC572>Extra -30%</color>,2.2.3,Perks
+Perk_Combat_Sight_1,Fox Eyes I,2.2.3,Perks
+Perk_Combat_Sight_1_Desc,Enhances basic environmental awareness to detect threats earlier.\n\nView Distance <color=#7FE8D8>+5m</color>\nView Angle <color=#7FE8D8>+15°</color>,2.2.3,Perks
+Perk_Combat_Sight_2,Fox Eyes II,2.2.3,Perks
+Perk_Combat_Sight_2_Desc,Strengthens dynamic visual capture significantly expanding enemy detection range.\n\nView Distance <color=#7FE8D8>+6m</color>\nView Angle <color=#7FE8D8>+25°</color>,2.2.3,Perks
+Perk_Combat_Sight_3,Fox Eyes III,2.2.3,Perks
+Perk_Combat_Sight_3_Desc,Ultimate reconnaissance perception capable of seeing through darkness.\n\nView Distance <color=#7FE8D8>+7m</color>\nView Angle <color=#7FE8D8>+35°</color>\nUnlocks Night Vision,2.2.3,Perks

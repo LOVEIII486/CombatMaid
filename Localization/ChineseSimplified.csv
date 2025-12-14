@@ -96,3 +96,15 @@ Settings_Group_AI,AI 智能设置,2.2.3,Groups
 Settings_IgnoreSearched,忽略已搜索容器,2.2.3,GeneralSettings
 Settings_MaidAlertVolume,女仆警觉语音音量,2.2.3,GeneralSettings
 Settings_EnableElementalGrenades,允许投掷元素手雷,2.2.3,GeneralSettings
+Perk_Combat_Scatter_1,精确射击 I,2.2.3,Perks
+Perk_Combat_Scatter_1_Desc,提升酒狐的枪械精准度，减少开火散布。\n\n散布范围 <color=#FFC572>-20%</color>\n移动射击散布 <color=#FFC572>-20%</color>\n盲射散布 <color=#FFC572>-20%</color>,2.2.3,Perks
+Perk_Combat_Scatter_2,精确射击 II,2.2.3,Perks
+Perk_Combat_Scatter_2_Desc,进一步提升枪械精准度，远距离射击更稳定。\n\n散布范围 <color=#FFC572>额外-20%</color>\n移动射击散布 <color=#FFC572>额外-20%</color>\n盲射散布 <color=#FFC572>额外-20%</color>,2.2.3,Perks
+Perk_Combat_Scatter_3,精确射击 III,2.2.3,Perks
+Perk_Combat_Scatter_3_Desc,精确射击达到极致，枪械子弹如同激光般精准。\n\n散布范围 <color=#FFC572>额外-30%</color>\n移动射击散布 <color=#FFC572>额外-30%</color>\n盲射散布 <color=#FFC572>额外-30%</color>,2.2.3,Perks
+Perk_Combat_Sight_1,灵狐瞳 I,2.2.3,Perks
+Perk_Combat_Sight_1_Desc,提升基础的环境感知能力，能更早发现附近的威胁。\n\n视野距离 <color=#7FE8D8>+5米</color>\n视野角度 <color=#7FE8D8>+15度</color>,2.2.3,Perks
+Perk_Combat_Sight_2,灵狐瞳 II,2.2.3,Perks
+Perk_Combat_Sight_2_Desc,强化动态视觉捕捉，大幅扩大索敌范围。\n\n视野距离 <color=#7FE8D8>+6米</color>\n视野角度 <color=#7FE8D8>+25度</color>,2.2.3,Perks
+Perk_Combat_Sight_3,灵狐瞳 III,2.2.3,Perks
+Perk_Combat_Sight_3_Desc,极限的侦察感知能力，即使在黑夜中也能洞察秋毫。\n\n视野距离 <color=#7FE8D8>+7米</color>\n视野角度 <color=#7FE8D8>+35度</color>\n获得夜视能力,2.2.3,Perks
