@@ -31,10 +31,10 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
             float hpPercent = Owner.Health.CurrentHealth / Owner.Health.MaxHealth;
             if (hpPercent >= HealthThreshold) return false;
             
-            // 紧急情况：血量低于 30%，无视状态直接吃药保命
-            if (hpPercent < 0.3f) return true;
+            // 紧急情况：血量低于 15%，无视状态直接吃药保命
+            if (hpPercent < 0.15f) return true;
 
-            // 非紧急情况（30%~70%）：如果有攻击目标则暂不吃药
+            // 非紧急情况（15%~70%）：如果有攻击目标则暂不吃药
             if (Controller.AI.aimTarget != null) return false;
 
             return true;
