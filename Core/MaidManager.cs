@@ -375,6 +375,8 @@ namespace CombatMaid.Core
                     // 可选：给玩家发个提示
                     var player = CharacterMainControl.Main;
                     if (player != null) player.PopText("正在重载技能树...");
+                    
+                    CombatMaid.Localization.LocalizationManager.HotReloadLocalization();
                 }
             }
             
@@ -393,8 +395,18 @@ namespace CombatMaid.Core
                     MaidSpawner.Instance.DebugExportReferenceStats();
                 }
             }
-
-            CombatMaid.Localization.LocalizationManager.HotReloadLocalization();
+            
+            if (Input.GetKeyDown(KeyCode.F2))
+            {
+                foreach (var maid in _activeMaids)
+                {
+                    if (maid != null)
+                    {
+                        maid.DebugPrintMaidStatus();
+                    }
+                }
+            }
+            
         }
 
         #endregion

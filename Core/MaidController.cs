@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 using Duckov.Modding;
 using CombatMaid.Core.MaidFSM;
@@ -486,6 +487,41 @@ namespace CombatMaid.Core
                 }
             }
             CMDebug.Log("=======================================");
+        }
+        
+        public void DebugPrintMaidStatus()
+        {
+            // 安全检查
+            if (MaidCharacter == null || MaidCharacter.Health == null) return;
+
+            var sb = new StringBuilder();
+            var h = MaidCharacter.Health;
+
+            sb.AppendLine($"========== 女仆 [{MaidCharacter.name}] 状态监控 ==========");
+            
+            // 1. 基础生存
+            sb.Append($"[生命]: {h.CurrentHealth:F1} / {h.MaxHealth:F1}");
+            sb.AppendLine(h.Invincible ? " (无敌状态)" : "");
+            
+            sb.AppendLine($"[水分]: {MaidCharacter.CurrentWater:F1} / {MaidCharacter.MaxWater:F1}");
+            sb.AppendLine($"[能量]: {MaidCharacter.CurrentEnergy:F1} / {MaidCharacter.MaxEnergy:F1}");
+            sb.AppendLine($"[体力]: {MaidCharacter.CurrentStamina:F1} / {MaidCharacter.MaxStamina:F1}");
+
+            // 2. 防御属性 (来自 Health 类)
+            sb.AppendLine($"[护甲]: 头盔防护[{h.HeadArmor:F1}] | 身体防护[{h.BodyArmor:F1}]");
+
+            // 3. 战斗状态
+            sb.AppendLine($"[战斗]: 攻击倍率[{MaidCharacter.GunDamageMultiplier:F2}] | 移速[{MaidCharacter.CharacterMoveability:F2}]");
+            
+            // 4. 当前AI行为
+            string stateName = StateMachine?.CurrentState != null ? StateMachine.CurrentState.GetType().Name : "无状态";
+            sb.AppendLine($"[AI状态]: {stateName}");
+            
+            // 打印日志
+            CMDebug.Log(sb.ToString());
+            
+            // 游戏内浮动提示，方便直观确认
+            MaidCharacter.PopText("属性已输出到日志", 2.0f);
         }
     }
 }
