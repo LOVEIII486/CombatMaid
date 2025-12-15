@@ -4,10 +4,8 @@ using CombatMaid.Core.BuffsSystem;
 using CombatMaid.Core.Items.Logic;
 using CombatMaid.Core.SkillTreeSystem;
 using HarmonyLib;
-using Duckov.Modding;
 using CombatMaid.Localization;
 using CombatMaid.ModSettingsApi;
-using FastModdingLib;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -32,6 +30,12 @@ namespace CombatMaid
             {
                 CMDebug.LogError($"模组启动失败: 缺少 Harmony 依赖。");
                 return;
+            }
+            
+            if (!IsFmlLoaded())
+            {
+                CMDebug.LogError("模组启动失败: 未检测到 FastModdingLib (FML) 前置模组！请确保已安装并启用。");
+                return; 
             }
             
             InitializeHarmonyPatches();
@@ -92,6 +96,18 @@ namespace CombatMaid
             CleanupMaidBuffSystem();
             CleanupMaidSystem();
             CleanupSkillTreeSystem();
+        }
+        
+        private bool IsFmlLoaded()
+        {
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                if (assembly.GetName().Name.Contains("FastModdingLib"))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         #region MaidItem
