@@ -164,11 +164,12 @@ namespace CombatMaid.Core.CustomModel
                 _changeMethod = _modelHandlerType.GetMethod("ChangeToCustomModel");
 
                 _aiTargetEnumValue = Enum.Parse(targetEnum, "AICharacter");
-
+                
                 if (_bundlesField != null && _findMethod != null && _initMethod != null)
                 {
                     _isModAvailable = true;
                     CMDebug.Log($"模组连接成功");
+                    CustomModelAudioPatcher.Initialize(); 
                 }
             }
             catch { /* 忽略反射错误，视为未安装模组 */ }

@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using CombatMaid.Core;
+using CombatMaid.Core.CustomModel;
 using CombatMaid.Core.WineFox;
 
 namespace CombatMaid.Settings
@@ -30,6 +31,7 @@ namespace CombatMaid.Settings
         public const string Key_CustomMaidModelID = "CustomMaidModelID";
         public const string Key_BuffBlockList = "BuffBlockList";
         public const string Key_MaidAlertVolume = "MaidAlertVolume";
+        public const string Key_MaidVoiceVolume = "MaidVoiceVolume";
         
         // 高级AI配置
         public const string Key_LootMinVal = "LootMinValue";
@@ -50,6 +52,7 @@ namespace CombatMaid.Settings
         public const string LocalKey_OpenSaveFolderButton = "Settings_OpenSaveFolderButton";
         public const string LocalKey_BuffBlockList = "Settings_BuffBlockList";
         public const string LocalKey_MaidAlertVolume = "Settings_MaidAlertVolume";
+        public const string LocalKey_MaidVoiceVolume = "Settings_MaidVoiceVolume";
 
         // ==================== 默认值 ====================
         
@@ -60,6 +63,7 @@ namespace CombatMaid.Settings
         private const string Default_CustomMaidName = "";
         private const string Default_CustomMaidModelID = "";
         private const float Default_MaidAlertVolume = 0.5f;
+        private const float Default_MaidVoiceVolume = 1.0f;
         private const string Default_BuffBlockList = "";
         
         private const int Default_LootMinVal = 0;
@@ -83,6 +87,7 @@ namespace CombatMaid.Settings
         public static string CustomMaidName { get; set; } = Default_CustomMaidName;
         public static string CustomMaidModelID { get; set; } = Default_CustomMaidModelID;
         public static float MaidAlertVolume { get; set; } = Default_MaidAlertVolume;
+        public static float MaidVoiceVolume { get; set; } = Default_MaidVoiceVolume;
         public static string BuffBlockListString { get; set; } = Default_BuffBlockList;
         
         // 高级AI配置
@@ -299,6 +304,20 @@ namespace CombatMaid.Settings
                 CustomMaidModelID = savedModelId;
                 hasModSettingValues = true;
             }
+            if (ModSettingAPI.GetSavedValue(Key_MaidAlertVolume, out float savedAlertVol))
+            {
+                MaidAlertVolume = savedAlertVol;
+            }
+            if (ModSettingAPI.GetSavedValue(Key_MaidVoiceVolume, out float savedVol))
+            {
+                MaidVoiceVolume = Mathf.Clamp01(savedVol);
+            }
+            else
+            {
+                MaidVoiceVolume = Default_MaidVoiceVolume;
+            }
+            CustomModelAudioPatcher.GlobalMaidVolume = MaidVoiceVolume;
+            
             
             if (ModSettingAPI.GetSavedValue(Key_BuffBlockList, out string savedBlockList))
             {
@@ -322,10 +341,7 @@ namespace CombatMaid.Settings
                 EnableElementalGrenades = savedEnableElem;
             }
             
-            if (ModSettingAPI.GetSavedValue(Key_MaidAlertVolume, out float savedVol))
-            {
-                MaidAlertVolume = savedVol;
-            }
+
             
             if (!hasModSettingValues || 
                 (string.IsNullOrEmpty(CustomMaidName) && 

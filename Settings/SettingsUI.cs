@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using CombatMaid.Core.CustomModel;
 using CombatMaid.Localization;
 using CombatMaid.ModSettingsApi;
 using CombatMaid.Core.WineFox;
@@ -148,6 +149,20 @@ namespace CombatMaid.Settings
                 2
             );
             
+            ModSettingAPI.AddSlider(
+                CombatMaidConfig.Key_MaidVoiceVolume,
+                LocalizationManager.GetText(CombatMaidConfig.LocalKey_MaidVoiceVolume),
+                CombatMaidConfig.MaidVoiceVolume,
+                new Vector2(0.0f, 1.0f),
+                (value) => 
+                {
+                    CombatMaidConfig.MaidVoiceVolume = value;
+                    CustomModelAudioPatcher.GlobalMaidVolume = value;
+                },
+                2,
+                5
+            );
+            
             ModSettingAPI.AddInput(
                 CombatMaidConfig.Key_BuffBlockList,
                 LocalizationManager.GetText(CombatMaidConfig.LocalKey_BuffBlockList), 
@@ -213,6 +228,7 @@ namespace CombatMaid.Settings
                     CombatMaidConfig.Key_CustomMaidName,
                     CombatMaidConfig.Key_CustomMaidModelID,
                     CombatMaidConfig.Key_MaidAlertVolume,
+                    CombatMaidConfig.Key_MaidVoiceVolume,
                     CombatMaidConfig.Key_BuffBlockList,
                     "OpenSaveFolder"
                 },

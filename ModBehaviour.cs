@@ -1,6 +1,7 @@
 using System;
 using CombatMaid.Core;
 using CombatMaid.Core.BuffsSystem;
+using CombatMaid.Core.CustomModel;
 using CombatMaid.Core.Items.Logic;
 using CombatMaid.Core.SkillTreeSystem;
 using HarmonyLib;
@@ -96,6 +97,7 @@ namespace CombatMaid
             CleanupMaidBuffSystem();
             CleanupMaidSystem();
             CleanupSkillTreeSystem();
+            CustomModelAudioPatcher.Unpatch();
         }
         
         private bool IsFmlLoaded()

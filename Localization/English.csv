@@ -108,3 +108,6 @@ Perk_Combat_Sight_2,Fox Eyes II,2.2.3,Perks
 Perk_Combat_Sight_2_Desc,Strengthens dynamic visual capture significantly expanding enemy detection range.\n\nView Distance <color=#7FE8D8>+6m</color>\nView Angle <color=#7FE8D8>+25°</color>,2.2.3,Perks
 Perk_Combat_Sight_3,Fox Eyes III,2.2.3,Perks
 Perk_Combat_Sight_3_Desc,Ultimate reconnaissance perception capable of seeing through darkness.\n\nView Distance <color=#7FE8D8>+7m</color>\nView Angle <color=#7FE8D8>+35°</color>\nUnlocks Night Vision,2.2.3,Perks
+Item_MaidRecallBell,Maid Recall Bell,2.2.3,MaidItemName
+Item_MaidRecallBell_Desc,Ring the bell to command all currently following maids to retreat. This item is not consumed.,2.2.3,MaidItemDescription
+Settings_MaidVoiceVolume,Maid Voice Volume,2.2.3,CustomMaid
