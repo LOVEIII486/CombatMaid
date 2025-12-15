@@ -58,22 +58,38 @@ namespace CombatMaid.Core.SkillTreeSystem
         {
             if (_isInitializing) yield break;
             _isInitializing = true;
-            
-            yield return new WaitForSeconds(0.5f);
-            try
+
+            // 使用轮询机制替代固定等待
+            GameObject skillBuilding = null;
+            float timeOut = 15f; // 设置最大等待时间
+            float timer = 0f;
+            float checkInterval = 0.5f;
+
+            CMDebug.Log("[SkillTreeManager] 开始寻找 SkillMachine...");
+
+            while (skillBuilding == null && timer < timeOut)
             {
-                GameObject skillBuilding = FindSkillMachine();
-                if (skillBuilding == null)
+                skillBuilding = FindSkillMachine();
+
+                if (skillBuilding != null)
                 {
-                    CMDebug.LogWarning("[SkillTreeManager] 未找到 SkillMachine，跳过。");
-                    yield break;
+                    CMDebug.Log($"[SkillTreeManager] 成功找到 SkillMachine (耗时: {timer:F1}s)");
+                    break;
                 }
 
-                // ================= 改动开始 =================
-                // 场景加载后，PerkTreeManager 肯定是新的，旧的 _customTree 即使不为null也肯定没有注册。
-                // 所以不需要调用 PerkTreeManager.GetPerkTree(TREE_ID) 来触发报错。
-                // 直接销毁旧引用，强制重建。
+                yield return new WaitForSeconds(checkInterval);
+                timer += checkInterval;
+            }
 
+            if (skillBuilding == null)
+            {
+                CMDebug.LogWarning($"[SkillTreeManager] 初始化失败：在 {timeOut} 秒内未找到 SkillMachine，跳过技能树构建。");
+                _isInitializing = false; // 务必在退出前重置状态
+                yield break;
+            }
+
+            try
+            {
                 if (_customTree != null)
                 {
                     CMDebug.Log("[SkillTreeManager] 检测到跨场景残留的技能树，正在清理...");
@@ -83,7 +99,7 @@ namespace CombatMaid.Core.SkillTreeSystem
 
                 // 此时 _customTree 必为 null，执行重建流程
                 CMDebug.Log("[SkillTreeManager] 开始构建新场景的技能树...");
-        
+
                 // 1. 清理旧数据
                 _isTreeBuilt = false;
                 _runtimePerks.Clear();
@@ -97,7 +113,7 @@ namespace CombatMaid.Core.SkillTreeSystem
 
                 // 4. 恢复购买状态
                 RestorePurchasedState();
-        
+
                 // 5. 验证
                 if (_customTree != null)
                 {
@@ -106,7 +122,7 @@ namespace CombatMaid.Core.SkillTreeSystem
                     SkillTreeBuilder.RegisterInteraction(skillBuilding, TREE_ID, INTERACT_KEY, "战斗女仆: 战术技能");
                     CMDebug.LogInfo("[SkillTreeManager] ✓ 技能树初始化完毕");
                 }
-                // ================= 改动结束 =================
+                // ================= 原有逻辑结束 =================
             }
             catch (System.Exception ex)
             {
@@ -122,7 +138,6 @@ namespace CombatMaid.Core.SkillTreeSystem
         /// [已删除] ReregisterTreeToPerkTreeManager 方法（不再需要）
         /// 改为直接重建技能树以确保状态完全一致
         /// </summary>
-
         private GameObject FindSkillMachine()
         {
             GameObject obj = GameObject.Find("SkillMachine");
@@ -185,10 +200,10 @@ namespace CombatMaid.Core.SkillTreeSystem
                 }
 
                 CMDebug.Log($"[BuildSkillTree] 技能树已创建: {_customTree.name}");
-                
+
                 // 🔧 修复：将技能树设置为 SkillTreeManager 的子对象，确保跟随 DontDestroyOnLoad
                 _customTree.transform.SetParent(this.transform);
-                
+
                 // 🔧 修复：确保技能树对象本身也设置 DontDestroyOnLoad（冗余保险）
                 DontDestroyOnLoad(_customTree.gameObject);
 
@@ -323,8 +338,8 @@ namespace CombatMaid.Core.SkillTreeSystem
                 CMDebug.LogError($"[SaveProgress] 保存失败: {ex.Message}");
             }
         }
-        
-        
+
+
         public void ReloadTree()
         {
             CMDebug.LogWarning("[SkillTreeManager] 开始执行热重载...");
@@ -334,15 +349,15 @@ namespace CombatMaid.Core.SkillTreeSystem
                 Destroy(_customTree.gameObject);
                 _customTree = null;
             }
-        
+
             _currentConfig = null;
             _isTreeBuilt = false;
             _runtimePerks.Clear();
             _nodeDefsMap.Clear();
-            _isInitializing = false; 
-        
+            _isInitializing = false;
+
             StartCoroutine(InitSkillTreeRoutine());
-        
+
             CMDebug.LogInfo("[SkillTreeManager] 热重载请求已发送");
         }
     }
