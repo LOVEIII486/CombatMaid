@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
-using Duckov;
+using UnityEngine.EventSystems;
+using System.Collections.Generic; 
+using System.Linq;
 using Duckov.UI;
 using HarmonyLib; 
 using System.Reflection;
@@ -17,23 +19,23 @@ namespace CombatMaid.Core.UI
         // === 反射字段缓存 ===
         private static bool _isReflectionInitialized = false;
         
-        private static FieldInfo _lootTargetDisplayField;     // 左侧显示组件
-        private static FieldInfo _lootTargetInventoryField;   // 左侧数据引用
-        private static FieldInfo _lootTargetNameField;        // 左侧标题
+        // Target 区域 (右侧：玩家)
+        private static FieldInfo _targetDisplayField;       
+        private static FieldInfo _targetInventoryField;     
+        private static FieldInfo _targetNameField;          
         
-        private static FieldInfo _rightSlotDisplayField;      // 右侧装备组件
-        private static FieldInfo _rightInventoryDisplayField; // 右侧背包组件
+        // Character 区域 (左侧：女仆)
+        private static FieldInfo _characterSlotField;       
+        private static FieldInfo _characterInventoryField;  
 
+        // 角色数据字段
         private static FieldInfo _characterItemControlField;
         private static PropertyInfo _controlInventoryProp;
         private static FieldInfo _controlInventoryField;
 
         /// <summary>
-        /// 打开女仆装备管理界面 (交互模式)
-        /// 左侧：玩家背包 (作为仓库)
-        /// 右侧：女仆装备 + 女仆背包 (作为主角)
+        /// 打开女仆装备管理界面
         /// </summary>
-        /// <param name="maidCharacter">要管理的女仆角色</param>
         public static void OpenManagementPanel(CharacterMainControl maidCharacter)
         {
             if (maidCharacter == null)
@@ -45,23 +47,18 @@ namespace CombatMaid.Core.UI
             var player = CharacterMainControl.Main;
             if (player == null) return;
 
-            // [新增] 1. 在操作 UI 前，先禁用冲突模组 (QuickLoot)
-            // 防止它在 UI 数据切换瞬间读取到错误状态导致死循环/卡死
+            // 1. 禁用冲突模组
             QuickLootCompatibility.DisableQuickLoot();
 
-            CMDebug.Log($"打开物资交换面板: {player.name} <-> {maidCharacter.name}");
+            CMDebug.Log($"打开物资交换面板: 女仆[{maidCharacter.name}] <-> 玩家[{player.name}]");
             
-            // 初始化反射 (如果尚未初始化)
             EnsureReflectionInitialized();
 
-            // 执行UI劫持逻辑
-            OpenDualModeUI(mainSide: maidCharacter, otherSide: player);
+            // 执行UI劫持
+            OpenDualModeUI(maid: maidCharacter, playerSource: player);
         }
 
-        /// <summary>
-        /// 双向交互UI核心逻辑
-        /// </summary>
-        private static void OpenDualModeUI(CharacterMainControl mainSide, CharacterMainControl otherSide)
+        private static void OpenDualModeUI(CharacterMainControl maid, CharacterMainControl playerSource)
         {
             if (LootView.Instance == null) return;
 
@@ -70,50 +67,49 @@ namespace CombatMaid.Core.UI
                 var lootView = LootView.Instance;
                 
                 // === 1. 准备数据 ===
-                var mainInventory = GetInventoryFromCharacter(mainSide); // 女仆 (右)
-                var mainItem = mainSide.CharacterItem;
-                var otherInventory = GetInventoryFromCharacter(otherSide); // 玩家 (左)
+                var maidInventory = GetInventoryFromCharacter(maid);
+                var maidItem = maid.CharacterItem;
+                var playerInventory = GetInventoryFromCharacter(playerSource);
 
-                if (mainInventory == null || otherInventory == null) return;
+                if (maidInventory == null || playerInventory == null) return;
 
-                // [关键修复] 步骤 A: 在 Show() 之前注入左侧数据
-                _lootTargetInventoryField.SetValue(lootView, otherInventory);
+                // [步骤 A]: 注入 Target (玩家) 数据
+                _targetInventoryField.SetValue(lootView, playerInventory);
 
                 // === 2. 打开界面 ===
                 lootView.Show();
 
-                // [新增] 2. 挂载关闭监听器
-                // 当 LootView 关闭时，这个组件会自动恢复 QuickLoot 并销毁自己
-                // 确保不影响其他箱子的正常交互
-                if (lootView.GetComponent<MaidUICloseObserver>() == null)
+                // [步骤 B]: 挂载观察器 (修复 F 键逻辑)
+                var oldObserver = lootView.GetComponent<MaidUIObserver>();
+                if (oldObserver != null) Object.Destroy(oldObserver);
+
+                var observer = lootView.gameObject.AddComponent<MaidUIObserver>();
+                observer.Maid = maid;
+                observer.Player = playerSource;
+
+                // [步骤 C]: 覆盖 Character (女仆) 数据
+                var charSlotDisplay = _characterSlotField.GetValue(lootView) as ItemSlotCollectionDisplay;
+                if (charSlotDisplay != null)
                 {
-                    lootView.gameObject.AddComponent<MaidUICloseObserver>();
+                    charSlotDisplay.Setup(maidItem, true);
                 }
 
-                // 步骤 B: 覆盖右侧面板 (Show 之后执行)
-                var rightSlotDisplay = _rightSlotDisplayField.GetValue(lootView) as ItemSlotCollectionDisplay;
-                if (rightSlotDisplay != null)
+                var charInvDisplay = _characterInventoryField.GetValue(lootView) as InventoryDisplay;
+                if (charInvDisplay != null)
                 {
-                    rightSlotDisplay.Setup(mainItem, true);
+                    charInvDisplay.Setup(maidInventory, null, null, true, null);
                 }
 
-                var rightInvDisplay = _rightInventoryDisplayField.GetValue(lootView) as InventoryDisplay;
-                if (rightInvDisplay != null)
-                {
-                    rightInvDisplay.Setup(mainInventory, null, null, true, null);
-                }
-
-                // 步骤 C: 修正标题 (Show 之后执行)
-                var nameText = _lootTargetNameField.GetValue(lootView) as TMPro.TextMeshProUGUI;
+                // [步骤 D]: 修正标题
+                var nameText = _targetNameField.GetValue(lootView) as TMPro.TextMeshProUGUI;
                 if (nameText != null)
                 {
-                    nameText.text = $"{mainSide.characterPreset.DisplayName} (女仆背包) <---> 玩家背包";
+                    nameText.text = $"{maid.characterPreset.DisplayName} (女仆) <---> 玩家";
                 }
             }
             catch (System.Exception e)
             {
                 CMDebug.LogError($"UI劫持失败: {e}");
-                // 如果出错，尝试恢复，避免卡在禁用状态
                 QuickLootCompatibility.RestoreQuickLoot(); 
             }
         }
@@ -137,16 +133,13 @@ namespace CombatMaid.Core.UI
             {
                 var tLoot = typeof(LootView);
                 
-                // 左侧字段
-                _lootTargetDisplayField = AccessTools.Field(tLoot, "lootTargetInventoryDisplay");
-                _lootTargetInventoryField = AccessTools.Field(tLoot, "targetInventory");
-                _lootTargetNameField = AccessTools.Field(tLoot, "lootTargetDisplayName");
+                _targetDisplayField = AccessTools.Field(tLoot, "lootTargetInventoryDisplay");
+                _targetInventoryField = AccessTools.Field(tLoot, "targetInventory");
+                _targetNameField = AccessTools.Field(tLoot, "lootTargetDisplayName");
 
-                // 右侧字段
-                _rightSlotDisplayField = AccessTools.Field(tLoot, "characterSlotCollectionDisplay");
-                _rightInventoryDisplayField = AccessTools.Field(tLoot, "characterInventoryDisplay");
+                _characterSlotField = AccessTools.Field(tLoot, "characterSlotCollectionDisplay");
+                _characterInventoryField = AccessTools.Field(tLoot, "characterInventoryDisplay");
 
-                // 角色字段
                 _characterItemControlField = AccessTools.Field(typeof(CharacterMainControl), "itemControl");
                 _controlInventoryProp = AccessTools.Property(typeof(CharacterItemControl), "inventory"); 
                 _controlInventoryField = AccessTools.Field(typeof(CharacterItemControl), "inventory");
@@ -160,20 +153,91 @@ namespace CombatMaid.Core.UI
         }
 
         // =========================================================
-        // [新增] 内部类：用于监听 LootView 关闭事件
+        // [内部类] MaidUIObserver
+        // 1. 监听 LootView 关闭，恢复 QuickLoot
+        // 2. 监听 F 键，手动接管"玩家->女仆"的物品转移
         // =========================================================
-        /// <summary>
-        /// 挂载在 LootView 上，当 LootView 关闭(OnDisable)时，恢复外部模组的功能
-        /// </summary>
-        private class MaidUICloseObserver : MonoBehaviour
+        private class MaidUIObserver : MonoBehaviour
         {
+            public CharacterMainControl Maid;
+            public CharacterMainControl Player;
+
+            public KeyCode QuickLootKey = KeyCode.F; // 默认F键
+
+            private void Update()
+            {
+                if (Input.GetKeyDown(QuickLootKey))
+                {
+                    TryManualTransfer();
+                }
+            }
+
             private void OnDisable()
             {
-                // 界面关闭，恢复自动拾取功能
                 QuickLootCompatibility.RestoreQuickLoot();
-                
-                // 任务完成，销毁自己，保持 LootView 干净
                 Destroy(this);
+            }
+
+            /// <summary>
+            /// 尝试手动执行“从玩家 -> 女仆”的转移
+            /// </summary>
+            private void TryManualTransfer()
+            {
+                if (Maid == null || Player == null) return;
+
+                var hoveredItem = GetHoveredItem();
+                if (hoveredItem == null) return;
+
+                var playerInv = GetInventory(Player);
+                var maidInv = GetInventory(Maid);
+
+                // 只有当物品属于 Player (右侧) 时，原版 F 键会失效
+                // 我们拦截这种情况，手动转给 Maid (左侧)
+                if (IsItemInInventory(hoveredItem, playerInv))
+                {
+                    bool success = maidInv.AddAndMerge(hoveredItem);
+
+                    if (success)
+                    {
+                         CMDebug.Log($"[UI] 手动快速转移: {hoveredItem.DisplayName} -> 女仆");
+                    }
+                    else
+                    {
+                        Maid.PopText("女仆背包已满!");
+                    }
+                }
+            }
+
+            private Inventory GetInventory(CharacterMainControl c)
+            {
+                if (c == null || c.CharacterItem == null) return null;
+                return c.CharacterItem.Inventory;
+            }
+
+            private bool IsItemInInventory(Item item, Inventory inventory)
+            {
+                if (item == null || inventory == null) return false;
+                return inventory.Contains(item);
+            }
+
+            private Item GetHoveredItem()
+            {
+                if (EventSystem.current == null) return null;
+
+                var pointerData = new PointerEventData(EventSystem.current)
+                {
+                    position = Input.mousePosition
+                };
+
+                var results = new List<RaycastResult>();
+                EventSystem.current.RaycastAll(pointerData, results);
+
+                foreach (var result in results)
+                {
+                    var entry = result.gameObject.GetComponentInParent<InventoryEntry>();
+                    if (entry != null && entry.Item != null) return entry.Item;
+                }
+                return null;
             }
         }
     }
