@@ -46,14 +46,15 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
             if (target == null) return false;
 
             // 安全检查：池子是否为空
-            if (_grenadePool.Count == 0)
+            if (_grenadePool == null || _grenadePool.Count == 0)
             {
                 CMDebug.LogWarning($"[{SkillName}] 手雷配置列表为空，无法执行技能");
                 return false;
             }
-            
+    
+            // 1. 根据配置生成有效列表
             List<int> validGrenades;
-            if (CombatMaidConfig.EnableElementalGrenades)
+            if (CombatMaid.Settings.CombatMaidConfig.EnableElementalGrenades)
             {
                 validGrenades = _grenadePool;
             }
@@ -68,15 +69,17 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
                     }
                 }
             }
-            
+    
+            // 2. 检查有效列表
             if (validGrenades.Count == 0)
             {
+                // CMDebug.Log($"[{SkillName}] 没有可用的非元素手雷，跳过执行。");
                 return false; 
             }
-            
-            // 随机选取一个手雷 ID
-            int index = Random.Range(0, _grenadePool.Count);
-            int selectedItemId = _grenadePool[index];
+    
+            // 3. 从 validGrenades 中随机
+            int index = Random.Range(0, validGrenades.Count);
+            int selectedItemId = validGrenades[index];
 
             MaidSkillHelper.LaunchGrenade(
                 Owner, 
@@ -86,8 +89,7 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
                 canHurtSelf: false
             );
 
-            // 可以在日志里打印具体扔了哪个，方便调试
-            CMDebug.Log($"[{SkillName}] 随机投掷手雷 (ID: {selectedItemId})");
+            //CMDebug.Log($"[{SkillName}] 随机投掷手雷 (ID: {selectedItemId})");
             Owner.PopText("投掷手雷!");
             return true;
         }
