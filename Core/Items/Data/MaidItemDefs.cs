@@ -11,7 +11,7 @@ namespace CombatMaid.Core.Items.Data
         {
             return new List<MaidItemInfo>
             {
-                new MaidItemInfo // 酒狐女仆契约
+                new MaidItemInfo // 酒狐女仆契约 88000
                 {
                     itemId = 88000,
                     spritePath = "MaidContract_WineFox.png",
@@ -45,7 +45,7 @@ namespace CombatMaid.Core.Items.Data
                     ShopPossibility = 1f,
                     ShopForceUnlock = false
                 },
-                new MaidItemInfo // 瓶中女仆·I型
+                new MaidItemInfo // 瓶中女仆·I型 88001
                 {
                     itemId = 88001,
                     localizationKey = "Item_VialMaid_I",
@@ -88,7 +88,7 @@ namespace CombatMaid.Core.Items.Data
                     ShopPossibility = 1.0f,
                     ShopForceUnlock = false
                 },
-                new MaidItemInfo // 瓶中女仆·II型
+                new MaidItemInfo // 瓶中女仆·II型 88002
                 {
                     itemId = 88002,
                     localizationKey = "Item_VialMaid_II",
@@ -131,7 +131,7 @@ namespace CombatMaid.Core.Items.Data
                     ShopPossibility = 1f,
                     ShopForceUnlock = false
                 },
-                new MaidItemInfo // 瓶中女仆·III型
+                new MaidItemInfo // 瓶中女仆·III型 88003
                 {
                     itemId = 88003,
                     localizationKey = "Item_VialMaid_III",
@@ -174,7 +174,7 @@ namespace CombatMaid.Core.Items.Data
                     ShopPossibility = 1f,
                     ShopForceUnlock = false
                 },
-                new MaidItemInfo
+                new MaidItemInfo // 回复药 88101
                 {
                     itemId = 88101,
                     spritePath = "RecoveryPotion.png",
@@ -207,7 +207,41 @@ namespace CombatMaid.Core.Items.Data
                     ShopPriceFactor = 2.0f,
                     ShopPossibility = 1.0f,
                     ShopForceUnlock = false
-                }
+                },
+                new MaidItemInfo // 女仆召回铃铛 88102
+                {
+                    itemId = 88102,
+                    localizationKey = "Item_MaidRecallBell",
+                    localizationDesc = "Item_MaidRecallBell_Desc",
+                    spritePath = "MaidRecallBell.png",
+                    value = 1000,
+                    weight = 0.3f,
+                    maxStackCount = 1,
+                    maxDurability = 100f,
+                    tags = new List<string> { "Tool" },
+                    quality = 4,
+                    displayQuality = DisplayQuality.Purple,
+                    usages = new UsageData
+                    {
+                        useTime = 1.0f,
+                        useSound = "",
+                        actionSound = "",
+                        useDurability = false,
+                        durabilityUsage = 0,
+                        behaviors = new List<UsageBehaviorData>()
+                    },
+                    VisualReferenceId = 1266, 
+                    CustomComponentType = typeof(Component_MaidRecallBell),
+                    CustomConstants = new Dictionary<string, object>
+                    {
+                        { "ConsumeOnUse", false }
+                    },
+                    ShopMerchantId = MerchantIds.Mud,
+                    ShopMaxStock = 1,
+                    ShopPriceFactor = 1.0f,
+                    ShopPossibility = 1.0f,
+                    ShopForceUnlock = true
+                },
             };
         }
     }

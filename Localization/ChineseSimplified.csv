@@ -108,3 +108,5 @@ Perk_Combat_Sight_2,灵狐瞳 II,2.2.3,Perks
 Perk_Combat_Sight_2_Desc,强化动态视觉捕捉，大幅扩大索敌范围。\n\n视野距离 <color=#7FE8D8>+6米</color>\n视野角度 <color=#7FE8D8>+25度</color>,2.2.3,Perks
 Perk_Combat_Sight_3,灵狐瞳 III,2.2.3,Perks
 Perk_Combat_Sight_3_Desc,极限的侦察感知能力，即使在黑夜中也能洞察秋毫。\n\n视野距离 <color=#7FE8D8>+7米</color>\n视野角度 <color=#7FE8D8>+35度</color>\n获得夜视能力,2.2.3,Perks
+Item_MaidRecallBell,女仆召回铃,2.2.3,Perks
+Item_MaidRecallBell_Desc,摇响铃铛，命令所有当前跟随的女仆撤退。此物品不会消耗。,2.2.3,Perks
