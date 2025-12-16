@@ -508,7 +508,7 @@ namespace CombatMaid.Core
             sb.AppendLine($"[三维]: 水分[{MaidCharacter.CurrentWater:F0}] 能量[{MaidCharacter.CurrentEnergy:F0}] 体力[{MaidCharacter.CurrentStamina:F0}]");
 
             // 2. 防御属性 (直接读取 Health 属性)
-            sb.AppendLine($"[护甲]: 头盔[{h.HeadArmor:F0}] | 身体[{h.BodyArmor:F0}]");
+            sb.AppendLine($"[护甲]: 头盔[{h.HeadArmor:F2}] | 身体[{h.BodyArmor:F2}]");
     
             // 3. 补充：抗性系数 (1.0为标准，越低受伤越少)
             // 根据 Health 类中的 Hash 字段推断支持的类型 

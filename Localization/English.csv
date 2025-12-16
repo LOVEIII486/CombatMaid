@@ -122,3 +122,7 @@ Skill_SquadCoordination_Execute,Focus fire on the target!,2.2.3,Skill
 Skill_EmergencyHeal_Execute,Emergency heal!,2.2.3,Skill
 Skill_VanillaBuff_Happy,"Cheer up, Master~",2.2.3,Skill
 Skill_VanillaBuff_ExtraBuff,"\nI’ve buffed you, Master! ({0})",2.2.3,Skill
+Perk_WineFox_Armor_1,Rock Shield I,2.2.3,Perks
+Perk_WineFox_Armor_1_Desc,"Summons earth elements to surround the maid,  forming a rough yet tough rock layer that provides basic physical protection.\n\nHead Armor <color=#7FE8D8>+0.5</color>\nBody Armor <color=#7FE8D8>+0.5</color>",2.2.3,Perks
+Perk_WineFox_Armor_2,Rock Shield II,2.2.3,Perks
+Perk_WineFox_Armor_2_Desc,"Further compresses the rock density,  making it as solid as granite. This stone layer is capable of withstanding heavy firepower head-on.\n\nHead Armor <color=#7FE8D8>+0.8</color>\nBody Armor <color=#7FE8D8>+0.8</color>",2.2.3,Perks

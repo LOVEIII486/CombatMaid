@@ -189,7 +189,7 @@
         "797": 3,
         "1171": 5
       },
-      "RequiredLevel": 15,
+      "RequiredLevel": 12,
       "Position": {
         "x": -380,
         "y": 680
@@ -222,7 +222,7 @@
         "878": 3,
         "1171": 5
       },
-      "RequiredLevel": 20,
+      "RequiredLevel": 18,
       "Position": {
         "x": -380,
         "y": 830
@@ -235,12 +235,12 @@
         {
           "Type": "AddAttribute",
           "Attribute": "HeadArmor",
-          "Value": 0.5
+          "Value": 0.8
         },
         {
           "Type": "AddAttribute",
           "Attribute": "BodyArmor",
-          "Value": 0.5
+          "Value": 0.8
         }
       ]
     },
