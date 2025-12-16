@@ -498,30 +498,42 @@ namespace CombatMaid.Core
             var h = MaidCharacter.Health;
 
             sb.AppendLine($"========== 女仆 [{MaidCharacter.name}] 状态监控 ==========");
-            
+    
             // 1. 基础生存
-            sb.Append($"[生命]: {h.CurrentHealth:F1} / {h.MaxHealth:F1}");
-            sb.AppendLine(h.Invincible ? " (无敌状态)" : "");
-            
-            sb.AppendLine($"[水分]: {MaidCharacter.CurrentWater:F1} / {MaidCharacter.MaxWater:F1}");
-            sb.AppendLine($"[能量]: {MaidCharacter.CurrentEnergy:F1} / {MaidCharacter.MaxEnergy:F1}");
-            sb.AppendLine($"[体力]: {MaidCharacter.CurrentStamina:F1} / {MaidCharacter.MaxStamina:F1}");
+            sb.Append($"[生命]: {h.CurrentHealth:F0}/{h.MaxHealth:F0}");
+            if (h.Invincible) sb.Append(" [无敌]"); // 引用 Health.Invincible
+            if (h.IsDead) sb.Append(" [死亡]");      // 引用 Health.IsDead
+            sb.AppendLine();
+    
+            sb.AppendLine($"[三维]: 水分[{MaidCharacter.CurrentWater:F0}] 能量[{MaidCharacter.CurrentEnergy:F0}] 体力[{MaidCharacter.CurrentStamina:F0}]");
 
-            // 2. 防御属性 (来自 Health 类)
-            sb.AppendLine($"[护甲]: 头盔防护[{h.HeadArmor:F1}] | 身体防护[{h.BodyArmor:F1}]");
+            // 2. 防御属性 (直接读取 Health 属性)
+            sb.AppendLine($"[护甲]: 头盔[{h.HeadArmor:F0}] | 身体[{h.BodyArmor:F0}]");
+    
+            // 3. 补充：抗性系数 (1.0为标准，越低受伤越少)
+            // 根据 Health 类中的 Hash 字段推断支持的类型 
+            sb.Append("[抗性]: ");
+            sb.Append($"物理:{h.ElementFactor(ElementTypes.physics):F2} ");
+            sb.Append($"火:{h.ElementFactor(ElementTypes.fire):F2} ");
+            sb.Append($"毒:{h.ElementFactor(ElementTypes.poison):F2} ");
+            sb.Append($"电:{h.ElementFactor(ElementTypes.electricity):F2} ");
+            sb.Append($"灵:{h.ElementFactor(ElementTypes.ghost):F2} ");
+            sb.AppendLine();
 
-            // 3. 战斗状态
-            sb.AppendLine($"[战斗]: 攻击倍率[{MaidCharacter.GunDamageMultiplier:F2}] | 移速[{MaidCharacter.CharacterMoveability:F2}]");
-            
-            // 4. 当前AI行为
+            // 4. 战斗能力
+            // GunDamageMultiplier 等通常在 CharacterMainControl 中
+            sb.AppendLine($"[输出]: 枪械伤害[{MaidCharacter.GunDamageMultiplier:P0}] | 暴击率[{MaidCharacter.GunCritRateGain:P1}]");
+            sb.AppendLine($"[机动]: 移速系数[{MaidCharacter.CharacterMoveability:F2}] | 潜行系数[{MaidCharacter.VisableDistanceFactor:F2}]");
+    
+            // 5. 当前AI状态
             string stateName = StateMachine?.CurrentState != null ? StateMachine.CurrentState.GetType().Name : "无状态";
-            sb.AppendLine($"[AI状态]: {stateName}");
-            
+            sb.AppendLine($"[逻辑]: AI状态[{stateName}] | 队伍[{MaidCharacter.Team}]");
+    
             // 打印日志
             CMDebug.Log(sb.ToString());
-            
-            // 游戏内浮动提示，方便直观确认
-            MaidCharacter.PopText("属性已输出到日志", 2.0f);
+    
+            // 游戏内浮动提示
+            MaidCharacter.PopText("体检报告已生成 (请看控制台)");
         }
     }
 }

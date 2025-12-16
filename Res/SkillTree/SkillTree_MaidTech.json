@@ -178,6 +178,73 @@
       ]
     },
     {
+      "//": "========== 左侧支线：护甲强化 ==========",
+      "ID": "maid_survival_armor_1",
+      "DisplayName": "Perk_WineFox_Armor_1",
+      "Description": "Perk_WineFox_Armor_1_Desc",
+      "IconFileName": "perk_armor.png",
+      "CostMoney": 10000,
+      "CostItems": {
+        "1137": 1,
+        "797": 3,
+        "1171": 5
+      },
+      "RequiredLevel": 15,
+      "Position": {
+        "x": -380,
+        "y": 680
+      },
+      "PrerequisiteIDs": [
+        "maid_survival_health_4"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "AddAttribute",
+          "Attribute": "HeadArmor",
+          "Value": 0.5
+        },
+        {
+          "Type": "AddAttribute",
+          "Attribute": "BodyArmor",
+          "Value": 0.5
+        }
+      ]
+    },
+    {
+      "ID": "maid_survival_armor_2",
+      "DisplayName": "Perk_WineFox_Armor_2",
+      "Description": "Perk_WineFox_Armor_2_Desc",
+      "IconFileName": "perk_armor.png",
+      "CostMoney": 20000,
+      "CostItems": {
+        "947": 1,
+        "878": 3,
+        "1171": 5
+      },
+      "RequiredLevel": 20,
+      "Position": {
+        "x": -380,
+        "y": 830
+      },
+      "PrerequisiteIDs": [
+        "maid_survival_armor_1"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "AddAttribute",
+          "Attribute": "HeadArmor",
+          "Value": 0.5
+        },
+        {
+          "Type": "AddAttribute",
+          "Attribute": "BodyArmor",
+          "Value": 0.5
+        }
+      ]
+    },
+    {
       "//": "========== 左侧子分支：运动增强 (x: -380) ==========",
       "ID": "maid_flexibility_1",
       "DisplayName": "Perk_Flexibility_1",

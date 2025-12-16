@@ -363,7 +363,17 @@ namespace CombatMaid.Core
                     CMDebug.LogWarning($"[Spawn] 背包扩容失败: {charCtrl.name} 的 Inventory 为空");
                 }
             }
-
+            
+            if (profileData.PresetConfig.HeadArmor > 0)
+            {
+                AttributeModifier.Modify(charCtrl, AttributeModifier.StandardAttributes.HeadArmor, profileData.PresetConfig.HeadArmor, false);
+                CMDebug.Log($"[Spawn] 应用头部护甲: {profileData.PresetConfig.HeadArmor}");
+            }
+            if (profileData.PresetConfig.BodyArmor > 0)
+            {
+                AttributeModifier.Modify(charCtrl, AttributeModifier.StandardAttributes.BodyArmor, profileData.PresetConfig.BodyArmor, false);
+                CMDebug.Log($"[Spawn] 应用身体护甲: {profileData.PresetConfig.BodyArmor}");
+            }
             return controller;
         }
 

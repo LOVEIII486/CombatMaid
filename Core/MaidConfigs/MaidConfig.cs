@@ -85,5 +85,8 @@ namespace CombatMaid.Core.MaidConfigs
         public float ResistElectricity = 1f;
         public float ResistSpace = 1f;
         public float ResistGhost = 1f;
+        
+        public float HeadArmor = 0f;
+        public float BodyArmor = 0f;
     }
 }
