@@ -16,6 +16,7 @@ namespace CombatMaid.Core.MaidFSM.States
         private const float SearchRadius = 10.0f;       // 略微增大搜索范围
         private const float OwnerTetherRadius = 15.0f;  // 允许在主人附近稍微远一点的地方搜刮
         private const float InteractionThreshold = 1f;  // 交互距离
+        private const float VerticalInteractionRange = 2.5f;
         
         // 搜刮耗时配置
         private const float LootDurationPerItem = 0.5f; // 每个物品的搜刮耗时(秒)
@@ -200,21 +201,38 @@ namespace CombatMaid.Core.MaidFSM.States
             if (_currentTarget == null || _currentTarget.gameObject == null)
             {
                 AcquireNextTarget();
+                return;
+            }
+
+            // [关键Bug点修复]：
+            // 原代码：float dist = Vector3.Distance(Controller.transform.position, _currentTarget.transform.position);
+            // 错误原因：如果物体挂在墙上(高度1.5m)，即使走到脚下，直线距离也>1.0m，导致永远无法触发交互。
+            Vector3 myPos = Controller.transform.position;
+            Vector3 targetPos = _currentTarget.transform.position;
+
+            // 1. 计算水平距离 (忽略高度差，只看平面距离)
+            float horizontalDist = Vector2.Distance(
+                new Vector2(myPos.x, myPos.z), 
+                new Vector2(targetPos.x, targetPos.z)
+            );
+
+            // 2. 计算垂直高度差
+            float heightDiff = Mathf.Abs(myPos.y - targetPos.y);
+
+            // 3. 综合判定：
+            // 逻辑 A: 水平距离够近 且 高度在手臂可及范围内 (解决了高处衣物无法搜刮的问题)
+            // 逻辑 B: 或者传统的 3D 距离够近 (兼容地面上的小物品)
+            bool isReach = (horizontalDist <= InteractionThreshold && heightDiff <= VerticalInteractionRange) 
+                           || Vector3.Distance(myPos, targetPos) <= InteractionThreshold;
+
+            if (isReach)
+            {
+                Controller.AI?.StopMove();
+                StartLooting(_currentTarget);
             }
             else
             {
-                float dist = Vector3.Distance(Controller.transform.position, _currentTarget.transform.position);
-
-                if (dist <= InteractionThreshold)
-                {
-                    Controller.AI?.StopMove();
-                    StartLooting(_currentTarget); // 到达位置，切换为搜刮模式
-                }
-                else
-                {
-                    // 持续更新移动目标
-                    Controller.AI?.MoveToPos(_currentTarget.transform.position);
-                }
+                Controller.AI?.MoveToPos(targetPos);
             }
         }
 
