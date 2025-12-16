@@ -1,13 +1,16 @@
-﻿using UnityEngine;
-using CombatMaid.Core;
+﻿using System;
 using CombatMaid.Core.MaidFSM.States;
+using CombatMaid.Localization;
 
 namespace CombatMaid.Core.MaidSkillSystem.Skills
 {
     public class Skill_SquadCoordination : MaidSkillBase
     {
         public override string SkillName => "SquadCoordination";
-        public override float Cooldown => 0.5f; // 检测频率
+        public override float Cooldown => 1f; // 检测频率
+        
+        private readonly Lazy<string> _txtExecute = new Lazy<string>(() => 
+            LocalizationManager.GetText("Skill_SquadCoordination_Execute"));
 
         protected override bool CheckTriggerCondition()
         {
@@ -22,10 +25,8 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
 
             var focusTarget = MaidManager.Instance.FocusTarget;
             if (focusTarget == null || focusTarget.Health.IsDead) return false;
-
-            // 逻辑优化：只要当前目标不是集火目标，或者当前没有处于攻击状态，就触发修正
-            // 这样可以防止 AI "发呆"
-            if (Controller.AI.searchedEnemy != focusTarget) return true;
+            
+            if (Controller.AI.searchedEnemy != focusTarget.mainDamageReceiver) return true;
             if (!Controller.AI.alert) return true;
 
             return false;
@@ -38,20 +39,16 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
 
             var ai = Controller.AI;
 
-            // 强制覆盖 AI 的仇恨列表
-            ai.searchedEnemy = target.mainDamageReceiver; // 确保指向主受击体
+            ai.searchedEnemy = target.mainDamageReceiver;
             ai.aimTarget = target.transform;
             
-            // 强制进入战斗状态
             if (!ai.alert || !ai.noticed)
             {
                 ai.alert = true;
                 ai.noticed = true;
-                // 让女仆喊话，明确反馈她收到了指令
-                Owner.PopText("收到！集火目标！");
+                Owner.PopText(_txtExecute.Value);
             }
             
-            // 调试日志
             // CMDebug.Log($"[{Owner.name}] 执行集火 -> {target.name}");
 
             return true;

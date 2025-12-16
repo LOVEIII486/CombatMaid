@@ -38,13 +38,12 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
             int buffId = selection.Id;
 
             // 2. 获取或创建模板
-            var config = new MaidBuffFactory.BuffConfig(buffName, buffId, 30f); // 持续30秒
+            var config = new MaidBuffFactory.BuffConfig(buffName, buffId, 30f);
             var template = MaidBuffFactory.GetOrCreateSharedBuff(config);
             
             // 3. 施加给玩家
             if (MaidBuffFactory.TryAddBuff(Controller.MainOwner, template, Owner))
             {
-                // 可以把 Buff 名也打出来方便调试
                 Owner.PopText($"支援: {buffName}!");
                 return true;
             }

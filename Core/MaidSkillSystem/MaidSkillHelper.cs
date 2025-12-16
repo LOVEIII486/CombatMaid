@@ -1,9 +1,5 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using Duckov;
-using Duckov.Scenes;
+﻿using UnityEngine;
 using ItemStatsSystem;
-using ItemStatsSystem.Items;
 
 namespace CombatMaid.Core.MaidSkillSystem
 {

@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using CombatMaid.Core.BuffsSystem;
+using CombatMaid.Localization;
 using CombatMaid.Settings;
-using Duckov.Buffs;
+using Random = UnityEngine.Random;
 
 namespace CombatMaid.Core.MaidSkillSystem.Skills
 {
@@ -16,10 +17,15 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
         public override float Cooldown => 90.0f;
         
         public override bool RespectGlobalCooldown => true;
-        public override float TriggerGCDDuration => 0.5f;
+        public override float TriggerGCDDuration => 1f;
 
         private readonly List<int> _buffPool;
         private const int HappyBuffId = 1101; // 高兴 Buff
+        
+        private readonly Lazy<string> _txtHappy = new Lazy<string>(() => 
+            LocalizationManager.GetText("Skill_VanillaBuff_Happy"));
+        private readonly Lazy<string> _txtExtraBuff = new Lazy<string>(() => 
+            LocalizationManager.GetText("Skill_VanillaBuff_ExtraBuff"));
 
         public Skill_VanillaBuff(List<int> buffIds)
         {
@@ -58,22 +64,23 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
                     }
                     else
                     {
-                        CMDebug.LogWarning($"[{SkillName}] 随机 Buff 施加失败 (ID: {randomBuffId})");
+                        CMDebug.LogWarning($"随机 Buff 施加失败 (ID: {randomBuffId})");
                     }
                 }
                 else
                 {
-                    CMDebug.LogWarning($"[{SkillName}] 所有随机 Buff 均被黑名单禁用或池为空。");
+                    CMDebug.LogWarning($"所有随机 Buff 均被黑名单禁用或池为空。");
                 }
             }
 
             if (anySuccess)
             {
-                string popText = "主人要开心哦~ ";
+                string popText = _txtHappy.Value;
                 if (!string.IsNullOrEmpty(randomBuffName))
                 {
-                    popText += $"\n给主人buff了！ ({randomBuffName})";
+                    popText += string.Format(_txtExtraBuff.Value, randomBuffName);
                 }
+
                 Owner.PopText(popText);
                 return true;
             }

@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
-using CombatMaid.Core.MaidSkillSystem;
-using CombatMaid.Settings;
+using CombatMaid.Localization;
+using Random = UnityEngine.Random;
 
 namespace CombatMaid.Core.MaidSkillSystem.Skills
 {
@@ -18,6 +19,9 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
         private float _minRange = 5.0f;
         
         private readonly HashSet<int> _elementalGrenadeIds = new HashSet<int> { 933, 941, 942 };
+        
+        private readonly Lazy<string> _txtExecute = new Lazy<string>(() => 
+            LocalizationManager.GetText("Skill_GrenadeThrow_Execute"));
 
         public Skill_GrenadeThrower(List<int> grenadeIds) 
         {
@@ -26,14 +30,11 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
 
         protected override bool CheckTriggerCondition()
         {
-            // 1. 必须有 AI 且活着
             if (Controller == null || Controller.AI == null) return false;
             
-            // 2. 必须有仇恨目标
             var target = Controller.AI.searchedEnemy;
             if (target == null || target.health.IsDead) return false;
 
-            // 3. 距离检查
             float dist = Vector3.Distance(Owner.transform.position, target.transform.position);
             
             // 只有在射程内，且不会炸到自己的距离才扔
@@ -45,7 +46,7 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
             var target = Controller.AI.searchedEnemy;
             if (target == null) return false;
 
-            // 安全检查：池子是否为空
+            // 池子是否为空
             if (_grenadePool == null || _grenadePool.Count == 0)
             {
                 CMDebug.LogWarning($"[{SkillName}] 手雷配置列表为空，无法执行技能");
@@ -85,12 +86,12 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
                 Owner, 
                 selectedItemId, 
                 target.transform.position, 
-                delay: 2.0f, 
+                delay: 1.3f, 
                 canHurtSelf: false
             );
 
             //CMDebug.Log($"[{SkillName}] 随机投掷手雷 (ID: {selectedItemId})");
-            Owner.PopText("投掷手雷!");
+            Owner.PopText(_txtExecute.Value);
             return true;
         }
     }

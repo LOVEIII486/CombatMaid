@@ -116,3 +116,10 @@ Item_MaidContractWineFox_Rebuild,正在重铸酒狐躯体...,2.2.3,MaidItem
 Item_MaidContractWineFox_Respond,酒狐契约响应中...,2.2.3,MaidItem
 Item_MaidRecallBell_OnUse,全员撤退！,2.2.3,MaidItem
 Item_MaidVial_OnUse,瓶中女仆 [{0}] 已就绪！,2.2.3,MaidItem
+Skill_GrenadeThrow_Execute,投掷手雷！,2.2.3,Skill
+Skill_SelfHeal_UseItem,使用: {0},2.2.3,Skill
+Skill_SelfHeal_NoDrug,主人我没有药了！,2.2.3,Skill
+Skill_SquadCoordination_Execute,集火目标！,2.2.3,Skill
+Skill_EmergencyHeal_Execute,紧急治疗！,2.2.3,Skill
+Skill_VanillaBuff_Happy,主人要开心哦~,2.2.3,Skill
+Skill_VanillaBuff_ExtraBuff,\n给主人buff了！ ({0}),2.2.3,Skill

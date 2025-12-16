@@ -115,3 +115,10 @@ Item_MaidContractWineFox_Rebuild,Reforging the Wine Fox body...,2.2.3,MaidItem
 Item_MaidContractWineFox_Respond,Wine Fox contract responding...,2.2.3,MaidItem
 Item_MaidRecallBell_OnUse,"All units, retreat!",2.2.3,MaidItem
 Item_MaidVial_OnUse,Maid in a bottle [{0}] is ready!,2.2.3,MaidItem
+Skill_GrenadeThrow_Execute,Throwing grenade!,2.2.3,Skill
+Skill_SelfHeal_UseItem,Using: {0},2.2.3,Skill
+Skill_SelfHeal_NoDrug,"Master, I’m out of medicine!",2.2.3,Skill
+Skill_SquadCoordination_Execute,Focus fire on the target!,2.2.3,Skill
+Skill_EmergencyHeal_Execute,Emergency heal!,2.2.3,Skill
+Skill_VanillaBuff_Happy,"Cheer up, Master~",2.2.3,Skill
+Skill_VanillaBuff_ExtraBuff,"\nI’ve buffed you, Master! ({0})",2.2.3,Skill

@@ -1,15 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Duckov.ItemUsage;
 using ItemStatsSystem;
 using CombatMaid.Core;
+using CombatMaid.Localization;
 
 namespace CombatMaid.Core.MaidSkillSystem.Skills
 {
     public class Skill_SelfHeal : MaidSkillBase
     {
-        // === 1. 基础配置 ===
         public override string SkillName => "SelfHeal";
         public override float Cooldown => 3.0f;
         
@@ -22,6 +23,11 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
         private readonly HashSet<int> _normalMedIds = new HashSet<int> { 88101, 15, 16, 17, 20, 10, 875 };
         // 优先级列表：越靠前越优先使用
         private readonly List<int> _priorityList = new List<int> { 88101, 15, 16, 17, 20, 10, 875 };
+        
+        private readonly Lazy<string> _txtUseItem = new Lazy<string>(() => 
+            LocalizationManager.GetText("Skill_SelfHeal_UseItem"));
+        private readonly Lazy<string> _txtNoDrug = new Lazy<string>(() => 
+            LocalizationManager.GetText("Skill_SelfHeal_NoDrug"));
 
         protected override bool CheckTriggerCondition()
         {
@@ -44,10 +50,7 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
         {
             return ExecuteHealLogic();
         }
-
-        /// <summary>
-        /// 强制触发接口
-        /// </summary>
+        
         public void ForceActivate()
         {
             if (Owner == null || Owner.Health.IsDead) return;
@@ -80,7 +83,7 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
             if (bestDrug != null)
             {
                 Owner.UseItem(bestDrug);
-                Owner.PopText($"使用: {bestDrug.DisplayName}");
+                Owner.PopText(string.Format(_txtUseItem.Value, bestDrug.DisplayName));
                 
                 if (isForce)
                 {
@@ -89,7 +92,7 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
                 return true;
             }
             
-            Owner.PopText("主人我没有药了!"); 
+            Owner.PopText(_txtNoDrug.Value); 
             return false;
         }
 
