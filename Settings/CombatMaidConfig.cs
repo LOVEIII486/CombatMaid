@@ -107,7 +107,7 @@ namespace CombatMaid.Settings
             // 验证输入
             if (string.IsNullOrWhiteSpace(newName))
             {
-                CMDebug.LogWarning("[Config] 女仆名称不能为空，跳过应用");
+                CMDebug.LogWarning("女仆名称不能为空，跳过应用");
                 return false;
             }
 
@@ -119,7 +119,7 @@ namespace CombatMaid.Settings
             string trimmedName = newName.Trim();
             if (data.PresetConfig.CustomName == trimmedName)
             {
-                CMDebug.Log("[Config] 名称无变化，跳过保存");
+                CMDebug.Log("名称无变化，跳过保存");
                 return false;
             }
 
@@ -139,13 +139,13 @@ namespace CombatMaid.Settings
             {
                 if (!int.TryParse(newModelID, out int testId))
                 {
-                    CMDebug.LogWarning($"[Config] 无效的模型ID: {newModelID}，必须是纯数字");
+                    CMDebug.LogWarning($"无效的模型ID: {newModelID}，必须是纯数字");
                     return false;
                 }
                 
                 if (testId < 0)
                 {
-                    CMDebug.LogWarning("[Config] 模型ID不能为负数");
+                    CMDebug.LogWarning("模型ID不能为负数");
                     return false;
                 }
             }
@@ -164,7 +164,7 @@ namespace CombatMaid.Settings
             
             if (data.ExtraData.CustomModelID == targetModelID)
             {
-                CMDebug.Log("[Config] 模型ID无变化，跳过保存");
+                CMDebug.Log("模型ID无变化，跳过保存");
                 return false;
             }
 
@@ -189,13 +189,13 @@ namespace CombatMaid.Settings
             
             if (data == null)
             {
-                CMDebug.LogWarning("[Config] 酒狐存档尚未生成，请先生成一次酒狐后再修改配置");
+                CMDebug.LogWarning("酒狐存档尚未生成，请先生成一次酒狐后再修改配置");
                 return null;
             }
 
             if (data.PresetConfig == null)
             {
-                CMDebug.LogError("[Config] 酒狐存档数据异常：PresetConfig 为 null");
+                CMDebug.LogError("酒狐存档数据异常：PresetConfig 为 null");
                 return null;
             }
 
@@ -216,12 +216,12 @@ namespace CombatMaid.Settings
                     MaidSpawner.Instance.RefreshWineFoxCache();
                 }
                 
-                CMDebug.Log($"[Config] ✓ {logMessage}");
+                CMDebug.Log($"✓ {logMessage}");
                 return true;
             }
             catch (System.Exception ex)
             {
-                CMDebug.LogError($"[Config] 保存存档失败: {ex.Message}");
+                CMDebug.LogError($"保存存档失败: {ex.Message}");
                 return false;
             }
         }
@@ -235,7 +235,7 @@ namespace CombatMaid.Settings
             
             if (data == null || data.PresetConfig == null)
             {
-                CMDebug.LogWarning("[Config] 酒狐存档不存在，使用空白配置");
+                CMDebug.LogWarning("酒狐存档不存在，使用空白配置");
                 CustomMaidName = "";
                 CustomMaidModelID = "";
                 return;
@@ -250,7 +250,7 @@ namespace CombatMaid.Settings
                 CustomMaidModelID = "";
             }
            
-            CMDebug.Log($"[Config] 已从存档加载配置: 名称={CustomMaidName}, 模型={CustomMaidModelID}");
+            CMDebug.Log($"已从存档加载配置: 名称={CustomMaidName}, 模型={CustomMaidModelID}");
         }
         
         public static void ParseBuffBlockList(string input)
@@ -269,7 +269,7 @@ namespace CombatMaid.Settings
                     BlockedBuffIDs.Add(id);
                 }
             }
-            CMDebug.Log($"[Config] 已更新Buff黑名单，共 {BlockedBuffIDs.Count} 个禁用项");
+            CMDebug.Log($"已更新Buff黑名单，共 {BlockedBuffIDs.Count} 个禁用项");
         }
         
         /// <summary>
