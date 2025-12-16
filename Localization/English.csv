@@ -1,4 +1,3 @@
-key,value,version,sheet
 Item_VialMaid_I,Vial Maid Type-I,1.0,MaidItemName
 Item_VialMaid_I_Desc,"A temporary contract maid sealed in a magic container. Shatter the bottle in critical moments to summon emergency support for evacuation. A disposable, short-duration support unit.",1.0,MaidItemDescription
 Item_VialMaid_II,Vial Maid Type-II,1.0,MaidItemName
@@ -111,3 +110,8 @@ Perk_Combat_Sight_3_Desc,Ultimate reconnaissance perception capable of seeing th
 Item_MaidRecallBell,Maid Recall Bell,2.2.3,MaidItemName
 Item_MaidRecallBell_Desc,Ring the bell to command all currently following maids to retreat. This item is not consumed.,2.2.3,MaidItemDescription
 Settings_MaidVoiceVolume,Maid Voice Volume,2.2.3,CustomMaid
+Item_MaidContractWineFox_Cooldown,Contract cooling down... {0}s,2.2.3,MaidItem
+Item_MaidContractWineFox_Rebuild,Reforging the Wine Fox body...,2.2.3,MaidItem
+Item_MaidContractWineFox_Respond,Wine Fox contract responding...,2.2.3,MaidItem
+Item_MaidRecallBell_OnUse,"All units, retreat!",2.2.3,MaidItem
+Item_MaidVial_OnUse,Maid in a bottle [{0}] is ready!,2.2.3,MaidItem

@@ -7,8 +7,6 @@ using CombatMaid.Core.Items.Components;
 using System.IO;     
 using Duckov.ItemBuilders; 
 using System.Collections.Generic;
-using CombatMaid.Core.SkillTreeSystem;
-using Duckov.ItemUsage; 
 using CombatMaid.Localization;
 
 namespace CombatMaid.Core.Items.Logic
@@ -26,7 +24,7 @@ namespace CombatMaid.Core.Items.Logic
             {
                 try
                 {
-                    RegisterSingleItemSafe(modPath, info);
+                    RegisterItem(modPath, info);
                     successCount++;
                 }
                 catch (System.Exception ex)
@@ -55,7 +53,7 @@ namespace CombatMaid.Core.Items.Logic
 
         #region 注册物品并添加到商店
         
-        private static void RegisterSingleItemSafe(string modPath, MaidItemInfo info)
+        private static void RegisterItem(string modPath, MaidItemInfo info)
         {
             // 1. 本地化
             RegisterLocalization(info);
@@ -76,21 +74,19 @@ namespace CombatMaid.Core.Items.Logic
             }
 
             // 5. 商店注入
-            InjectToShopWithLockState(info);
+            InjectToShop(info);
         }
 
         /// <summary>
-        /// 将物品注入商店，并根据技能树要求决定初始锁定状态
+        /// 将物品注入商店
         /// </summary>
-        private static void InjectToShopWithLockState(MaidItemInfo info)
+        private static void InjectToShop(MaidItemInfo info)
         {
             if (string.IsNullOrEmpty(info.ShopMerchantId)) return;
 
             // 检查该物品是否需要技能树前置
             string requiredNodeID = GetRequiredSkillNode(info.itemId);
             bool hasRequirement = !string.IsNullOrEmpty(requiredNodeID);
-            
-            // 注意：这里覆盖了 MaidItemInfo 中配置的 ShopForceUnlock 默认值
             bool finalUnlockState = !hasRequirement;
 
             ShopUtils.AddGoods(new ShopGoodsData
@@ -180,7 +176,7 @@ namespace CombatMaid.Core.Items.Logic
                 if (typeof(MonoBehaviour).IsAssignableFrom(info.CustomComponentType))
                     prefab.gameObject.AddComponent(info.CustomComponentType);
                 else
-                    CMDebug.LogError($"{info.itemId} 的组件类型无效，必须继承 MonoBehaviour");
+                    CMDebug.LogError($"{info.itemId} 的组件类型无效");
             }
 
             // 4. 注入常量
@@ -220,7 +216,7 @@ namespace CombatMaid.Core.Items.Logic
         
         #endregion
 
-        #region 技能树映射
+        #region 技能树映射，解锁配置也在这里！
         /// <summary>
         /// 获取指定技能节点ID解锁的所有物品ID列表
         /// 供 SkillTreeBuilder 使用，用于给节点挂载 PerkUnlockStockShop 组件
@@ -230,7 +226,6 @@ namespace CombatMaid.Core.Items.Logic
             var list = new List<int>();
             foreach (var item in MaidItemDefs.GetDefinitions())
             {
-                // 如果该物品的前置节点正是传入的 nodeId，则加入列表
                 if (GetRequiredSkillNode(item.itemId) == nodeId)
                 {
                     list.Add(item.itemId);
@@ -246,12 +241,12 @@ namespace CombatMaid.Core.Items.Logic
         {
             switch (itemId)
             {
-                // === 契约 ===
+                // 契约
                 // case 88888: // 贝拉契约
                 case 88000: // 酒狐契约
                     return "maid_core_license";
 
-                // === 瓶中女仆 ===
+                // 瓶中女仆
                 case 88001: return "maid_special_bottle_1"; // Lv1
                 case 88002: return "maid_special_bottle_2"; // Lv2
                 case 88003: return "maid_special_bottle_3"; // Lv3
@@ -259,7 +254,6 @@ namespace CombatMaid.Core.Items.Logic
                 // 女仆物品
                 case 88101: return "maid_skill_selfheal"; // 治疗药
 
-                // === 默认 ===
                 default: 
                     return null;
             }

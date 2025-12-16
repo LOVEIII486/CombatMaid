@@ -1,15 +1,19 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using ItemStatsSystem;
 using System.Linq;
-using CombatMaid.Core;
+using CombatMaid.Localization;
 
 namespace CombatMaid.Core.Items.Components
 {
     public class Component_MaidVial : MonoBehaviour
     {
         private Item _item;
-        
-        private const string DefaultProfile = "VialMaid_I"; 
+
+        private const string DefaultProfile = "VialMaid_I";
+
+        private readonly Lazy<string> _txtOnUse =
+            new Lazy<string>(() => LocalizationManager.GetText("Item_MaidVial_OnUse"));
 
         private void Awake()
         {
@@ -21,16 +25,19 @@ namespace CombatMaid.Core.Items.Components
         {
             var player = user as CharacterMainControl;
             if (player == null) return;
-            
-            string targetProfile = GetProfileFromItem(item);
-            
-            Vector3 spawnPos = player.transform.position + player.transform.forward * 2.0f + Vector3.up * 0.5f;
-            
-            if (MaidManager.Instance != null)
+
+            if (MaidManager.Instance == null)
             {
-                Core.MaidSpawner.Instance.SpawnMaidByProfile(targetProfile, spawnPos);
-                player.PopText($"瓶中女仆 [{targetProfile}] 已就绪！");
+                CMDebug.LogError("MaidManager 未初始化");
+                return;
             }
+
+            string targetProfile = GetProfileFromItem(item);
+
+            Vector3 spawnPos = player.transform.position + player.transform.forward * 1.5f;
+            Core.MaidSpawner.Instance.SpawnMaidByProfile(targetProfile, spawnPos);
+            
+            player.PopText(string.Format(_txtOnUse.Value, targetProfile));
         }
 
         private string GetProfileFromItem(Item item)
@@ -43,6 +50,7 @@ namespace CombatMaid.Core.Items.Components
                     return data.GetString();
                 }
             }
+            CMDebug.LogWarning("物品缺少对应的女仆预设名称！");
             return DefaultProfile;
         }
 

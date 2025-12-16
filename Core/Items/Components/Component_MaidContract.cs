@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using ItemStatsSystem;
-using CombatMaid.Core;
 
 namespace CombatMaid.Core.Items.Components
 {

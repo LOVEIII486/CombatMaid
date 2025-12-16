@@ -111,3 +111,8 @@ Perk_Combat_Sight_3_Desc,极限的侦察感知能力，即使在黑夜中也能�
 Item_MaidRecallBell,女仆召回铃,2.2.3,MaidItemName
 Item_MaidRecallBell_Desc,摇响铃铛，命令所有当前跟随的女仆撤退。此物品不会消耗。,2.2.3,MaidItemDescription
 Settings_MaidVoiceVolume,女仆语音音量,2.2.3,CustomMaid
+Item_MaidContractWineFox_Cooldown,契约冷却中... {0}秒,2.2.3,MaidItem
+Item_MaidContractWineFox_Rebuild,正在重铸酒狐躯体...,2.2.3,MaidItem
+Item_MaidContractWineFox_Respond,酒狐契约响应中...,2.2.3,MaidItem
+Item_MaidRecallBell_OnUse,全员撤退！,2.2.3,MaidItem
+Item_MaidVial_OnUse,瓶中女仆 [{0}] 已就绪！,2.2.3,MaidItem

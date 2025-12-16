@@ -5,8 +5,7 @@ using Duckov.ItemUsage;
 namespace CombatMaid.Core.Items.Components
 {
     /// <summary>
-    /// 一个没有任何限制条件的通用使用行为
-    /// 用于激活“使用”按钮，具体逻辑由 OnUse 事件接管
+    /// 仅用于激活“使用”按钮
     /// </summary>
     public class SimpleUseBehavior : UsageBehavior
     {
@@ -16,9 +15,6 @@ namespace CombatMaid.Core.Items.Components
         }
 
         // 必须是 protected override void
-        protected override void OnUse(Item item, object user)
-        {
-            // 留空
-        }
+        protected override void OnUse(Item item, object user) { }
     }
 }

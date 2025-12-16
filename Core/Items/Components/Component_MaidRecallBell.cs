@@ -1,15 +1,18 @@
-﻿using UnityEngine;
+﻿using System;
+using CombatMaid.Localization;
+using UnityEngine;
 using ItemStatsSystem;
-using CombatMaid.Core;
 
 namespace CombatMaid.Core.Items.Components
 {
     /// <summary>
-    /// 女仆召回铃铛组件：使用时解散所有女仆
+    /// 女仆召回铃：使用时解散所有女仆
     /// </summary>
     public class Component_MaidRecallBell : MonoBehaviour
     {
         private Item _item;
+        
+        private readonly Lazy<string> _txtOnUse =  new Lazy<string>(() =>LocalizationManager.GetText("Item_MaidRecallBell_OnUse"));
 
         private void Awake()
         {
@@ -24,12 +27,11 @@ namespace CombatMaid.Core.Items.Components
         {
             var player = user as CharacterMainControl;
             if (player == null) return;
-
-            // 检查管理器是否存在
+            
             if (MaidManager.Instance != null)
             {
                 MaidManager.Instance.DespawnTeam();
-                player.PopText("全员撤退！");
+                player.PopText(_txtOnUse.Value);
             }
         }
 
