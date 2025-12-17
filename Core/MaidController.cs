@@ -46,12 +46,12 @@ namespace CombatMaid.Core
 
         #region 默认设置
 
-        public float HoldMaxDistance = 25.0f; // 驻守模式最大宽容距离
-        public float TeleportDistance = 30.0f; // 强制传送距离
+        public float HoldMaxDistance = 30.0f; // 驻守模式最大宽容距离
+        public float TeleportDistance = 35.0f; // 强制传送距离
         public float TeleportTimeout = 5.0f; // 强制跟随卡死超时时间
 
-        public float ForceFollowDistance = 20.0f; // 强制跟随触发距离
-        public float SafeDistanceToResumeCombat = 5.0f; // 恢复自主战斗的安全距离
+        public float ForceFollowDistance = 25.0f; // 强制跟随触发距离
+        public float SafeDistanceToResumeCombat = 8.0f; // 恢复自主战斗的安全距离
 
         /// <summary>
         /// 是否处于非原版接管状态

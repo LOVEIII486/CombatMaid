@@ -14,7 +14,7 @@ namespace CombatMaid.Core.MaidFSM.States
         public Vector3 TargetPosition { get; set; }
         
         private float _timeoutTimer;
-        private const float MaxDuration = 10.0f;
+        private const float MaxDuration = 5.0f;
         
         // 战术移动的移速倍率
         private const float TacticalSpeedMultiplier = 1.3f;
@@ -27,9 +27,9 @@ namespace CombatMaid.Core.MaidFSM.States
 
             if (Controller.AI != null)
             {
-                Controller.AI.searchedEnemy = null;
+                //Controller.AI.searchedEnemy = null;
                 //Controller.AI.aimTarget = null;
-                Controller.AI.SetTarget(null); // 这是一个显式清除目标的方法
+                //Controller.AI.SetTarget(null); // 这是一个显式清除目标的方法
 
                 // 2. 执行移动指令
                 Controller.AI.StopMove();
@@ -89,7 +89,7 @@ namespace CombatMaid.Core.MaidFSM.States
             {
                 float dist = Vector3.Distance(ai.transform.position, ai.searchedEnemy.transform.position);
                 // 15米以上脱离
-                if (dist > 15.0f)
+                if (dist > 18.0f)
                 {
                     ai.searchedEnemy = null;
                     ai.aimTarget = null;
