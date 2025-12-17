@@ -154,20 +154,17 @@ namespace CombatMaid.Core
         /// </summary>
         public void ForceMoveTo(Vector3 position)
         {
-            // 检查当前是否已经是战术移动状态
             if (StateMachine.CurrentState is State_TacticalMove tacticalState)
             {
                 // 1. 更新目标点
                 tacticalState.TargetPosition = position;
-                // 2. 强制“重入”状态
+                // 2. 强制重入状态
                 // 重新触发 Enter() 里的 AI.MoveToPos 逻辑
-                // 从而打断当前的卡死状态，执行新的移动
                 tacticalState.Enter();
-                CMDebug.Log($"[MaidController] 刷新战术移动目标 -> {position}");
+                //CMDebug.Log($"刷新战术移动目标 -> {position}");
                 return;
             }
-
-            // 如果是其他状态，走正常流程切换
+            // 其他状态，走正常流程切换
             StateMachine.ChangeState<State_TacticalMove>(state => { state.TargetPosition = position; });
         }
 
@@ -183,6 +180,10 @@ namespace CombatMaid.Core
             {
                 // CMDebug.Log($"{MaidCharacter.name} 收到强制治疗指令...");
                 healSkill.ForceActivate();
+            }
+            else
+            {
+                MaidCharacter.PopText("我还不会这个技能...");
             }
         }
 
@@ -241,7 +242,7 @@ namespace CombatMaid.Core
             // 3. 如果没有东西，直接清理历史并退出
             if (validItems.Count == 0)
             {
-                MaidCharacter.PopText("主人我身上没有东西了。。。");
+                MaidCharacter.PopText("主人我身上没有东西了...");
                 LootHistory.Clear();
                 return;
             }
@@ -259,8 +260,9 @@ namespace CombatMaid.Core
             {
                 container.Inventory.AddAndMerge(item, 0);
             }
-
+            
             LootHistory.Clear();
+            MaidCharacter.PopText("主人这是今天搜刮到的战利品~");
         }
 
         /// <summary>
@@ -384,7 +386,7 @@ namespace CombatMaid.Core
             var prefab = MaidCharacter.deadLootBoxPrefab;
             if (prefab == null)
             {
-                CMDebug.LogError("[MaidController] 无法生成战利品箱：未配置 deadLootBoxPrefab！");
+                CMDebug.LogError("无法生成战利品箱：未配置 deadLootBoxPrefab！");
                 return null;
             }
 
