@@ -156,27 +156,42 @@ namespace CombatMaid.Core.Items.Logic
                 MaidVisualHelper.CloneVisuals(prefab, info.VisualReferenceId);
             }
 
-            // 2. 挂载通用使用行为
-            if (info.usages != null)
+            // 确保行为列表初始化
+            if (prefab.UsageUtilities.behaviors == null) 
+                prefab.UsageUtilities.behaviors = new List<UsageBehavior>();
+
+            bool hasCustomUsageBehavior = false;
+
+            // 2. 挂载自定义逻辑组件
+            if (info.CustomComponentType != null)
             {
-                if (prefab.UsageUtilities.behaviors == null) 
-                    prefab.UsageUtilities.behaviors = new List<UsageBehavior>();
-                
+                var component = prefab.gameObject.AddComponent(info.CustomComponentType);
+                if (component is UsageBehavior customBehavior)
+                {
+                    // 如果是UsageBehavior必须加入到底层列表
+                    prefab.UsageUtilities.behaviors.Add(customBehavior);
+                    hasCustomUsageBehavior = true;
+                    // CMDebug.LogInfo($"[{info.itemId}] 挂载了原生行为: {info.CustomComponentType.Name}");
+                }
+                else if (component is MonoBehaviour)
+                {
+                    // 如果是 MonoBehaviour，什么都不用做
+                }
+                else
+                {
+                    CMDebug.LogError($"{info.itemId} 的组件类型无效");
+                }
+            }
+
+            // 3. 挂载通用使用行为 (SimpleUseBehavior)
+            if (info.usages != null && !hasCustomUsageBehavior)
+            {
                 // 避免重复挂载
                 if (prefab.GetComponent<SimpleUseBehavior>() == null)
                 {
                     var behavior = prefab.gameObject.AddComponent<SimpleUseBehavior>();
                     prefab.UsageUtilities.behaviors.Add(behavior);
                 }
-            }
-
-            // 3. 挂载自定义逻辑组件
-            if (info.CustomComponentType != null)
-            {
-                if (typeof(MonoBehaviour).IsAssignableFrom(info.CustomComponentType))
-                    prefab.gameObject.AddComponent(info.CustomComponentType);
-                else
-                    CMDebug.LogError($"{info.itemId} 的组件类型无效");
             }
 
             // 4. 注入常量

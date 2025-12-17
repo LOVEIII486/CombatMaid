@@ -56,6 +56,8 @@ namespace CombatMaid.Core
 
         // 只管理活跃单位
         private List<MaidController> _activeMaids = new List<MaidController>();
+        public int ActiveMaidCount => _activeMaids.Count;
+        public bool HasActiveMaids => _activeMaids.Count > 0;
 
         /// <summary>
         /// [新接口] 供 Spawner 调用，注册新生成的女仆入队
