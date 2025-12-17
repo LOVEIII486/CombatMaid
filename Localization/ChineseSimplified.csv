@@ -127,3 +127,7 @@ Perk_WineFox_Armor_1,岩石护盾 I,2.2.3,Perks
 Perk_WineFox_Armor_1_Desc,召唤大地元素附着于女仆周身，形成粗糙但坚硬的岩层，提供基础的物理防护。\n\n头部护甲 <color=#7FE8D8>+0.5</color>\n身体护甲 <color=#7FE8D8>+0.5</color>,2.2.3,Perks
 Perk_WineFox_Armor_2,岩石护盾 II,2.2.3,Perks
 Perk_WineFox_Armor_2_Desc,进一步压缩岩石密度，使其如花岗岩般致密。这层岩石足以正面抵挡重火力的侵袭。\n\n头部护甲 <color=#7FE8D8>+0.8</color>\n身体护甲 <color=#7FE8D8>+0.8</color>,2.2.3,Perks
+Item_ArmorRepairPotion_Used,装备已修复,2.2.3,MaidItem
+Item_ArmorRepairPotion_NoTarget,没有需要修复的护甲,2.2.3,MaidItem
+Item_ArmorRepairPotion,酒狐的魔力抛光剂,2.2.3,MaidItem
+Item_ArmorRepairPotion_Desc,一瓶被注入了魔力的金色液体，原本是酒狐女仆擦拭魔具的秘方。意外的对维护防具也有奇效，涂抹后裂纹将自动愈合。\n<color=#FFD700>功能：</color>修复已装备<b>头盔</b>与<b>护甲</b> <color=#00FFFF>25%</color> 耐久。\n<color=#808080>（仅修复当前耐久，无法突破磨损上限）</color>\n<i>“只要擦一擦就闪闪发光！...少了防御力？那是错觉啦~”</i>,2.2.3,MaidItem

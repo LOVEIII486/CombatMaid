@@ -180,7 +180,7 @@ namespace CombatMaid.Core.Items.Data
                     spritePath = "RecoveryPotion.png",
                     localizationKey = "Item_RecoveryPotion",
                     localizationDesc = "Item_RecoveryPotion_Desc",
-                    value = 2500,
+                    value = 2000,
                     weight = 0.5f,
                     maxStackCount = 1,
                     maxDurability = 6f,
@@ -203,8 +203,8 @@ namespace CombatMaid.Core.Items.Data
                         { "ConsumeOnUse", false }
                     },
                     ShopMerchantId = MerchantIds.Fo,
-                    ShopMaxStock = 5,
-                    ShopPriceFactor = 2.0f,
+                    ShopMaxStock = 6,
+                    ShopPriceFactor = 1.0f,
                     ShopPossibility = 1.0f,
                     ShopForceUnlock = false
                 },
@@ -241,6 +241,40 @@ namespace CombatMaid.Core.Items.Data
                     ShopPriceFactor = 1.0f,
                     ShopPossibility = 1.0f,
                     ShopForceUnlock = true
+                },
+                new MaidItemInfo // 魔力抛光剂 88103
+                {
+                    itemId = 88103,
+                    spritePath = "ArmorRepairPotion.png",
+                    localizationKey = "Item_ArmorRepairPotion",
+                    localizationDesc = "Item_ArmorRepairPotion_Desc",
+                    value = 6000,
+                    weight = 0.5f,
+                    maxStackCount = 1,
+                    maxDurability = 4f,
+                    quality = 4,
+                    displayQuality = DisplayQuality.Purple,
+                    tags = new List<string> { "Tool" },
+                    usages = new UsageData
+                    {
+                        useTime = 2.0f,
+                        useSound = "",
+                        actionSound = "",
+                        useDurability = true,
+                        durabilityUsage = 1,
+                        behaviors = new List<UsageBehaviorData>()
+                    },
+                    VisualReferenceId = 30, 
+                    CustomComponentType = typeof(Component_ArmorRepairPotion),
+                    CustomConstants = new Dictionary<string, object>
+                    {
+                        { "ConsumeOnUse", false }
+                    },
+                    ShopMerchantId = MerchantIds.Fo,
+                    ShopMaxStock = 5,
+                    ShopPriceFactor = 1.0f,
+                    ShopPossibility = 1.0f,
+                    ShopForceUnlock = false
                 },
             };
         }
