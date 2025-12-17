@@ -248,7 +248,7 @@ namespace CombatMaid.Core.Items.Data
                     spritePath = "ArmorRepairPotion.png",
                     localizationKey = "Item_ArmorRepairPotion",
                     localizationDesc = "Item_ArmorRepairPotion_Desc",
-                    value = 6000,
+                    value = 3000,
                     weight = 0.5f,
                     maxStackCount = 1,
                     maxDurability = 4f,
@@ -272,7 +272,7 @@ namespace CombatMaid.Core.Items.Data
                     },
                     ShopMerchantId = MerchantIds.Fo,
                     ShopMaxStock = 5,
-                    ShopPriceFactor = 1.5f,
+                    ShopPriceFactor = 1.0f,
                     ShopPossibility = 1.0f,
                     ShopForceUnlock = false
                 },

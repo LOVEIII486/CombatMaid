@@ -126,3 +126,9 @@ Perk_WineFox_Armor_1,Rock Shield I,2.2.3,Perks
 Perk_WineFox_Armor_1_Desc,"Summons earth elements to surround the maid,  forming a rough yet tough rock layer that provides basic physical protection.\n\nHead Armor <color=#7FE8D8>+0.5</color>\nBody Armor <color=#7FE8D8>+0.5</color>",2.2.3,Perks
 Perk_WineFox_Armor_2,Rock Shield II,2.2.3,Perks
 Perk_WineFox_Armor_2_Desc,"Further compresses the rock density,  making it as solid as granite. This stone layer is capable of withstanding heavy firepower head-on.\n\nHead Armor <color=#7FE8D8>+0.8</color>\nBody Armor <color=#7FE8D8>+0.8</color>",2.2.3,Perks
+Item_ArmorRepairPotion_Used,Equipment repaired,2.2.3,MaidItem
+Item_ArmorRepairPotion_NoTarget,No armor needs repairing,2.2.3,MaidItem
+Item_ArmorRepairPotion,Wine Fox's Magic Polish,2.2.3,MaidItem
+Item_ArmorRepairPotion_Desc,"A bottle of golden liquid infused with magic, originally a secret recipe for the Wine Fox Maid to wipe her magic tools. It is surprisingly effective for armor maintenance; cracks heal automatically after application.\n<color=#FFD700>Effect:</color> Repairs equipped <b>Helmet</b> and <b>Body Armor</b> by <color=#00FFFF>25%</color> durability.\n<color=#808080>(Repairs current durability only  cannot exceed maximum wear limit)</color>\n<i>""Just a quick wipe and it sparkles!... Less defense? It's just an illusion~""</i>",2.2.3,MaidItem
+Perk_Maid_Repair,Armor Maintenance,2.2.3,Perks
+Perk_Maid_Repair_Desc,Unlocks the [Armor Maintenance] skill.\nThe Wine Fox has mastered the art of quick armor repair. She can automatically maintain damaged armor when she has the special polish.\nUnlocks Item: <color=#FFD700>Wine Fox's Magic Polish</color>.,2.2.3,Perks
