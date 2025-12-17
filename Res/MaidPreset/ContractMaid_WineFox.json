@@ -10,7 +10,7 @@
     "MoveSpeedFactor": 1.0,
     "HasSoul": true,
     "Exp": 0,
-    "PushCharacter": true,
+    "PushCharacter": false,
     "//--- 物品配置 ---": "",
     "InventoryCapacity": 15.0,
     "CustomItemIDs": [

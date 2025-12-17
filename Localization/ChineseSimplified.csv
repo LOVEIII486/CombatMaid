@@ -91,7 +91,7 @@ Perk_Backpack_3_Desc,大幅增加背包容量。\n嘿嘿~ 主人你看，只要�
 Setting_Key_InvManage,指令: 管理女仆背包,2.2.3,KeyBindings
 Settings_BuffBlockList,禁用Buff列表 (ID用逗号隔开),2.2.3,GeneralSettings
 Settings_Key_Passive,指令: 开启/关闭和平模式,2.2.3,KeyBindings
-Settings_LootMinValue,最低搜刮价值,2.2.3,GeneralSettings
+Settings_LootMinValue,最低搜刮价值 (遵循显示价值),2.2.3,GeneralSettings
 Settings_Group_AI,AI 智能设置,2.2.3,Groups
 Settings_IgnoreSearched,忽略已搜索容器,2.2.3,GeneralSettings
 Settings_MaidAlertVolume,女仆警觉语音音量,2.2.3,CustomMaid

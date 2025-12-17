@@ -142,7 +142,7 @@ namespace CombatMaid.Core.MaidFSM.States
         {
             ResetLootingState();
 
-            int minVal = CombatMaidConfig.LootMinVal; 
+            int minVal = CombatMaidConfig.LootMinVal * 2; 
 
             // 1. 解析目标内的物品
             if (target.TryGetComponent<InteractableLootbox>(out var box))
@@ -435,7 +435,7 @@ namespace CombatMaid.Core.MaidFSM.States
                 }
             }
             
-            int minVal = CombatMaidConfig.LootMinVal;
+            int minVal = CombatMaidConfig.LootMinVal * 2;
             bool isValidBox = false;
             if (col.TryGetComponent<InteractableLootbox>(out var box) && 
                 box.Inventory != null && box.Inventory.Content.Count > 0)

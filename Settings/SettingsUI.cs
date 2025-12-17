@@ -93,7 +93,7 @@ namespace CombatMaid.Settings
                 CombatMaidConfig.Key_LootMinVal,
                 LocalizationManager.GetText("Settings_LootMinValue"),
                 CombatMaidConfig.LootMinVal,
-                0, 500000,
+                0, 10000,
                 (value) => 
                 {
                     CombatMaidConfig.LootMinVal = value;
