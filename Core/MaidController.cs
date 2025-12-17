@@ -233,8 +233,10 @@ namespace CombatMaid.Core
         {
             // 1. 基础检查
             if (MaidCharacter?.CharacterItem?.Inventory == null) return;
+            if (LootHistory == null) return;
 
             // 2. 筛选出有效且在背包中的物品
+            // 这里使用了修复后的 IsItemInInventory，它是安全的
             var validItems = LootHistory
                 .Where(item => item != null && IsItemInInventory(item))
                 .ToList();
@@ -242,7 +244,7 @@ namespace CombatMaid.Core
             // 3. 如果没有东西，直接清理历史并退出
             if (validItems.Count == 0)
             {
-                MaidCharacter.PopText("主人我身上没有东西了...");
+                MaidCharacter.PopText("主人我身上没有东西了。。。");
                 LootHistory.Clear();
                 return;
             }
@@ -258,11 +260,21 @@ namespace CombatMaid.Core
             // 5. 批量转移物品
             foreach (var item in validItems)
             {
-                container.Inventory.AddAndMerge(item, 0);
+                if (item != null && IsItemInInventory(item))
+                {
+                    try 
+                    {
+                        container.Inventory.AddAndMerge(item, 0);
+                    }
+                    catch (System.Exception e)
+                    {
+                        CMDebug.LogWarning($"转移物品失败: {item.DisplayName} - {e.Message}");
+                    }
+                }
             }
-            
+
             LootHistory.Clear();
-            MaidCharacter.PopText("主人这是今天搜刮到的战利品~");
+            MaidCharacter.PopText("主人这是今天搜刮到的战利品！");
         }
 
         /// <summary>
@@ -448,7 +460,8 @@ namespace CombatMaid.Core
         /// </summary>
         private bool IsItemInInventory(Item item)
         {
-            return MaidCharacter.CharacterItem.Inventory.Contains(item);
+            var inventory = MaidCharacter?.CharacterItem?.Inventory;
+            return inventory != null && inventory.Contains(item);
         }
 
         /// <summary>

@@ -2,36 +2,49 @@
 using System.Linq;
 using CombatMaid.Settings;
 using UnityEngine;
-using ItemStatsSystem; 
-using Duckov.ItemUsage; 
+using ItemStatsSystem;
 
 namespace CombatMaid.Core.MaidFSM.States
 {
     /// <summary>
-    /// 智能搜刮状态 (拟真优化版)
+    /// 智能搜刮状态 (拟真优化版 - 增强寻路与交互)
     /// </summary>
     public class State_Scavenge : MaidStateBase
     {
         // ================= 参数配置 =================
-        private const float SearchRadius = 15.0f;       // 略微增大搜索范围
-        private const float OwnerTetherRadius = 30.0f;  // 允许在主人附近稍微远一点的地方搜刮
-        private const float InteractionThreshold = 1.3f;  // 交互距离
+        private const float SearchRadius = 12.0f;       // 搜索范围
+        private const float OwnerTetherRadius = 18.0f;  // 主人牵引范围
+        private const float InteractionThreshold = 1.1f;  // 交互距离
         private const float VerticalInteractionRange = 2.5f;
         
         // 搜刮耗时配置
-        private const float LootDurationPerItem = 0.5f; // 每个物品的搜刮耗时(秒)
-        private const float BoxSearchDelay = 1.0f;      // 打开箱子/开始搜索的初始延迟
+        private const float LootDurationPerItem = 0.5f; 
+        private const float BoxSearchDelay = 1.0f;
+
+        // 防卡死与寻路配置
+        private const float StuckTimeout = 2.0f;         // 卡死判定时间
+        private const float MinMoveDistance = 0.1f;      // 判定移动的最小距离
+        private const float StuckCheckInterval = 0.5f;   // 卡死检测频率
+        private const float DoorCheckInterval = 0.5f;    // 开门检测频率
+        private const float DoorCheckRadius = 1.8f;      // 门检测半径
 
         // ================= 运行时状态 =================
         private List<Collider> _scannedObjects = new List<Collider>();
         private Collider _currentTarget;
         
         // 搜刮过程控制变量
-        private Queue<Item> _pendingLootQueue = new Queue<Item>(); // 待拾取物品队列
-        private bool _isLooting = false;        // 是否正在执行搜刮动作
-        private float _actionTimer = 0f;        // 动作计时器
+        private Queue<Item> _pendingLootQueue = new Queue<Item>(); 
+        private bool _isLooting = false;        
+        private float _actionTimer = 0f;        
 
-        // 战利品记录
+        // 卡死检测与黑名单变量
+        private HashSet<Collider> _failedTargets = new HashSet<Collider>(); // 临时黑名单
+        private Vector3 _lastPosForStuckCheck;
+        private float _stuckTimer = 0f;
+        private float _stuckCheckTimer = 0f;
+        private float _doorCheckTimer = 0f;
+
+        // 战利品记录 (本地引用，实际数据写入Controller)
         public List<Item> LootHistory { get; private set; } = new List<Item>();
 
         public override void Enter()
@@ -42,7 +55,10 @@ namespace CombatMaid.Core.MaidFSM.States
             // 初始化状态
             _currentTarget = null;
             _scannedObjects.Clear();
-            ResetLootingState(); // 清理搜刮相关的临时变量
+            _failedTargets.Clear(); // 每次重新进入状态时清空黑名单，给之前的失败目标一次重试机会
+            
+            ResetLootingState(); 
+            ResetStuckCheck(); // 重置卡死检测
             
             Controller.MaidCharacter?.PopText("开始搜刮物资...");
         }
@@ -51,60 +67,70 @@ namespace CombatMaid.Core.MaidFSM.States
         {
             if (Controller.MainOwner == null) return;
 
-            // --- 1. 高优先级中断检测 (任何时候都生效) ---
-            // 即使正在捡东西，如果发现敌人或离主人太远，也要立刻停手
+            // --- 1. 高优先级中断检测 ---
             if (CheckInterrupts()) return;
 
             // --- 2. 状态逻辑分流 ---
             if (_isLooting)
             {
-                // 正在搜刮中 (读条阶段)
                 UpdateLootingProcess();
             }
             else
             {
-                // 寻找或移动向目标
+                // [修复] 移动向目标时，同时进行防卡死检测和自动开门
+                // 必须按顺序判断，如果前一步导致了状态变化或目标丢失，直接 return
+        
                 UpdateMovementLogic();
+                // 如果在移动逻辑中切换了目标或状态，停止本帧
+                if (_currentTarget == null) return; 
+
+                bool stuckHandled = UpdateStuckCheck(); // 修改返回值
+                if (stuckHandled) return; // [关键] 如果处理了卡死（可能导致状态切换），立刻停止！
+
+                UpdateDoorCheck();
             }
         }
 
         // ================= 核心逻辑: 搜刮过程 =================
 
-        /// <summary>
-        /// 驱动搜刮读条和动作
-        /// </summary>
         private void UpdateLootingProcess()
         {
-            // 保护性检查：如果箱子/物品突然消失了 (被销毁)
+            // 保护性检查：如果箱子/物品突然消失了
             if (_currentTarget == null || _currentTarget.gameObject == null)
             {
-                FinishCurrentLooting(); // 结束当前目标，找下一个
+                FinishCurrentLooting(); 
                 return;
             }
 
             _actionTimer += Time.deltaTime;
 
-            // 读条完成，执行一次拾取
             if (_actionTimer >= LootDurationPerItem)
             {
-                _actionTimer = 0f; // 重置计时器
+                _actionTimer = 0f; 
 
                 if (_pendingLootQueue.Count > 0)
                 {
-                    // 从队列取出一个物品尝试拾取
+                    // [修复漏洞] 在从队列取出物品(Dequeue)之前，必须先检查背包是否已满！
+                    if (IsBagFull())
+                    {
+                        // 如果背包满了，立刻停止当前搜刮
+                        // 剩下的物品会留在 _pendingLootQueue 里被清除，但实际上它们还在箱子里没有被动过
+                        FinishCurrentLooting(); 
+                
+                        // 这里不需要额外调用 ExitState，因为 FinishCurrentLooting 会把 _isLooting 设为 false
+                        // 下一帧 Update 的 CheckInterrupts 就会检测到背包满并自动退出状态
+                        return;
+                    }
+
                     Item itemToPick = _pendingLootQueue.Dequeue();
-                    
-                    // 只有当物品仍然存在且未被他人拿走时才拾取
+            
+                    // 鲁棒性检查：确保物品未被销毁且有效
                     if (itemToPick != null && TryPickItem(itemToPick))
                     {
-                        // 可选：每捡起一个东西冒个字
-                        // Controller.MaidCharacter?.PopText($"+ {itemToPick.DisplayName}");
+                        // 成功拾取
                     }
-                    
-                    // 如果捡完这个导致背包满了，中断会在下一帧的 CheckInterrupts 处理
                 }
 
-                // 队列空了，说明捡完了
                 if (_pendingLootQueue.Count == 0)
                 {
                     FinishCurrentLooting();
@@ -112,21 +138,17 @@ namespace CombatMaid.Core.MaidFSM.States
             }
         }
 
-        /// <summary>
-        /// 到达目标，开始初始化搜刮队列
-        /// </summary>
         private void StartLooting(Collider target)
         {
             ResetLootingState();
 
-            int minVal = CombatMaidConfig.LootMinVal; // 获取配置的阈值
+            int minVal = CombatMaidConfig.LootMinVal; 
 
             // 1. 解析目标内的物品
             if (target.TryGetComponent<InteractableLootbox>(out var box))
             {
                 if (box.Inventory != null && box.Inventory.Content != null)
                 {
-                    // 将箱子里的东西加入队列 (增加价值判断)
                     foreach (var item in box.Inventory.Content)
                     {
                         if (item != null && item.GetTotalRawValue() >= minVal)
@@ -140,7 +162,6 @@ namespace CombatMaid.Core.MaidFSM.States
             {
                 if (pickup.ItemAgent != null && pickup.ItemAgent.Item != null)
                 {
-                    // 地面物品判断
                     if (pickup.ItemAgent.Item.GetTotalRawValue() >= minVal)
                     {
                         _pendingLootQueue.Enqueue(pickup.ItemAgent.Item);
@@ -154,10 +175,11 @@ namespace CombatMaid.Core.MaidFSM.States
                 _isLooting = true;
                 _actionTimer = -BoxSearchDelay + LootDurationPerItem; 
                 Controller.MaidCharacter?.PopText("正在搜刮...");
+                HaltMovement(); // 确保停下来
             }
             else
             {
-                // 虽然箱子是空的或者全是垃圾，但也需要结束流程并标记
+                // 目标是空的，结束并标记
                 Controller.MaidCharacter?.PopText("没有什么值得搜刮的...");
                 FinishCurrentLooting();
             }
@@ -165,26 +187,20 @@ namespace CombatMaid.Core.MaidFSM.States
 
         private void FinishCurrentLooting()
         {
-            // === 新增标记功能 ===
-            // 只有当目标仍然存在时才尝试标记
+            // 标记箱子为已搜索
             if (_currentTarget != null && _currentTarget.gameObject != null)
             {
-                // 如果是战利品箱，手动触发“已搜索”标记
                 if (_currentTarget.TryGetComponent<InteractableLootbox>(out var box))
                 {
-                    // 1. 设置库存内部标志位（防止逻辑上重复搜索）
-                    if (box.Inventory != null)
-                    {
-                        box.Inventory.hasBeenInspectedInLootBox = true;
-                    }
-                    
-                    // 2. 调用 UI 标记方法（使世界图标变灰，给玩家视觉反馈）
+                    if (box.Inventory != null) box.Inventory.hasBeenInspectedInLootBox = true;
                     box.SetMarkerUsed();
                 }
             }
 
             ResetLootingState();
-            _currentTarget = null; // 置空当前目标，触发 UpdateMovementLogic 寻找下一个
+            _currentTarget = null; 
+            // 搜刮完成后，重置卡死检测，准备前往下一个目标
+            ResetStuckCheck();
         }
 
         private void ResetLootingState()
@@ -198,30 +214,25 @@ namespace CombatMaid.Core.MaidFSM.States
 
         private void UpdateMovementLogic()
         {
+            // 如果没有目标或目标已销毁，寻找下一个
             if (_currentTarget == null || _currentTarget.gameObject == null)
             {
                 AcquireNextTarget();
                 return;
             }
 
-            // [关键Bug点修复]：
-            // 原代码：float dist = Vector3.Distance(Controller.transform.position, _currentTarget.transform.position);
-            // 错误原因：如果物体挂在墙上(高度1.5m)，即使走到脚下，直线距离也>1.0m，导致永远无法触发交互。
             Vector3 myPos = Controller.transform.position;
             Vector3 targetPos = _currentTarget.transform.position;
 
-            // 1. 计算水平距离 (忽略高度差，只看平面距离)
+            // 1. 水平距离
             float horizontalDist = Vector2.Distance(
                 new Vector2(myPos.x, myPos.z), 
                 new Vector2(targetPos.x, targetPos.z)
             );
-
-            // 2. 计算垂直高度差
+            // 2. 垂直高度差
             float heightDiff = Mathf.Abs(myPos.y - targetPos.y);
 
-            // 3. 综合判定：
-            // 逻辑 A: 水平距离够近 且 高度在手臂可及范围内 (解决了高处衣物无法搜刮的问题)
-            // 逻辑 B: 或者传统的 3D 距离够近 (兼容地面上的小物品)
+            // 3. 距离判定
             bool isReach = (horizontalDist <= InteractionThreshold && heightDiff <= VerticalInteractionRange) 
                            || Vector3.Distance(myPos, targetPos) <= InteractionThreshold;
 
@@ -232,7 +243,103 @@ namespace CombatMaid.Core.MaidFSM.States
             }
             else
             {
+                // 持续请求移动（防止之前的 StopMove 导致停滞）
+                // 注意：MoveToPos 内部有优化，重复调用消耗不大
                 Controller.AI?.MoveToPos(targetPos);
+            }
+        }
+
+        // ================= 增强逻辑: 防卡死与开门 =================
+
+        private void ResetStuckCheck()
+        {
+            _stuckTimer = 0f;
+            _stuckCheckTimer = 0f;
+            _lastPosForStuckCheck = Controller.transform.position;
+            _doorCheckTimer = 0f;
+        }
+
+        private bool UpdateStuckCheck()
+        {
+            // 如果没有目标，不需要检测卡死
+            if (_currentTarget == null) return false;
+
+            _stuckCheckTimer += Time.deltaTime;
+            if (_stuckCheckTimer < StuckCheckInterval) return false;
+    
+            _stuckCheckTimer = 0f;
+
+            bool isTryingToMove = Controller.AI != null && Controller.AI.IsMoving();
+            float distMoved = Vector3.Distance(Controller.transform.position, _lastPosForStuckCheck);
+            _lastPosForStuckCheck = Controller.transform.position;
+
+            if (isTryingToMove && distMoved < MinMoveDistance)
+            {
+                _stuckTimer += StuckCheckInterval;
+                if (_stuckTimer >= StuckTimeout)
+                {
+                    HandleStuck();
+                    return true; // [关键] 报告已处理卡死
+                }
+            }
+            else
+            {
+                _stuckTimer = 0f;
+            }
+            return false;
+        }
+
+        private void HandleStuck()
+        {
+            // [修复] 使用 Unity 的生命周期检查 (implicit bool check)
+            // 只有当物体真的还存在时，才获取它的 name 和加入黑名单
+            if (_currentTarget) 
+            {
+                CMDebug.LogWarning($"搜刮过程卡死！放弃目标: {_currentTarget.name}");
+                _failedTargets.Add(_currentTarget);
+            }
+
+            Controller.MaidCharacter?.PopText("过不去...");
+
+            // 2. 停止移动并重置状态
+            HaltMovement();
+            _currentTarget = null;
+            ResetStuckCheck();
+
+            // 3. 立即尝试获取下一个目标
+            AcquireNextTarget();
+        }
+
+        private void UpdateDoorCheck()
+        {
+            // 只有在试图移动时才检测开门
+            if (Controller.AI == null || !Controller.AI.IsMoving()) return;
+
+            _doorCheckTimer += Time.deltaTime;
+            if (_doorCheckTimer < DoorCheckInterval) return;
+            _doorCheckTimer = 0f;
+
+            TryOpenNearbyDoors();
+        }
+
+        private void TryOpenNearbyDoors()
+        {
+            Collider[] hits = Physics.OverlapSphere(Controller.transform.position, DoorCheckRadius);
+            foreach (var hit in hits)
+            {
+                Door door = hit.GetComponentInParent<Door>();
+                if (door == null) continue;
+
+                // 自动开门条件：关着 + 无锁(不需要物品) + 可交互
+                if (!door.IsOpen && 
+                    door.Interact != null && 
+                    !door.Interact.requireItem && 
+                    door.Interact.CheckInteractable())
+                {
+                    CMDebug.Log($"尝试自动开门: {door.name}");
+                    Controller.MaidCharacter.Interact(door.Interact);
+                    return;
+                }
             }
         }
 
@@ -240,21 +347,19 @@ namespace CombatMaid.Core.MaidFSM.States
 
         private bool CheckInterrupts()
         {
-            // 优先级判定：
-            // 1. 主人太远 -> 强制归队
             if (IsOwnerTooFar())
             {
                 ExitStateAndClear("距离过远-归队");
                 return true;
             }
-            // 2. 威胁 -> 战斗
             if (IsUnderThreat())
             {
                 ExitStateAndClear("发现威胁！停止搜刮");
                 return true;
             }
-            // 3. 背包满 -> 停止 (仅在非搜刮状态或搜刮间隙检测，避免频繁打断)
-            if (IsBagFull())
+            // 只有在非 Looting 状态下才检测背包满，防止搜刮到一半被打断
+            // 或者在 UpdateLootingProcess 内部处理了
+            if (!_isLooting && IsBagFull())
             {
                 ExitStateAndClear("背包已满，搜刮结束");
                 return true;
@@ -264,7 +369,7 @@ namespace CombatMaid.Core.MaidFSM.States
 
         private void ExitStateAndClear(string reason)
         {
-            ResetLootingState(); // 退出前务必清理队列
+            ResetLootingState(); 
             Controller.MaidCharacter?.PopText(reason);
             Machine.ChangeState<State_Autonomous>();
         }
@@ -273,22 +378,29 @@ namespace CombatMaid.Core.MaidFSM.States
         {
             ScanEnvironment();
             _currentTarget = GetClosestValidTarget();
+            
+            // 重置卡死检测，给新目标一个完整的 3s 机会
+            ResetStuckCheck();
+
             if (_currentTarget == null)
             {
+                // 如果扫描了一圈发现没有有效目标（或者全是黑名单里的），退出状态
                 ExitStateAndClear("附近无物资");
             }
         }
 
         private bool TryPickItem(Item item)
         {
-            // 增加校验：如果物品已经被别人捡走了，则跳过
+            if (Controller == null || Controller.MaidCharacter == null) return false;
             if (item == null || item.GetTotalRawValue() < 0) return false;
-            
-            // 尝试拾取
+    
             bool success = Controller.MaidCharacter.PickupItem(item);
             if (success)
             {
-                Controller.LootHistory.Add(item);
+                if (Controller.LootHistory != null)
+                {
+                    Controller.LootHistory.Add(item);
+                }
             }
             return success;
         }
@@ -299,6 +411,9 @@ namespace CombatMaid.Core.MaidFSM.States
             Collider[] hits = Physics.OverlapSphere(Controller.transform.position, SearchRadius);
             foreach (var hit in hits)
             {
+                // 过滤掉之前失败的目标
+                if (_failedTargets.Contains(hit)) continue;
+
                 if (IsValidLootTarget(hit)) _scannedObjects.Add(hit);
             }
         }
@@ -321,7 +436,6 @@ namespace CombatMaid.Core.MaidFSM.States
             }
             
             int minVal = CombatMaidConfig.LootMinVal;
-
             bool isValidBox = false;
             if (col.TryGetComponent<InteractableLootbox>(out var box) && 
                 box.Inventory != null && box.Inventory.Content.Count > 0)
@@ -347,6 +461,9 @@ namespace CombatMaid.Core.MaidFSM.States
             foreach (var target in _scannedObjects)
             {
                 if (target == null) continue;
+                // 再次过滤黑名单（双重保险）
+                if (_failedTargets.Contains(target)) continue;
+
                 float d = Vector3.Distance(myPos, target.transform.position);
                 if (d < minDst) { minDst = d; best = target; }
             }
@@ -355,8 +472,16 @@ namespace CombatMaid.Core.MaidFSM.States
 
         private bool IsBagFull()
         {
-            if (Controller.AI == null) return true;
-            return Controller.AI.CharacterMainControl.CharacterItem.Inventory.GetFirstEmptyPosition(0) < 0;
+            var character = Controller?.AI?.CharacterMainControl;
+            if (character == null) return true;
+
+            var item = character.CharacterItem;
+            if (item == null) return true;
+
+            var inventory = item.Inventory;
+            if (inventory == null) return true;
+
+            return inventory.GetFirstEmptyPosition(0) < 0;
         }
 
         private bool IsOwnerTooFar()
