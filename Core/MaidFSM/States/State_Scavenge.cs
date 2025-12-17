@@ -13,14 +13,14 @@ namespace CombatMaid.Core.MaidFSM.States
     public class State_Scavenge : MaidStateBase
     {
         // ================= 参数配置 =================
-        private const float SearchRadius = 10.0f;       // 略微增大搜索范围
-        private const float OwnerTetherRadius = 15.0f;  // 允许在主人附近稍微远一点的地方搜刮
-        private const float InteractionThreshold = 1f;  // 交互距离
+        private const float SearchRadius = 15.0f;       // 略微增大搜索范围
+        private const float OwnerTetherRadius = 30.0f;  // 允许在主人附近稍微远一点的地方搜刮
+        private const float InteractionThreshold = 1.3f;  // 交互距离
         private const float VerticalInteractionRange = 2.5f;
         
         // 搜刮耗时配置
         private const float LootDurationPerItem = 0.5f; // 每个物品的搜刮耗时(秒)
-        private const float BoxSearchDelay = 1.2f;      // 打开箱子/开始搜索的初始延迟
+        private const float BoxSearchDelay = 1.0f;      // 打开箱子/开始搜索的初始延迟
 
         // ================= 运行时状态 =================
         private List<Collider> _scannedObjects = new List<Collider>();
