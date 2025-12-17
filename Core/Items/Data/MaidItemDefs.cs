@@ -272,7 +272,7 @@ namespace CombatMaid.Core.Items.Data
                     },
                     ShopMerchantId = MerchantIds.Fo,
                     ShopMaxStock = 5,
-                    ShopPriceFactor = 1.0f,
+                    ShopPriceFactor = 1.5f,
                     ShopPossibility = 1.0f,
                     ShopForceUnlock = false
                 },

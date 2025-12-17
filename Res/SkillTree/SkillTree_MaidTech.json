@@ -1027,6 +1027,37 @@
       ]
     },
     {
+      "//": "========== 战地维修：自动护甲维护 ==========",
+      "ID": "maid_skill_repair",
+      "DisplayName": "Perk_Maid_Repair",
+      "Description": "Perk_Maid_Repair_Desc",
+      "IconFileName": "perk_repair.png",
+      "CostMoney": 10000,
+      "CostItems": {
+        "93": 1,
+        "86": 1,
+        "30": 2,
+        "52": 3,
+        "21": 3
+      },
+      "RequiredLevel": 15,
+      "Position": {
+        "x": 0,
+        "y": 600
+      },
+      "PrerequisiteIDs": [
+        "maid_skill_emergency_heal"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "AddSkill",
+          "SkillID": "AutoRepairArmor",
+          "SkillParams": {}
+        }
+      ]
+    },
+    {
       "//": "========== 特殊物品：瓶中女仆 (x: -60) ==========",
       "ID": "maid_special_bottle_1",
       "DisplayName": "Perk_Bottle_Lv1",

@@ -268,6 +268,7 @@ namespace CombatMaid.Core.Items.Logic
                 
                 // 女仆物品
                 case 88101: return "maid_skill_selfheal"; // 治疗药
+                case 88103: return "maid_skill_repair";
 
                 default: 
                     return null;

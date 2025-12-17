@@ -42,6 +42,8 @@ namespace CombatMaid.Core.MaidSkillSystem
                         return CreateEmergencyHeal(config.Params);
                     case "TeaBreak":
                         return new Skill_TeaBreak();
+                    case "AutoRepairArmor":
+                        return new Skill_AutoRepairArmor();
                     default:
                         CMDebug.LogWarning($"未知的技能类型: {config.SkillID}");
                         return null;
