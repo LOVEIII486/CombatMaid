@@ -20,7 +20,7 @@ namespace CombatMaid.Core.MaidFSM
         private const float RangeRetreatThresholdPercent = 0.35f; 
         
         private const float MinSafeLimit = 5f;   
-        private const float MaxSafeLimit = 15f;  
+        private const float MaxSafeLimit = 13f;  
 
         private float _nextAdjustTime;
 
