@@ -1,3 +1,4 @@
+key,value,version,sheet
 Item_VialMaid_I,Vial Maid Type-I,1.0,MaidItemName
 Item_VialMaid_I_Desc,"A temporary contract maid sealed in a magic container. Shatter the bottle in critical moments to summon emergency support for evacuation. A disposable, short-duration support unit.",1.0,MaidItemDescription
 Item_VialMaid_II,Vial Maid Type-II,1.0,MaidItemName
