@@ -14,12 +14,12 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
         public override bool RespectGlobalCooldown => true;
         public override float TriggerGCDDuration => 3.0f;
 
-        private const float StartRepairThreshold = 0.25f; // 低于 25% 开始修
-        private const float StopRepairThreshold = 0.80f;
+        private const float StartRepairThreshold = 0.55f;
+        private const float StopRepairThreshold = 0.95f;
         
         private const float RepairSafeWindow = 6.0f; 
 
-        // 【新增】标记当前是否处于“正在连续维修”的状态
+        // 标记当前是否处于“正在连续维修”的状态
         private bool _isUnderMaintenance = false;
         
         private readonly Lazy<string> _txtUseRepair = new Lazy<string>(() => 
