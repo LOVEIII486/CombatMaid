@@ -41,6 +41,8 @@ namespace CombatMaid.Core
 
         //缓存引用
         private CharacterMainControl _cachedCharacter;
+        
+        public MaidAIAssistant AIAssistant { get; private set; }
 
         #endregion
 
@@ -102,6 +104,7 @@ namespace CombatMaid.Core
             }
 
             // 初始化状态机
+            AIAssistant = new MaidAIAssistant(this);
             InitializeStateMachine();
             //DebugPrintAllLayers();
             CMDebug.Log($"女仆控制器初始化完成。主人: {player.name}, 技能数: {SkillSystem.SkillCount}");

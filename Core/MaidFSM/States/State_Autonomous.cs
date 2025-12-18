@@ -39,6 +39,8 @@ namespace CombatMaid.Core.MaidFSM.States
         public override void Update()
         {
             if (Controller.MainOwner == null || Controller.AI == null) return;
+            
+            Controller.AIAssistant.OnTick();
 
             // 如果离得太远，优先切换到强制跟随
             if (Controller.IsTooFarFromOwner())
