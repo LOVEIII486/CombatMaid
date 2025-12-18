@@ -135,3 +135,5 @@ Perk_Maid_Repair,护甲维护,2.2.3,Perks
 Perk_Maid_Repair_Desc,解锁[护甲维护]技能。\n酒狐掌握了快速修补防具的技巧。当拥有专用抛光剂时，她可以自动维护受损的护甲。\n解锁商品：<color=#FFD700>酒狐的魔力抛光剂</color>。,2.2.3,Perks
 Perk_Combat_Scatter_4,精确射击 IV,2.2.3,Perks
 Perk_Combat_Scatter_4_Desc,枪械精准度登峰造极，酒狐几乎不会浪费任何一发子弹。\n\n散布范围 <color=#FFC572>额外-70%</color>\n移动射击散布 <color=#FFC572>额外-50%</color>\n盲射散布 <color=#FFC572>额外-50%</color>\n暴击率 <color=#FFC572>+20%</color>,2.2.3,Perks
+Item_MaidScanner,战斗女仆体检套装,2.2.3,MaidItem
+Item_MaidScanner_Desc,用于给女仆进行简单体检，反馈实时生理指标。支持多次使用。,2.2.3,MaidItem

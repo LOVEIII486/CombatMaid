@@ -116,6 +116,20 @@ namespace CombatMaid.Core
 
             return null;
         }
+        
+        public List<MaidController> GetAllActiveMaids()
+        {
+            for (int i = _activeMaids.Count - 1; i >= 0; i--)
+            {
+                var maid = _activeMaids[i];
+                if (maid == null || maid.gameObject == null)
+                {
+                    _activeMaids.RemoveAt(i);
+                }
+            }
+            // 返回当前列表的副本，防止外部直接修改私有列表
+            return new List<MaidController>(_activeMaids);
+        }
 
         #endregion
 

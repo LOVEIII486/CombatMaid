@@ -276,6 +276,39 @@ namespace CombatMaid.Core.Items.Data
                     ShopPossibility = 1.0f,
                     ShopForceUnlock = false
                 },
+                new MaidItemInfo 
+                {
+                    itemId = 88104,
+                    localizationKey = "Item_MaidScanner", 
+                    localizationDesc = "Item_MaidScanner_Desc",
+                    spritePath = "MaidScanner.png",
+                    value = 200,
+                    weight = 0.1f,
+                    maxStackCount = 1,
+                    maxDurability = 10f,
+                    quality = 3,
+                    displayQuality = DisplayQuality.Blue,
+                    usages = new UsageData
+                    {
+                        useTime = 0.3f,
+                        useSound = "",
+                        actionSound = "",
+                        useDurability = true,
+                        durabilityUsage = 1,
+                        behaviors = new List<UsageBehaviorData>()
+                    },
+                    VisualReferenceId = 73,
+                    CustomComponentType = typeof(Component_MaidStatusChecker),
+                    CustomConstants = new Dictionary<string, object>
+                    {
+                        { "ConsumeOnUse", false }
+                    },
+                    ShopMerchantId = MerchantIds.Fo,
+                    ShopMaxStock = 10,
+                    ShopPriceFactor = 1.0f,
+                    ShopPossibility = 1.0f,
+                    ShopForceUnlock = true
+                },
             };
         }
     }

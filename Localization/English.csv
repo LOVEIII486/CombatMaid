@@ -135,3 +135,5 @@ Perk_Maid_Repair,Armor Maintenance,2.2.3,Perks
 Perk_Maid_Repair_Desc,Unlocks the [Armor Maintenance] skill.\nThe Wine Fox has mastered the art of quick armor repair. She can automatically maintain damaged armor when she has the special polish.\nUnlocks Item: <color=#FFD700>Wine Fox's Magic Polish</color>.,2.2.3,Perks
 Perk_Combat_Scatter_4,Precision Shooting IV,2.2.3,Perks
 Perk_Combat_Scatter_4_Desc,"Weapon accuracy reaches its peak,  allowing the wine fox to waste almost no shots.\n\nWeapon Scatter <color=#FFC572>Additional -70%</color>\nScatter While Moving <color=#FFC572>Additional -50%</color>\nBlind Fire Scatter <color=#FFC572>Additional -50%</color>",2.2.3,Perks
+Item_MaidScanner,Combat Maid Medical Kit,2.2.3,MaidItem
+Item_MaidScanner_Desc,"Used for basic physical examinations of maids, providing real-time physiological indicators. Supports multiple uses.",2.2.3,MaidItem
