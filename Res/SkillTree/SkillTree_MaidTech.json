@@ -667,6 +667,55 @@
       ]
     },
     {
+      "ID": "maid_combat_scatter_4",
+      "DisplayName": "Perk_Combat_Scatter_4",
+      "Description": "Perk_Combat_Scatter_4_Desc",
+      "IconFileName": "perk_scatter.png",
+      "CostMoney": 15000,
+      "CostItems": {
+        "983": 1,
+        "979": 1,
+        "394": 3,
+        "328": 1
+      },
+      "RequiredLevel": 20,
+      "Position": {
+        "x": 380,
+        "y": 680
+      },
+      "PrerequisiteIDs": [
+        "maid_combat_scatter_3"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "AddAttribute",
+          "Attribute": "GunDistanceMultiplier",
+          "Value": 0.15
+        },
+        {
+          "Type": "AddAttribute",
+          "Attribute": "GunCritRateGain",
+          "Value": 0.2
+        },
+        {
+          "Type": "MultiplyAttribute",
+          "Attribute": "GunScatterMultiplier",
+          "Value": 0.3
+        },
+        {
+          "Type": "MultiplyAttribute",
+          "Attribute": "ScatterMultiIfTargetRunning",
+          "Value": 0.5
+        },
+        {
+          "Type": "MultiplyAttribute",
+          "Attribute": "ScatterMultiIfOffScreen",
+          "Value": 0.5
+        }
+      ]
+    },
+    {
       "//": "========== 左侧子分支：侦察视野 (x: -380) ==========",
       "ID": "maid_combat_sight_1",
       "DisplayName": "Perk_Combat_Sight_1",
