@@ -132,7 +132,7 @@ Item_ArmorRepairPotion_NoTarget,没有需要修复的护甲,2.2.3,MaidItem
 Item_ArmorRepairPotion,酒狐的魔力抛光剂,2.2.3,MaidItem
 Item_ArmorRepairPotion_Desc,一瓶被注入了魔力的金色液体，原本是酒狐女仆擦拭魔具的秘方。意外的对维护防具也有奇效，涂抹后裂纹将自动愈合。\n<color=#FFD700>功能：</color>修复已装备<b>头盔</b>与<b>护甲</b> <color=#00FFFF>25%</color> 耐久。\n<color=#808080>（仅修复当前耐久，无法突破磨损上限）</color>\n<i>“只要擦一擦就闪闪发光！...少了防御力？那是错觉啦~”</i>,2.2.3,MaidItem
 Perk_Maid_Repair,护甲维护,2.2.3,Perks
-Perk_Maid_Repair_Desc,解锁[护甲维护]技能。\n酒狐掌握了快速修补防具的技巧。当拥有专用抛光剂时，她可以自动维护受损的护甲。\n解锁商品：<color=#FFD700>酒狐的魔力抛光剂</color>。,2.2.3,Perks
+Perk_Maid_Repair_Desc,解锁[护甲维护]技能。\n酒狐掌握了快速修补防具的技巧。当拥有专用抛光剂时，她可以自动维护受损的护甲。（装备耐久低于50%时）\n解锁商品：<color=#FFD700>酒狐的魔力抛光剂</color>。,2.2.3,Perks
 Perk_Combat_Scatter_4,精确射击 IV,2.2.3,Perks
 Perk_Combat_Scatter_4_Desc,枪械精准度登峰造极，酒狐几乎不会浪费任何一发子弹。\n\n散布范围 <color=#FFC572>额外-70%</color>\n移动射击散布 <color=#FFC572>额外-50%</color>\n盲射散布 <color=#FFC572>额外-50%</color>\n暴击率 <color=#FFC572>+20%</color>,2.2.3,Perks
 Item_MaidScanner,战斗女仆体检套装,2.2.3,MaidItem
