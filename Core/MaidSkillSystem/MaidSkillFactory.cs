@@ -44,6 +44,8 @@ namespace CombatMaid.Core.MaidSkillSystem
                         return new Skill_TeaBreak();
                     case "AutoRepairArmor":
                         return new Skill_AutoRepairArmor();
+                    case "FreezeNova":
+                        return new Skill_FreezeNova();
                     default:
                         CMDebug.LogWarning($"未知的技能类型: {config.SkillID}");
                         return null;

@@ -137,3 +137,7 @@ Perk_Combat_Scatter_4,Precision Shooting IV,2.2.3,Perks
 Perk_Combat_Scatter_4_Desc,"Weapon accuracy reaches its peak,  allowing the wine fox to waste almost no shots.\n\nWeapon Scatter <color=#FFC572>Additional -70%</color>\nScatter While Moving <color=#FFC572>Additional -50%</color>\nBlind Fire Scatter <color=#FFC572>Additional -50%</color>",2.2.3,Perks
 Item_MaidScanner,Combat Maid Medical Kit,2.2.3,MaidItem
 Item_MaidScanner_Desc,"Used for basic physical examinations of maids, providing real-time physiological indicators. Supports multiple uses.",2.2.3,MaidItem
+Perk_Maid_FreezeNova,Freeze Nova,2.2.3,Perks
+Perk_Maid_FreezeNova_Desc,"Unlocks the [Freeze Nova] skill.\nThe Wine Fox releases ice energy, freezing all enemies within a 15m radius, dealing continuous damage and rendering them immobile.\nCooldown: <color=#F3D38A>60s</color>.",2.2.3,Perks
+Skill_FreezeNova_Success,<color=#00FFFF>Freeze Nova</color>: <color=#7FFFD4>{0}</color> targets frozen!,2.2.3,Skill
+Buff_MaidBuff_SuperRegen_Name,Super Regen,2.2.3,Buffs

@@ -83,9 +83,7 @@ namespace CombatMaid.Core.MaidFSM
                 // 最终限制在物理区间内
                 float finalSafeDist = Mathf.Clamp(rawSafeDist, MinSafeLimit, MaxSafeLimit);
 
-                // --- 添加调试日志 ---
-                // 使用 CMDebug 打印武器名、原始射程、计算值以及最终钳制值
-                CMDebug.Log($"武器监测: {currentGun.Item.DisplayName} | 射程: {weaponRange}m | 比例计算值: {rawSafeDist:F1}m | 最终红线: {finalSafeDist:F1}m");
+                //CMDebug.Log($"武器监测: {currentGun.Item.DisplayName} | 射程: {weaponRange}m | 比例计算值: {rawSafeDist:F1}m | 最终红线: {finalSafeDist:F1}m");
 
                 return finalSafeDist;
             }

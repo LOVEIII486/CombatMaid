@@ -137,3 +137,7 @@ Perk_Combat_Scatter_4,精确射击 IV,2.2.3,Perks
 Perk_Combat_Scatter_4_Desc,枪械精准度登峰造极，酒狐几乎不会浪费任何一发子弹。\n\n散布范围 <color=#FFC572>额外-70%</color>\n移动射击散布 <color=#FFC572>额外-50%</color>\n盲射散布 <color=#FFC572>额外-50%</color>\n暴击率 <color=#FFC572>+20%</color>,2.2.3,Perks
 Item_MaidScanner,战斗女仆体检套装,2.2.3,MaidItem
 Item_MaidScanner_Desc,用于给女仆进行简单体检，反馈实时生理指标。支持多次使用。,2.2.3,MaidItem
+Perk_Maid_FreezeNova,寒冰新星,2.2.3,Perks
+Perk_Maid_FreezeNova_Desc,解锁[寒冰新星]技能。\n酒狐释放寒冰能量，冻结半径15米内的所有敌人，持续伤害并使其无法行动。\n冷却时间：<color=#F3D38A>60秒</color>。,2.2.3,Perks
+Skill_FreezeNova_Success,<color=#00FFFF>寒冰新星</color>：已冻结 <color=#7FFFD4>{0}</color> 个目标！,2.2.3,Skill
+Buff_MaidBuff_SuperRegen_Name,超级再生,2.2.3,Buffs
