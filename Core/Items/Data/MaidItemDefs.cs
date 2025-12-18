@@ -138,7 +138,7 @@ namespace CombatMaid.Core.Items.Data
                     localizationDesc = "Item_VialMaid_III_Desc",
                     spritePath = "VialMaid_III.png",
 
-                    value = 40000,
+                    value = 30000,
                     weight = 1.5f,
                     maxStackCount = 1,
                     maxDurability = 0f,
