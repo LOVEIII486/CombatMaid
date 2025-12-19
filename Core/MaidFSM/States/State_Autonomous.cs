@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using CombatMaid.Core;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
 
@@ -11,27 +10,28 @@ namespace CombatMaid.Core.MaidFSM.States
     public class State_Autonomous : MaidStateBase
     {
         // 配置参数
-        private const float IdleThreshold = 3.0f;     // 判定为闲置的时间
-        private const float PatrolRadiusMin = 2.0f;  // 最小巡逻半径
-        private const float PatrolRadiusMax = 5.0f;  // 最大巡逻半径
-        private const float ChangePosInterval = 5.0f;// 闲置时多久换一次位置
+        private const float IdleThreshold = 2.0f;     
+        private const float PatrolRadiusMin = 3.0f;  
+        private const float PatrolRadiusMax = 7.0f;  
+        private const float ChangePosInterval = 4.0f;
+        private const float ReloadCheckInterval = 5.0f;
 
         // 运行时变量
         private Vector3 _lastOwnerPos;
         private float _idleTimer;
         private float _nextPatrolMoveTime;
+        private float _nextReloadCheckTime;
 
         public override void Enter()
         {
             SetNativeBrainActive(true);
-            
             _idleTimer = 0f;
             _nextPatrolMoveTime = 0f;
+            _nextReloadCheckTime = 0f;
 
             if (Controller.MainOwner != null)
             {
                 _lastOwnerPos = Controller.MainOwner.transform.position;
-                // 进入状态时先跟随一次
                 UpdatePatrolPosition(Controller.MainOwner.transform.position);
             }
         }
@@ -42,46 +42,68 @@ namespace CombatMaid.Core.MaidFSM.States
             
             Controller.AIAssistant.OnTick();
 
-            // 如果离得太远，优先切换到强制跟随
             if (Controller.IsTooFarFromOwner())
             {
                 Machine.ChangeState<State_ForceFollow>();
                 return;
             }
 
-            // 检测玩家是否移动
             Vector3 ownerCurrentPos = Controller.MainOwner.transform.position;
             bool isPlayerMoving = (ownerCurrentPos - _lastOwnerPos).sqrMagnitude > 0.01f;
-            
             _lastOwnerPos = ownerCurrentPos;
 
             if (isPlayerMoving)
             {
-                // 玩家移动
                 _idleTimer = 0f;
-                // 紧跟模式：直接设置目标为玩家位置
                 UpdatePatrolPosition(ownerCurrentPos);
             }
             else
             {
-                // 玩家静止
                 _idleTimer += Time.deltaTime;
-
                 if (_idleTimer > IdleThreshold)
                 {
-                    // 超过3秒，开始分散闲逛
+                    if (Time.time >= _nextReloadCheckTime)
+                    {
+                        TryAutoReload();
+                        _nextReloadCheckTime = Time.time + ReloadCheckInterval;
+                    }
+
                     HandleIdlePatrol(ownerCurrentPos);
                 }
                 else
                 {
-                    // 3秒内保持当前位置
                     UpdatePatrolPosition(ownerCurrentPos);
                 }
             }
         }
 
         /// <summary>
-        /// 处理闲置时的巡逻逻辑
+        /// 换弹
+        /// </summary>
+        private void TryAutoReload()
+        {
+            var mc = Controller.MaidCharacter;
+            if (mc == null) return;
+
+            var gunAgent = mc.GetGun();
+            if (gunAgent == null) return;
+
+            var gunSetting = gunAgent.GunItemSetting;
+            if (gunSetting == null) return;
+            
+            if (!gunSetting.IsFull() && mc.CurrentAction == null && mc.CanUseHand())
+            {
+                bool success = mc.TryToReload();
+                if (success)
+                {
+                    string maidName = mc.characterPreset != null ? mc.characterPreset.DisplayName : "战斗女仆";
+                    CMDebug.Log($"[{maidName}] 闲置中，检测到弹药不满，开始自动换弹...");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 闲置时巡逻
         /// </summary>
         private void HandleIdlePatrol(Vector3 centerPos)
         {
@@ -92,11 +114,6 @@ namespace CombatMaid.Core.MaidFSM.States
                 float distance = Random.Range(PatrolRadiusMin, PatrolRadiusMax);
                 Vector3 roughTargetPos = centerPos + (offset.normalized * distance);
 
-                // 使用 NavMesh.SamplePosition 修正坐标
-                // sourcePosition: 原始粗略坐标
-                // hit: 输出结果
-                // maxDistance: 允许的搜索范围（这里给 2.0f，意味着如果随机点在墙里，只要离地面2米内都能吸附过去）
-                // areaMask: 允许的区域层级（NavMesh.AllAreas 表示所有能走的地方）
                 NavMeshHit hit;
                 if (NavMesh.SamplePosition(roughTargetPos, out hit, 2.0f, NavMesh.AllAreas))
                 {
@@ -112,7 +129,7 @@ namespace CombatMaid.Core.MaidFSM.States
         }
 
         /// <summary>
-        /// 封装设置AI巡逻点的方法
+        /// 设置AI巡逻点
         /// </summary>
         private void UpdatePatrolPosition(Vector3 pos)
         {
