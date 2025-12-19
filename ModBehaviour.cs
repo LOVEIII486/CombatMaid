@@ -153,7 +153,7 @@ namespace CombatMaid
 
         #endregion
         
-        #region MaidBuffSystem (新增部分)
+        #region MaidBuffSystem
 
         private void InitializeMaidBuffSystem()
         {
