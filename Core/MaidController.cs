@@ -92,6 +92,8 @@ namespace CombatMaid.Core
 
             // 固有技能：小队协同
             SkillSystem.AddSkill(new Skill_SquadCoordination());
+            // 固有技能：温暖
+            SkillSystem.AddSkill(new Skill_WarmthOfFox());
 
             // 加载配置技能
             if (profileData.ExtraData?.Skills != null)
