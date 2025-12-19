@@ -7,8 +7,6 @@ using Duckov.PerkTrees.Behaviours;
 using Duckov.PerkTrees.Interactable;
 using Duckov.Economy;
 using NodeCanvas.Framework;
-using CombatMaid.Localization;
-using SodaCraft.Localizations;
 
 namespace CombatMaid.Core.SkillTreeSystem
 {

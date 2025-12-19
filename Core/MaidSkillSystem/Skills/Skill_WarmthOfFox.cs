@@ -12,7 +12,7 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
         public override bool RespectGlobalCooldown => false;
 
         private readonly int[] _coldBuffIds = { 2101, 2102, 2201 }; 
-        private readonly int _resistColdBuffId = 2301; 
+        //private readonly int _resistColdBuffId = 2301; 
         private const float RangeThreshold = 1.5f;
         
         private float _lastPopTextTime = -999f; 

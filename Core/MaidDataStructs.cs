@@ -16,19 +16,18 @@ namespace CombatMaid.Core
     [Serializable]
     public class MaidInventoryData
     {
-        // 装备栏（对应 CharacterItem.Slots）
+        // 装备栏
         public List<MaidItemData> Equipment = new List<MaidItemData>();
-        
-        // 背包内容（对应 CharacterItem.Inventory.Content）
+        // 背包内容
         public List<MaidItemData> InventoryContent = new List<MaidItemData>();
     }
 
     [Serializable]
     public class MaidItemData
     {
-        public int TypeID;           // [核心] 物品的数字ID
+        public int TypeID;           // 物品的数字ID
         public int SlotIndex;        // 在格子里的位置 / 装备槽的索引
-        public string SlotKey;       // [备用] 装备槽的名称（如 "Head", "Primary"）
+        public string SlotKey;       // 装备槽的名称
         
         public int Count;            // 堆叠数量
         public float Durability;     // 耐久度
@@ -36,12 +35,11 @@ namespace CombatMaid.Core
         public float MaxDurability;
         public string FromInfoKey;
         public bool Inspected;       // 是否已鉴定
-        // [新增] 自定义变量列表 (直接存储原始二进制数据)
+        // 自定义变量列表
         public List<MaidCustomVarData> CustomVariables;
-        
         // 递归数据
-        public List<MaidItemData> Attachments;     // 枪械配件 (Slots)
-        public List<MaidItemData> InnerContainer;  // 容器内容 (如背包装的东西)
+        public List<MaidItemData> Attachments;     // 枪械配件
+        public List<MaidItemData> InnerContainer;  // 容器内容
     }
     
     [Serializable]

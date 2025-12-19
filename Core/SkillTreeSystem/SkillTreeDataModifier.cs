@@ -18,24 +18,21 @@ namespace CombatMaid.Core.SkillTreeSystem
     {
         public enum ModifierType
         {
-            AddAttribute, // 增加属性（如 MaxHealth +50）
-            MultiplyAttribute, // 乘法属性（如 DamageMultiplier *1.2）
+            AddAttribute, // 增加属性
+            MultiplyAttribute, // 乘法属性
             AddSkill, // 添加技能
-            UnlockItem, // 解锁物品（已有，但也可以在这里统一）
-            CustomLogic // 自定义逻辑（预留）
+            UnlockItem, // 解锁物品
+            CustomLogic // 自定义逻辑
         }
 
         public ModifierType Type;
 
-        // 用于属性修改
-        public string AttributeKey; // 例如 "Health", "MoveSpeedFactor"
-        public float AttributeValue; // 修改值
+        public string AttributeKey;
+        public float AttributeValue;
 
-        // 用于技能添加
-        public string SkillID; // 例如 "AutoHeal", "Grenade"
-        public Dictionary<string, object> SkillParams; // 技能参数
+        public string SkillID;
+        public Dictionary<string, object> SkillParams;
 
-        // 用于自定义逻辑
         public string CustomActionID;
     }
 
@@ -44,9 +41,8 @@ namespace CombatMaid.Core.SkillTreeSystem
     /// </summary>
     public class ModifyWineFoxDataBehaviour : PerkBehaviour
     {
-        // 这些字段会在 SkillTreeBuilder 中注入
         public List<SkillTreeModifier> Modifiers = new List<SkillTreeModifier>();
-        public string NodeID; // 用于调试和日志
+        public string NodeID;
 
         protected override void OnUnlocked()
         {
@@ -70,7 +66,6 @@ namespace CombatMaid.Core.SkillTreeSystem
                 return;
             }
 
-            // 确保 ExtraData 存在（兼容旧存档）
             if (data.ExtraData == null) data.ExtraData = new MaidExtraInfo();
             if (data.ExtraData.AppliedModifierKeys == null) data.ExtraData.AppliedModifierKeys = new List<string>();
 
@@ -80,21 +75,18 @@ namespace CombatMaid.Core.SkillTreeSystem
             {
                 var modifier = Modifiers[i];
 
-                // [关键设计] 生成唯一 Key: "{NodeID}#{Index}"
-                // 这种格式既绑定了节点，也区分了同一节点下的多个修改项
+                // 生成唯一 Key: "{NodeID}#{Index}"
                 string uniqueKey = $"{NodeID}#{i}";
 
-                // 3. 检查是否已应用
+                // 检查是否已应用
                 if (data.ExtraData.AppliedModifierKeys.Contains(uniqueKey))
                 {
                     CMDebug.Log($"[ModifyWineFoxData] 跳过已应用修改: {uniqueKey}");
                     continue;
                 }
 
-                // 4. 尝试应用
                 if (ApplyModifier(modifier, data))
                 {
-                    // 5. 标记为已应用
                     data.ExtraData.AppliedModifierKeys.Add(uniqueKey);
                     anyChangesMade = true;
                     CMDebug.Log($"[ModifyWineFoxData] 应用成功: {uniqueKey} ({modifier.Type})");
@@ -150,7 +142,6 @@ namespace CombatMaid.Core.SkillTreeSystem
             string key = modifier.AttributeKey;
             float value = modifier.AttributeValue;
 
-            // 使用反射修改对应字段
             var field = typeof(MaidConfig).GetField(key);
             if (field != null)
             {
@@ -339,12 +330,9 @@ namespace CombatMaid.Core.SkillTreeSystem
                 string key = kvp.Key;
                 object newVal = kvp.Value;
 
-                // ---------------------------------------------------------
-                // 情况 A: 简单整数列表 (ItemIDs, BuffIDs)
-                // ---------------------------------------------------------
+                // 简单整数列表 (ItemIDs, BuffIDs)
                 if (key == "ItemIDs" || key == "BuffIDs")
                 {
-                    // 1. 提取旧列表
                     List<int> currentList = new List<int>();
                     if (skill.Params.TryGetValue(key, out object oldVal))
                     {
@@ -352,12 +340,10 @@ namespace CombatMaid.Core.SkillTreeSystem
                         else if (oldVal is List<int> list) currentList = list;
                     }
 
-                    // 2. 提取新列表
                     List<int> newList = new List<int>();
                     if (newVal is JArray jNewArray) newList = jNewArray.ToObject<List<int>>();
                     else if (newVal is List<int> list) newList = list;
 
-                    // 3. 合并去重 (int 直接比较值)
                     int addedCount = 0;
                     foreach (int id in newList)
                     {
@@ -375,13 +361,9 @@ namespace CombatMaid.Core.SkillTreeSystem
                         CMDebug.Log($"    -> [{key}] 追加了 {addedCount} 个 ID");
                     }
                 }
-                // ---------------------------------------------------------
-                // 情况 B: 复杂对象列表 (Buffs)
-                // ---------------------------------------------------------
+                // 复杂对象列表 (Buffs)
                 else if (key == "Buffs")
                 {
-                    // 定义一个临时结构来辅助解析 (Name, ID)
-                    // 1. 提取旧列表
                     var currentBuffs = new List<MaidSkillFactory.BuffParamEntry>();
                     if (skill.Params.TryGetValue(key, out object oldVal))
                     {
@@ -390,17 +372,14 @@ namespace CombatMaid.Core.SkillTreeSystem
                         else if (oldVal is List<MaidSkillFactory.BuffParamEntry> list) currentBuffs = list;
                     }
 
-                    // 2. 提取新列表
                     var newBuffs = new List<MaidSkillFactory.BuffParamEntry>();
                     if (newVal is JArray jNewArray)
                         newBuffs = jNewArray.ToObject<List<MaidSkillFactory.BuffParamEntry>>();
                     else if (newVal is List<MaidSkillFactory.BuffParamEntry> list) newBuffs = list;
 
-                    // 3. 合并去重 (根据 BuffName 判断是否存在)
                     int addedCount = 0;
                     foreach (var newEntry in newBuffs)
                     {
-                        // 如果旧列表中不存在同名 Buff，则添加
                         if (!currentBuffs.Exists(b => b.BuffName == newEntry.BuffName))
                         {
                             currentBuffs.Add(newEntry);
@@ -415,9 +394,7 @@ namespace CombatMaid.Core.SkillTreeSystem
                         CMDebug.Log($"    -> [{key}] 追加了 {addedCount} 个 Buff");
                     }
                 }
-                // ---------------------------------------------------------
-                // 情况 C: 其他参数 (直接覆盖)
-                // ---------------------------------------------------------
+                // 其他参数 (直接覆盖)
                 else
                 {
                     if (!skill.Params.ContainsKey(key) || !skill.Params[key].Equals(newVal))

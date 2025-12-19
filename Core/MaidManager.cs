@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
 using CombatMaid.Core.SkillTreeSystem;
 using UnityEngine;
-using Duckov.Modding;
 using CombatMaid.Core.WineFox;
 
 namespace CombatMaid.Core
 {
     public class MaidManager : MonoBehaviour
     {
-        #region Singleton & Lifecycle
+        #region 基础
 
         public static MaidManager Instance { get; private set; }
 
@@ -21,7 +20,7 @@ namespace CombatMaid.Core
 
                 _enemyLayerMask = LayerMask.GetMask("DamageReceiver", "Character", "HeadCollider");
 
-                CMDebug.LogInfo("MaidManager (指挥官) 初始化完成。");
+                CMDebug.LogInfo("MaidManager 初始化完成。");
             }
             else
             {
@@ -349,7 +348,7 @@ namespace CombatMaid.Core
 
         #endregion
 
-        #region Debug Input
+        #region Debug指令
 
         private void HandleDebugInput()
         {
@@ -371,11 +370,8 @@ namespace CombatMaid.Core
                 {
                     SkillTreeManager.Instance.ReloadTree();
 
-                    // 可选：给玩家发个提示
                     var player = CharacterMainControl.Main;
                     if (player != null) player.PopText("正在重载技能树...");
-
-                    
                 }
             }
             

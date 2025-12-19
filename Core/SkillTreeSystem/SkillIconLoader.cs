@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using CombatMaid;
 using UnityEngine;
 
 namespace CombatMaid.Core.SkillTreeSystem
@@ -35,7 +34,7 @@ namespace CombatMaid.Core.SkillTreeSystem
             }
             else
             {
-                CMDebug.LogWarning($"[SkillIconLoader] 找不到图标文件: {path}");
+                CMDebug.LogWarning($"找不到图标文件: {path}");
             }
 
             return GetDefaultIcon();

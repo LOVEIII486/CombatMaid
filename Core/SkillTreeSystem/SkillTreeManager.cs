@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using CombatMaid.Localization;
 using UnityEngine;
 using Duckov.Scenes;
 using Duckov.PerkTrees;
@@ -43,11 +42,10 @@ namespace CombatMaid.Core.SkillTreeSystem
             SaveProgress();
         }
 
-        // 响应任何场景加载
         private void OnAnySceneLoaded(UnityEngine.SceneManagement.Scene scene,
             UnityEngine.SceneManagement.LoadSceneMode mode)
         {
-            if (scene.name == "Base" || scene.name == "Base_SceneV2")
+            if (scene.name == "Base_SceneV2")
             {
                 CMDebug.Log($"[SkillTreeManager] 检测到基地场景: {scene.name}");
                 StartCoroutine(InitSkillTreeRoutine());
@@ -97,7 +95,6 @@ namespace CombatMaid.Core.SkillTreeSystem
                     _customTree = null;
                 }
 
-                // 此时 _customTree 必为 null，执行重建流程
                 CMDebug.Log("[SkillTreeManager] 开始构建新场景的技能树...");
 
                 // 1. 清理旧数据
@@ -122,7 +119,6 @@ namespace CombatMaid.Core.SkillTreeSystem
                     SkillTreeBuilder.RegisterInteraction(skillBuilding, TREE_ID, INTERACT_KEY, "战斗女仆: 战术技能");
                     CMDebug.LogInfo("[SkillTreeManager] ✓ 技能树初始化完毕");
                 }
-                // ================= 原有逻辑结束 =================
             }
             catch (System.Exception ex)
             {
@@ -133,11 +129,7 @@ namespace CombatMaid.Core.SkillTreeSystem
                 _isInitializing = false;
             }
         }
-
-        /// <summary>
-        /// [已删除] ReregisterTreeToPerkTreeManager 方法（不再需要）
-        /// 改为直接重建技能树以确保状态完全一致
-        /// </summary>
+        
         private GameObject FindSkillMachine()
         {
             GameObject obj = GameObject.Find("SkillMachine");
@@ -201,10 +193,9 @@ namespace CombatMaid.Core.SkillTreeSystem
 
                 CMDebug.Log($"[BuildSkillTree] 技能树已创建: {_customTree.name}");
 
-                // 🔧 修复：将技能树设置为 SkillTreeManager 的子对象，确保跟随 DontDestroyOnLoad
+                // 将技能树设置为 SkillTreeManager 的子对象，确保跟随 DontDestroyOnLoad
                 _customTree.transform.SetParent(this.transform);
-
-                // 🔧 修复：确保技能树对象本身也设置 DontDestroyOnLoad（冗余保险）
+                // 确保技能树对象本身也设置 DontDestroyOnLoad
                 DontDestroyOnLoad(_customTree.gameObject);
 
                 // 3. 转换配置为节点定义
@@ -256,27 +247,21 @@ namespace CombatMaid.Core.SkillTreeSystem
         {
             if (string.IsNullOrEmpty(nodeID)) return false;
 
-            // 1. 优先检查运行时 Perk 对象 (最准确，包含当前会话刚解锁但未保存的状态)
             if (_runtimePerks != null && _runtimePerks.TryGetValue(nodeID, out Perk perk))
             {
                 if (perk != null && perk.Unlocked) return true;
             }
 
-            // 2. 回退检查存档数据
-            // (适用于技能树 UI 尚未构建，但数据已加载的情况，例如商店初始化时)
             if (_saveData != null && _saveData.UnlockedNodeIDs != null)
             {
                 if (_saveData.UnlockedNodeIDs.Contains(nodeID)) return true;
             }
 
-            // 3. 如果以上都无法确认（例如数据尚未初始化），尝试临时加载防止逻辑错误
-            // 注意：这取决于你的加载流程，如果 MaidItemRegistry 运行极早，可能需要这一步
             if (_saveData == null)
             {
                 var tempList = SkillTreePersistence.Load();
                 if (tempList != null && tempList.UnlockedNodeIDs.Contains(nodeID))
                 {
-                    // 顺便缓存一下，避免频繁 IO
                     _saveData = tempList;
                     return true;
                 }

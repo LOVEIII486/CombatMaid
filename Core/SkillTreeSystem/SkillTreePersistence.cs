@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
-using CombatMaid;
-using UnityEngine;
 
 namespace CombatMaid.Core.SkillTreeSystem
 {
@@ -25,11 +23,9 @@ namespace CombatMaid.Core.SkillTreeSystem
         /// </summary>
         private static string GetSavePath()
         {
-            // 获取游戏根目录
             string root = Directory.GetCurrentDirectory();
             string dir = Path.Combine(root, SaveFolderName);
             
-            // 确保文件夹存在
             if (!Directory.Exists(dir))
             {
                 Directory.CreateDirectory(dir);

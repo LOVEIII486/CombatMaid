@@ -1,7 +1,6 @@
 ﻿using CombatMaid.ModSettingsApi;
 using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
 using CombatMaid.Core;
 using CombatMaid.Core.CustomModel;
 using CombatMaid.Core.WineFox;
@@ -95,7 +94,7 @@ namespace CombatMaid.Settings
         public static bool IgnoreSearched { get; set; } = true;
         public static bool EnableElementalGrenades { get; set; } = Default_EnableElementalGrenades;
     
-        // [新增] 解析后的黑名单集合，用于游戏逻辑快速查询
+        // 解析后的黑名单集合，用于游戏逻辑快速查询
         public static HashSet<int> BlockedBuffIDs { get; private set; } = new HashSet<int>();
         // ==================== 独立更新函数 ====================
         
@@ -210,7 +209,6 @@ namespace CombatMaid.Settings
             try
             {
                 WineFoxDataManager.SaveData();
-                // 刷新 Spawner 缓存
                 if (MaidSpawner.Instance != null)
                 {
                     MaidSpawner.Instance.RefreshWineFoxCache();
@@ -255,12 +253,11 @@ namespace CombatMaid.Settings
         
         public static void ParseBuffBlockList(string input)
         {
-            BuffBlockListString = input; // 更新原始字符串
+            BuffBlockListString = input;
             BlockedBuffIDs.Clear();
         
             if (string.IsNullOrWhiteSpace(input)) return;
 
-            // 按逗号分隔并解析
             var segments = input.Split(new[] { ',', '，', ';' }, System.StringSplitOptions.RemoveEmptyEntries);
             foreach (var seg in segments)
             {

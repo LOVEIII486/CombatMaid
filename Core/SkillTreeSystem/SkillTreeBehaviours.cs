@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Duckov.PerkTrees;
-using Duckov.PerkTrees.Behaviours;
-using UnityEngine;
+﻿using Duckov.PerkTrees;
 
 namespace CombatMaid.Core.SkillTreeSystem
 {
@@ -13,16 +9,16 @@ namespace CombatMaid.Core.SkillTreeSystem
     {
         protected override void OnUnlocked()
         {
-            CMDebug.Log($"[PerkAutoSave] ✓✓✓ 技能已解锁: {gameObject.name}");
+            CMDebug.Log($"[PerkAutoSave] 技能已解锁: {gameObject.name}");
             
             if (SkillTreeManager.Instance != null)
             {
                 SkillTreeManager.Instance.SaveProgress();
-                CMDebug.Log($"[PerkAutoSave] ✓ 存档请求已发送");
+                CMDebug.Log($"[PerkAutoSave] 存档请求已发送");
             }
             else
             {
-                CMDebug.LogError($"[PerkAutoSave] ✗ SkillTreeManager.Instance 为 null！");
+                CMDebug.LogError($"[PerkAutoSave] SkillTreeManager 为 null！");
             }
         }
     }
