@@ -8,7 +8,7 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
     public class Skill_WarmthOfFox : MaidSkillBase
     {
         public override string SkillName => "WarmthOfFox";
-        public override float Cooldown => 5.0f;
+        public override float Cooldown => 8.0f;
         public override bool RespectGlobalCooldown => false;
 
         private readonly int[] _coldBuffIds = { 2101, 2102, 2201 }; 
@@ -16,7 +16,7 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
         private const float RangeThreshold = 1.5f;
         
         private float _lastPopTextTime = -999f; 
-        private const float TextPopInterval = 10.0f;
+        private const float TextPopInterval = 16.0f;
 
         protected override bool CheckTriggerCondition()
         {
