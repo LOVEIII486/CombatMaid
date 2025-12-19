@@ -11,7 +11,7 @@ namespace CombatMaid.Core
         #region Singleton & Lifecycle
 
         public static MaidManager Instance { get; private set; }
-        
+
         private void Awake()
         {
             if (Instance == null)
@@ -31,7 +31,6 @@ namespace CombatMaid.Core
 
         private void Update()
         {
-            
 #if COMBATMAID_DEBUG
             HandleDebugInput();
 #else
@@ -52,27 +51,26 @@ namespace CombatMaid.Core
 
         #endregion
 
-        #region Team Management
+        #region 女仆注册管理
 
-        // 只管理活跃单位
         private List<MaidController> _activeMaids = new List<MaidController>();
         public int ActiveMaidCount => _activeMaids.Count;
         public bool HasActiveMaids => _activeMaids.Count > 0;
 
         /// <summary>
-        /// [新接口] 供 Spawner 调用，注册新生成的女仆入队
+        /// 注册新生成的女仆入队
         /// </summary>
         public void RegisterActiveMaid(MaidController maid)
         {
             if (maid != null && !_activeMaids.Contains(maid))
             {
                 _activeMaids.Add(maid);
-                CMDebug.Log($"[Manager] 女仆归队: {maid.name} (当前队伍: {_activeMaids.Count})");
+                CMDebug.Log($"女仆归队: {maid.MaidCharacter.characterPreset.DisplayName} (当前队伍: {_activeMaids.Count})");
             }
         }
 
         /// <summary>
-        /// 解散队伍 (销毁所有女仆)
+        /// 解散队伍
         /// </summary>
         public void DespawnTeam()
         {
@@ -91,7 +89,7 @@ namespace CombatMaid.Core
         }
 
         /// <summary>
-        /// 获取活跃的酒狐实例 (用于契约检测)
+        /// 获取活跃的酒狐实例
         /// </summary>
         public MaidController GetActiveWineFox()
         {
@@ -100,14 +98,13 @@ namespace CombatMaid.Core
             {
                 var maid = _activeMaids[i];
 
-                // 1. 清理无效引用
                 if (maid == null || maid.gameObject == null)
                 {
                     _activeMaids.RemoveAt(i);
                     continue;
                 }
 
-                // 2. 检查标记组件 (WineFoxDataSync 仅挂载在酒狐身上)
+                // 检查标记组件 (WineFoxDataSync 仅挂载在酒狐身上)
                 if (maid.GetComponent<WineFoxDataSync>() != null)
                 {
                     return maid;
@@ -116,7 +113,7 @@ namespace CombatMaid.Core
 
             return null;
         }
-        
+
         public List<MaidController> GetAllActiveMaids()
         {
             for (int i = _activeMaids.Count - 1; i >= 0; i--)
@@ -127,21 +124,23 @@ namespace CombatMaid.Core
                     _activeMaids.RemoveAt(i);
                 }
             }
+
             // 返回当前列表的副本，防止外部直接修改私有列表
             return new List<MaidController>(_activeMaids);
         }
 
         #endregion
 
-        #region Command System
-        
+        #region 指令
+
         // 集火系统变量
         public CharacterMainControl FocusTarget { get; private set; }
         private float _focusExpireTimer = 0f;
-        private const float FocusDuration = 8.0f;
-        private const float RaycastDistance = 150f; 
+        private const float FocusDuration = 5.0f;
+        private const float RaycastDistance = 150f;
         private int _enemyLayerMask;
-
+        private static readonly int CommandMask = LayerMask.GetMask("Default", "Wall", "Ground", "Interactable", "Door", "HalfObsticle", "Wall_FowBlock");
+        
         private void HandleCommandInput()
         {
             if (Input.GetKeyDown(Settings.CombatMaidConfig.KeyMove))
@@ -158,22 +157,22 @@ namespace CombatMaid.Core
             {
                 CommandToggleHoldTeam();
             }
-            
+
             if (Input.GetKeyDown(Settings.CombatMaidConfig.KeyScavenge))
             {
                 CommandToggleScavenge();
             }
-            
+
             if (Input.GetKeyDown(Settings.CombatMaidConfig.KeyDrop))
             {
                 CommandDropItems();
             }
-            
+
             if (Input.GetKeyDown(Settings.CombatMaidConfig.KeyInventoryManage))
             {
                 CommandInventoryManage_WineFox();
             }
-            
+
             if (Input.GetKeyDown(Settings.CombatMaidConfig.KeyPassive))
             {
                 CommandTogglePassiveFollow();
@@ -190,10 +189,12 @@ namespace CombatMaid.Core
                     FocusTarget = null;
                 }
             }
+
             if (Input.GetMouseButton(0)) // 按住或点击均可
             {
                 DetectPlayerTarget();
             }
+
             if (FocusTarget != null && (FocusTarget.Health == null || FocusTarget.Health.IsDead))
             {
                 FocusTarget = null;
@@ -205,12 +206,12 @@ namespace CombatMaid.Core
             if (Camera.main == null) return;
 
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            
+
             if (Physics.Raycast(ray, out RaycastHit hit, RaycastDistance, _enemyLayerMask))
             {
                 var target = hit.collider.GetComponentInParent<CharacterMainControl>();
-                
-                if (target == null || target.Health.IsDead || target.Team == CharacterMainControl.Main.Team) 
+
+                if (target == null || target.Health.IsDead || target.Team == CharacterMainControl.Main.Team)
                     return;
 
                 if (FocusTarget != target)
@@ -269,7 +270,7 @@ namespace CombatMaid.Core
                 CharacterMainControl.Main.PopText("手动治疗！");
             }
         }
-        
+
         private void CommandToggleScavenge()
         {
             foreach (var maid in _activeMaids)
@@ -277,7 +278,7 @@ namespace CombatMaid.Core
                 if (maid != null) maid.CommandScavenge();
             }
         }
-        
+
         private void CommandDropItems()
         {
             foreach (var maid in _activeMaids)
@@ -291,17 +292,17 @@ namespace CombatMaid.Core
 
         private void CommandInventoryManage_WineFox()
         {
-                var wineFox = GetActiveWineFox();
-                if (wineFox != null)
-                {
-                    wineFox.ToggleInventoryManagement();
-                }
-                else
-                {
-                    CMDebug.LogWarning("未找到酒狐，无法打开背包。");
-                }
+            var wineFox = GetActiveWineFox();
+            if (wineFox != null)
+            {
+                wineFox.ToggleInventoryManagement();
+            }
+            else
+            {
+                CMDebug.LogWarning("未找到酒狐，无法打开背包。");
+            }
         }
-        
+
         private void CommandTogglePassiveFollow()
         {
             for (int i = _activeMaids.Count - 1; i >= 0; i--)
@@ -320,54 +321,36 @@ namespace CombatMaid.Core
 
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
     
-            LayerMask mask = LayerMask.GetMask(
-                "Default",          // Layer 0: 默认层，通常包含大部分未分类的静态物体
-                "Wall",             // Layer 6: 墙壁，核心障碍物
-                "Ground",           // Layer 7: 地面，核心行走层
-                "Interactable",     // Layer 8: 交互物（如箱子、工作台），防止点到箱子后面去
-                "Door",             // Layer 13: 门，防止穿门
-                "HalfObsticle",     // Layer 14: 半身掩体（注意日志里的拼写是 Obsticle）
-                "Wall_FowBlock"     // Layer 19: 战争迷雾阻挡墙，通常也是实体墙
-            );
+            if (!Physics.Raycast(ray, out RaycastHit eyeHit, 100f, CommandMask)) 
+                return Vector3.zero;
 
-            float maxDistFromPlayer = 25.0f; // 最大指挥距离
-            float maxRayDist = 100f;       // 射线最大检测距离
-            Vector3 rawTargetPos;
-
-            if (Physics.Raycast(ray, out RaycastHit hit, maxRayDist, mask))
-            {
-                rawTargetPos = hit.point;
-            }
-            else
-            {
-                rawTargetPos = ray.GetPoint(50.0f);
-            }
-
+            Vector3 targetPos = eyeHit.point;
             Vector3 playerPos = CharacterMainControl.Main.transform.position;
-            Vector3 toTarget = rawTargetPos - playerPos;
-    
-            Vector3 flatDirection = new Vector3(toTarget.x, 0, toTarget.z).normalized;
-            float currentDist = new Vector3(toTarget.x, 0, toTarget.z).magnitude;
 
-            if (currentDist > maxDistFromPlayer)
+            // 2. 距离钳制：使用平面距离判断
+            Vector3 diff = targetPos - playerPos;
+            float flatDistSqr = diff.x * diff.x + diff.z * diff.z; // 使用平方根比较性能更好
+            if (flatDistSqr > 900f) // 30.0f * 30.0f
             {
-                rawTargetPos = playerPos + flatDirection * maxDistFromPlayer;
+                float ratio = 30.0f / Mathf.Sqrt(flatDistSqr);
+                targetPos = playerPos + new Vector3(diff.x * ratio, diff.y, diff.z * ratio);
             }
 
-            float castHeight = Mathf.Max(playerPos.y, rawTargetPos.y) + 5.0f;
-            Vector3 castOrigin = new Vector3(rawTargetPos.x, castHeight, rawTargetPos.z);
-
-            if (Physics.Raycast(castOrigin, Vector3.down, out RaycastHit groundHit, 20.0f, mask))
+            // 3. 穿透逻辑：从目标点下方 0.2米 开始向下探测（直接跳过当前的屋顶/表面）
+            // 这种方法性能最高，完全不需要 RaycastAll 和 排序
+            if (Physics.Raycast(targetPos + Vector3.down * 0.2f, Vector3.down, out RaycastHit floorHit, 20f, CommandMask))
             {
-                return groundHit.point;
+                return floorHit.point;
             }
-            return Vector3.zero;
+
+            // 如果下方没东西（比如点了地图边缘或纯空地），返回第一射的点
+            return targetPos;
         }
 
         #endregion
 
         #region Debug Input
-        
+
         private void HandleDebugInput()
         {
             // F5 测试: 调用 Spawner 生成酒狐
@@ -381,21 +364,21 @@ namespace CombatMaid.Core
 
             // F6 清除
             if (Input.GetKeyDown(KeyCode.F6)) DespawnTeam();
-            
+
             if (Input.GetKeyDown(KeyCode.F7))
             {
                 if (SkillTreeManager.Instance != null)
                 {
                     SkillTreeManager.Instance.ReloadTree();
-            
+
                     // 可选：给玩家发个提示
                     var player = CharacterMainControl.Main;
                     if (player != null) player.PopText("正在重载技能树...");
-                    
+
                     CombatMaid.Localization.LocalizationManager.HotReloadLocalization();
                 }
             }
-            
+
             // F8 重载配置: 调用 Spawner
             if (Input.GetKeyDown(KeyCode.F8))
             {
@@ -411,18 +394,6 @@ namespace CombatMaid.Core
                     MaidSpawner.Instance.DebugExportReferenceStats();
                 }
             }
-            
-            if (Input.GetKeyDown(KeyCode.F2))
-            {
-                foreach (var maid in _activeMaids)
-                {
-                    if (maid != null)
-                    {
-                        maid.DebugPrintMaidStatus();
-                    }
-                }
-            }
-            
         }
 
         #endregion

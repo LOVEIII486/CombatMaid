@@ -7,7 +7,6 @@ namespace CombatMaid.Core.MaidFSM.States
 {
     /// <summary>
     /// 战术移动模式：响应 G 键指令
-    /// 优化：强制面朝移动方向，防止倒退滑步
     /// </summary>
     public class State_TacticalMove : MaidStateBase
     {
@@ -22,7 +21,6 @@ namespace CombatMaid.Core.MaidFSM.States
 
         public override void Enter()
         {
-            // 1. 暂停原生AI决策
             SetNativeBrainActive(false);
 
             if (Controller.AI != null)
@@ -31,14 +29,12 @@ namespace CombatMaid.Core.MaidFSM.States
                 //Controller.AI.aimTarget = null;
                 //Controller.AI.SetTarget(null); // 这是一个显式清除目标的方法
 
-                // 2. 执行移动指令
                 Controller.AI.StopMove();
                 Controller.AI.MoveToPos(TargetPosition);
                 
                 Controller.MaidCharacter?.PopText("战术机动...");
             }
             
-            // 3. 应用战术移速加成
             if (Controller.MaidCharacter != null)
             {
                 AttributeModifier.Quick.RevertSpeedModifiers(Controller.MaidCharacter, _speedBuffs);
@@ -52,9 +48,17 @@ namespace CombatMaid.Core.MaidFSM.States
         {
             _timeoutTimer -= Time.deltaTime;
 
+            var focusTarget = MaidManager.Instance.FocusTarget;
+            if (focusTarget != null && !focusTarget.Health.IsDead)
+            {
+                CMDebug.Log($"检测到集火目标: {focusTarget.name}，打断战术移动。");
+                Controller.MaidCharacter?.PopText("<color=red>中止机动，集火目标！</color>");
+                Machine.ChangeState<State_Autonomous>();
+                return;
+            }
+
             if (Controller.MaidCharacter != null)
             {
-                // 抬高视线高度
                 Vector3 lookAtPos = TargetPosition + Vector3.up * 1.5f;
                 Controller.MaidCharacter.SetAimPoint(lookAtPos);
             }
@@ -71,11 +75,13 @@ namespace CombatMaid.Core.MaidFSM.States
         /// </summary>
         public override void Exit()
         {
+            SetNativeBrainActive(true); 
+
             if (Controller.MaidCharacter != null)
             {
                 AttributeModifier.Quick.RevertSpeedModifiers(Controller.MaidCharacter, _speedBuffs);
             }
-            
+    
             if (Controller.AI != null)
             {
                 Controller.AI.StopMove();
@@ -88,7 +94,6 @@ namespace CombatMaid.Core.MaidFSM.States
             if (ai != null && ai.searchedEnemy != null)
             {
                 float dist = Vector3.Distance(ai.transform.position, ai.searchedEnemy.transform.position);
-                // 15米以上脱离
                 if (dist > 18.0f)
                 {
                     ai.searchedEnemy = null;
@@ -103,14 +108,19 @@ namespace CombatMaid.Core.MaidFSM.States
         {
             var ai = Controller.AI;
             if (ai == null) return true;
-            
+    
             if (ai.WaitingForPathResult()) return false;
-      
-            float distToTarget = Vector3.Distance(ai.transform.position, TargetPosition);
-            if (distToTarget < 1.5f) return true;
 
+            Vector3 flatPos = new Vector3(ai.transform.position.x, 0, ai.transform.position.z);
+            Vector3 flatTarget = new Vector3(TargetPosition.x, 0, TargetPosition.z);
+            float distToTarget = Vector3.Distance(flatPos, flatTarget);
+
+            if (distToTarget < 1.8f)
+            {
+                return true;
+            }
             if ((!ai.IsMoving() && ai.HasPath()) || ai.ReachedEndOfPath()) return true;
-            
+    
             return false;
         }
     }

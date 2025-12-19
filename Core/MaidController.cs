@@ -39,7 +39,6 @@ namespace CombatMaid.Core
         public MaidStateMachine StateMachine { get; private set; }
         public MaidSkillComponent SkillSystem { get; private set; }
 
-        //缓存引用
         private CharacterMainControl _cachedCharacter;
         
         public MaidAIAssistant AIAssistant { get; private set; }
@@ -76,7 +75,6 @@ namespace CombatMaid.Core
                 return;
             }
 
-            // 注册实例
             if (!_maidRegistry.ContainsKey(AI)) _maidRegistry.Add(AI, this);
 
             _cachedCharacter = MaidCharacter;
@@ -85,7 +83,6 @@ namespace CombatMaid.Core
                 _cachedCharacter.BeforeCharacterSpawnLootOnDead += OnCheckLootBeforeDeath;
             }
 
-            // 初始化技能系统
             SkillSystem = gameObject.GetComponent<MaidSkillComponent>() ??
                           gameObject.AddComponent<MaidSkillComponent>();
             SkillSystem.Initialize(this);
@@ -108,8 +105,7 @@ namespace CombatMaid.Core
             // 初始化状态机
             AIAssistant = new MaidAIAssistant(this);
             InitializeStateMachine();
-            //DebugPrintAllLayers();
-            CMDebug.Log($"女仆控制器初始化完成。主人: {player.name}, 技能数: {SkillSystem.SkillCount}");
+            CMDebug.Log($"女仆控制器初始化完成。技能数: {SkillSystem.SkillCount}");
         }
 
         private void Update()
@@ -161,9 +157,7 @@ namespace CombatMaid.Core
         {
             if (StateMachine.CurrentState is State_TacticalMove tacticalState)
             {
-                // 1. 更新目标点
                 tacticalState.TargetPosition = position;
-                // 2. 强制重入状态
                 // 重新触发 Enter() 里的 AI.MoveToPos 逻辑
                 tacticalState.Enter();
                 //CMDebug.Log($"刷新战术移动目标 -> {position}");
@@ -236,17 +230,13 @@ namespace CombatMaid.Core
         /// </summary>
         public void CommandDumpLoot()
         {
-            // 1. 基础检查
             if (MaidCharacter?.CharacterItem?.Inventory == null) return;
             if (LootHistory == null) return;
 
-            // 2. 筛选出有效且在背包中的物品
-            // 这里使用了修复后的 IsItemInInventory，它是安全的
             var validItems = LootHistory
                 .Where(item => item != null && IsItemInInventory(item))
                 .ToList();
 
-            // 3. 如果没有东西，直接清理历史并退出
             if (validItems.Count == 0)
             {
                 MaidCharacter.PopText("主人我身上没有东西了。。。");
@@ -254,7 +244,6 @@ namespace CombatMaid.Core
                 return;
             }
 
-            // 4. 生成容器
             var container = SpawnDropContainer(validItems.Count);
             if (container == null || container.Inventory == null)
             {
@@ -262,7 +251,6 @@ namespace CombatMaid.Core
                 return;
             }
 
-            // 5. 批量转移物品
             foreach (var item in validItems)
             {
                 if (item != null && IsItemInInventory(item))
@@ -335,11 +323,7 @@ namespace CombatMaid.Core
         private float _cachedHearingAbility;
         private float _cachedSightAngle;
         private float _cachedForceTraceDist;
-
-        /// <summary>
-        /// 设置是否屏蔽索敌感知能力
-        /// </summary>
-        /// <param name="shouldSuppress">true=致盲(屏蔽索敌), false=恢复正常</param>
+        
         public void SetSensorySuppression(bool shouldSuppress)
         {
             if (AI == null) return;
@@ -377,7 +361,7 @@ namespace CombatMaid.Core
         }
 
         /// <summary>
-        /// 强制清除当前的仇恨目标和警觉状态
+        /// 清除当前的仇恨目标和警觉状态
         /// </summary>
         public void ClearImmediateThreats()
         {
@@ -407,11 +391,10 @@ namespace CombatMaid.Core
                 return null;
             }
 
-            // 1. 计算基础位置：角色正前方 0.6 米处
+            // 角色正前方 0.6 米处
             Vector3 forwardOffset = MaidCharacter.transform.forward * 0.6f;
             Vector3 basePos = MaidCharacter.transform.position + forwardOffset;
 
-            // 2. 地面检测
             Vector3 spawnPos;
             if (Physics.Raycast(basePos + Vector3.up * 1.5f, Vector3.down, out RaycastHit hit, 2.5f))
             {
@@ -423,13 +406,9 @@ namespace CombatMaid.Core
                 CMDebug.LogWarning($"前方未检测到地面，使用备用位置生成战利品箱: {spawnPos}");
             }
 
-            // 3. 实例化对象
             var boxInstance = Instantiate(prefab, spawnPos, MaidCharacter.transform.rotation);
-
-            // 4. 场景管理
             MultiSceneCore.MoveToActiveWithScene(boxInstance.gameObject, SceneManager.GetActiveScene().buildIndex);
 
-            // 5. 物理行为控制
             var rb = boxInstance.GetComponent<Rigidbody>();
             if (rb != null)
             {
@@ -439,7 +418,6 @@ namespace CombatMaid.Core
                 rb.angularDrag = 10f;
             }
 
-            // 6. 碰撞器设置
             if (boxInstance.interactCollider != null)
             {
                 boxInstance.interactCollider.isTrigger = false;
@@ -450,7 +428,6 @@ namespace CombatMaid.Core
                 if (col != null) col.isTrigger = false;
             }
 
-            // 7. 容量设置
             if (boxInstance.Inventory != null)
             {
                 int safeCapacity = Mathf.Max(20, requiredCapacity + 10);
@@ -494,66 +471,5 @@ namespace CombatMaid.Core
         
         #endregion
         
-        private void DebugPrintAllLayers()
-        {
-            CMDebug.Log("========== [Layer List Dump] ==========");
-            for (int i = 0; i < 32; i++)
-            {
-                string layerName = LayerMask.LayerToName(i);
-                // 如果名字不为空，说明该 Layer 被定义了
-                if (!string.IsNullOrEmpty(layerName))
-                {
-                    CMDebug.Log($"Layer ID: {i} | Name: \"{layerName}\"");
-                }
-            }
-            CMDebug.Log("=======================================");
-        }
-        
-        public void DebugPrintMaidStatus()
-        {
-            // 安全检查
-            if (MaidCharacter == null || MaidCharacter.Health == null) return;
-
-            var sb = new StringBuilder();
-            var h = MaidCharacter.Health;
-
-            sb.AppendLine($"========== 女仆 [{MaidCharacter.name}] 状态监控 ==========");
-    
-            // 1. 基础生存
-            sb.Append($"[生命]: {h.CurrentHealth:F0}/{h.MaxHealth:F0}");
-            if (h.Invincible) sb.Append(" [无敌]"); // 引用 Health.Invincible
-            if (h.IsDead) sb.Append(" [死亡]");      // 引用 Health.IsDead
-            sb.AppendLine();
-    
-            sb.AppendLine($"[三维]: 水分[{MaidCharacter.CurrentWater:F0}] 能量[{MaidCharacter.CurrentEnergy:F0}] 体力[{MaidCharacter.CurrentStamina:F0}]");
-
-            // 2. 防御属性 (直接读取 Health 属性)
-            sb.AppendLine($"[护甲]: 头盔[{h.HeadArmor:F2}] | 身体[{h.BodyArmor:F2}]");
-    
-            // 3. 补充：抗性系数 (1.0为标准，越低受伤越少)
-            // 根据 Health 类中的 Hash 字段推断支持的类型 
-            sb.Append("[抗性]: ");
-            sb.Append($"物理:{h.ElementFactor(ElementTypes.physics):F2} ");
-            sb.Append($"火:{h.ElementFactor(ElementTypes.fire):F2} ");
-            sb.Append($"毒:{h.ElementFactor(ElementTypes.poison):F2} ");
-            sb.Append($"电:{h.ElementFactor(ElementTypes.electricity):F2} ");
-            sb.Append($"灵:{h.ElementFactor(ElementTypes.ghost):F2} ");
-            sb.AppendLine();
-
-            // 4. 战斗能力
-            // GunDamageMultiplier 等通常在 CharacterMainControl 中
-            sb.AppendLine($"[输出]: 枪械伤害[{MaidCharacter.GunDamageMultiplier:P0}] | 暴击率[{MaidCharacter.GunCritRateGain:P1}]");
-            sb.AppendLine($"[机动]: 移速系数[{MaidCharacter.CharacterMoveability:F2}] | 潜行系数[{MaidCharacter.VisableDistanceFactor:F2}]");
-    
-            // 5. 当前AI状态
-            string stateName = StateMachine?.CurrentState != null ? StateMachine.CurrentState.GetType().Name : "无状态";
-            sb.AppendLine($"[逻辑]: AI状态[{stateName}] | 队伍[{MaidCharacter.Team}]");
-    
-            // 打印日志
-            CMDebug.Log(sb.ToString());
-    
-            // 游戏内浮动提示
-            MaidCharacter.PopText("体检报告已生成 (请看控制台)");
-        }
     }
 }
