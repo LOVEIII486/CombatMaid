@@ -10,11 +10,11 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
     public class Skill_AutoRepairArmor : MaidSkillBase
     {
         public override string SkillName => "AutoRepairArmor";
-        public override float Cooldown => 5.0f; 
+        public override float Cooldown => 10.0f; 
         public override bool RespectGlobalCooldown => true;
         public override float TriggerGCDDuration => 3.0f;
 
-        private const float StartRepairThreshold = 0.55f;
+        private const float StartRepairThreshold = 0.60f;
         private const float StopRepairThreshold = 0.95f;
         
         private const float RepairSafeWindow = 6.0f; 
@@ -27,19 +27,16 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
 
         protected override bool CheckTriggerCondition()
         {
-            // --- 1. 基础安全性检查 ---
             if (Controller == null || Controller.AI == null) return false;
             if (Owner == null || Owner.Health == null || Owner.Health.IsDead) return false;
             if (!Owner.CanUseHand()) return false;
 
-            // --- 2. 战斗环境判定 (一旦进入战斗，强制打断维修状态) ---
             if (Controller.AI.searchedEnemy != null || Controller.AI.alert || Controller.AI.aimTarget != null) 
             {
                 _isUnderMaintenance = false;
                 return false;
             }
 
-            // 受击保护
             bool recentlyActive = Time.time < Controller.AI.hurtTimeMarker + RepairSafeWindow;
             if (recentlyActive)
             {
@@ -47,14 +44,12 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
                 return false;
             }
 
-            // --- 3. 物品检查 (没药了就别修了) ---
             if (!HasRepairItem())
             {
                 _isUnderMaintenance = false;
                 return false;
             }
 
-            // --- 4. 核心逻辑：双阈值判定 ---
             float lowestRatio = GetLowestDurabilityRatio();
 
             if (_isUnderMaintenance)
@@ -62,17 +57,17 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
                 // 如果已经在维修模式中，直到修满 (>=95%) 才停止
                 if (lowestRatio >= StopRepairThreshold)
                 {
-                    _isUnderMaintenance = false; // 任务完成
+                    _isUnderMaintenance = false;
                     return false;
                 }
-                return true; // 继续修！
+                return true;
             }
             else
             {
-                // 如果不在维修模式，只有低于 25% 才触发
-                if (lowestRatio < StartRepairThreshold && lowestRatio > 0) // >0 排除没穿装备的情况
+                // 如果不在维修模式，只有低于阈值才触发
+                if (lowestRatio < StartRepairThreshold && lowestRatio > 0)
                 {
-                    _isUnderMaintenance = true; // 启动维修模式
+                    _isUnderMaintenance = true;
                     return true;
                 }
                 return false;
@@ -105,15 +100,13 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
                 }
                 return true;
             }
-            
-            // 如果执行时突然发现没物品了，重置状态
             _isUnderMaintenance = false;
             return false;
         }
 
         /// <summary>
         /// 获取全身装备中耐久度最低的比例 (0.0 - 1.0)
-        /// 如果没穿装备，返回 1.0 (视为满状态)
+        /// 如果没穿装备，返回 1.0
         /// </summary>
         private float GetLowestDurabilityRatio()
         {
@@ -144,9 +137,10 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
         /// 判断是否为维修药剂
         /// </summary>
         private bool IsRepairItem(Item item)
-        {   
-            //if (item.TypeID == 88103) return true;
-            return item.GetComponent<Component_ArmorRepairPotion>() != null;
+        {
+            if (item.TypeID == 88103) return true;
+            return false;
+            //return item.GetComponent<Component_ArmorRepairPotion>() != null;
         }
         
         /// <summary>
@@ -163,13 +157,10 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
         {
             if (item.Tags.Contains("Weapon")) return false;
             
-            // 游戏底层使用的是 Helmat
+            // 游戏拼错了 Helmat
             return item.Tags.Contains("Armor") || 
-                   item.Tags.Contains("BodyArmor") || 
                    item.Tags.Contains("Helmet") || 
-                   item.Tags.Contains("Helmat") || 
-                   item.Tags.Contains("HeadArmor") ||
-                   item.Tags.Contains("Vest");
+                   item.Tags.Contains("Helmat");
         }
 
         private bool IsItemUsable(Item item)

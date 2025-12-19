@@ -11,7 +11,7 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
     public class Skill_SelfHeal : MaidSkillBase
     {
         public override string SkillName => "SelfHeal";
-        public override float Cooldown => 1.0f;
+        public override float Cooldown => 2.0f;
 
         public override bool RespectGlobalCooldown => true;
         public override float TriggerGCDDuration => 1.5f;
