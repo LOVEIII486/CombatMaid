@@ -15,8 +15,8 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
         public override bool RespectGlobalCooldown => true;
         public override float TriggerGCDDuration => 1.0f;
 
-        private float _recoverWaterRatio = 0.20f;
-        private float _recoverEnergyRatio = 0.10f;
+        private float _recoverWaterRatio = 0.3f;
+        private float _recoverEnergyRatio = 0.1f;
 
         private const float NeedWaterThreshold = 0.6f;
         private const float NeedEnergyThreshold = 0.6f;
