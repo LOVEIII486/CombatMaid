@@ -12,10 +12,8 @@ namespace CombatMaid.Core.BuffsSystem
     /// </summary>
     public static class MaidBuffFactory
     {
-        // 缓存已创建的 Buff 模板 (单例)
         private static readonly Dictionary<int, Buff> SharedBuffs = new Dictionary<int, Buff>();
 
-        // 反射字段缓存
         private static FieldInfo _idField;
         private static FieldInfo _limitedLifeTimeField;
         private static FieldInfo _totalLifeTimeField;

@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
-using CombatMaid.Core;
 using CombatMaid.Core.Utilities;
-using CombatMaid.Core.WineFox;
 
 namespace CombatMaid.Core.WineFox
 {
@@ -21,19 +19,13 @@ namespace CombatMaid.Core.WineFox
         {
             if (_controller == null || _controller.MaidCharacter == null) return;
 
-            // 1. 实时同步逻辑
-            // [安全原则] 只同步"成长性数据" (如经验)，绝对不要同步"属性数据" (如MaxHealth)
-            // 因为属性数据包含技能树加成，一旦保存，下次加载会导致双重叠加！
+            // 实时同步逻辑
             if (_refData != null && _refData.PresetConfig != null)
             {
-                // 假设你的 CharacterMainControl 有 Experience 字段
-                // _refData.PresetConfig.Exp = (int)_controller.MaidCharacter.Experience; 
-                
-                // 如果你有等级系统，也可以同步等级
-                // _refData.PresetConfig.Level = ...
+                // 暂无
             }
 
-            // 2. 定时保存 (每60秒一次足够了，太频繁影响性能)
+            // 定时保存
             _saveTimer += Time.deltaTime;
             if (_saveTimer > 60f)
             {
@@ -57,19 +49,15 @@ namespace CombatMaid.Core.WineFox
         
         public void SaveInventory()
         {
-            // 1. [修正] 通过 _controller 获取 MaidCharacter
             if (_controller == null || _controller.MaidCharacter == null) return;
             var character = _controller.MaidCharacter;
 
-            // 2. 检查 CharacterItem 是否存在
             if (character.CharacterItem == null) return;
     
-            // CMDebug.LogInfo("正在保存女仆背包..."); // 频繁调用时建议注释掉日志
+            // CMDebug.LogInfo("正在保存女仆背包");
             
-            // 3. 序列化
             var data = InventorySerializer.SerializeCharacter(character.CharacterItem);
     
-            // 4. 存入全局数据对象
             if (WineFoxDataManager.CurrentData != null)
             {
                 WineFoxDataManager.CurrentData.Inventory = data;
@@ -79,10 +67,8 @@ namespace CombatMaid.Core.WineFox
 
         public async void LoadInventory() 
         {
-            // 1. 检查存档是否存在
             if (WineFoxDataManager.CurrentData?.Inventory == null) return;
             
-            // 2. [修正] 通过 _controller 获取 MaidCharacter
             if (_controller == null || _controller.MaidCharacter == null) return;
             var character = _controller.MaidCharacter;
 
@@ -90,7 +76,7 @@ namespace CombatMaid.Core.WineFox
 
             CMDebug.LogInfo("正在恢复女仆背包...");
             
-            // 3. 执行异步恢复
+            // 执行异步恢复
             await InventorySerializer.DeserializeCharacterAsync(
                 WineFoxDataManager.CurrentData.Inventory, 
                 character.CharacterItem

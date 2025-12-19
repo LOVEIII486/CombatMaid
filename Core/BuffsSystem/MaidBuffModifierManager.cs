@@ -12,7 +12,6 @@ namespace CombatMaid.Core.BuffsSystem
         private static MaidBuffModifierManager _instance;
         public static MaidBuffModifierManager Instance => _instance ??= new MaidBuffModifierManager();
 
-        // 存储结构: Buff实例ID -> [(属性, 修改器), ...]
         private Dictionary<int, List<(Stat stat, Modifier modifier)>> _buffModifiers 
             = new Dictionary<int, List<(Stat, Modifier)>>();
 

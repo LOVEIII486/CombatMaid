@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
-using MiniLocalizor; // 必须引用，用于解析 DataEntry
-using SodaCraft.Localizations; // 引用游戏核心命名空间
+using MiniLocalizor;
 
 namespace CombatMaid.Localization
 {
@@ -19,7 +18,6 @@ namespace CombatMaid.Localization
         // 需要自动注册到游戏核心的 Key 前缀
         private static readonly string[] AutoRegisterPrefixes = { "Item_", "Perk_","SkillTree_","Buff_MaidBuff_"};
 
-        // 缓存已加载的语言提供者
         private static readonly Dictionary<SystemLanguage, CSVFileLocalizor> LoadedProviders = new Dictionary<SystemLanguage, CSVFileLocalizor>();
         
         private static SystemLanguage _currentLanguage;
@@ -27,7 +25,6 @@ namespace CombatMaid.Localization
         private static string _modDirectory;
         private static bool _isInitialized = false;
 
-        // 反射缓存：CSVFileLocalizor 的内部字典字段
         private static FieldInfo _csvDicField;
 
         // ==================== 初始化与生命周期 ====================
@@ -42,22 +39,18 @@ namespace CombatMaid.Localization
 
             _modDirectory = modDirectory;
             
-            // 缓存反射字段信息，避免重复查找
             _csvDicField = typeof(CSVFileLocalizor).GetField("dic", BindingFlags.Instance | BindingFlags.NonPublic);
 
             try
             {
                 DetermineCurrentLanguage();
                 
-                // 1. 尝试加载当前语言
                 if (!LoadAndSetLanguage(_currentLanguage))
                 {
                     CMDebug.LogWarning($"无法加载语言 {_currentLanguage}，尝试后备语言...");
                     
-                    // 2. 失败则尝试英文
                     if (!LoadAndSetLanguage(SystemLanguage.English))
                     {
-                        // 3. 最后尝试中文保底
                         if (!LoadAndSetLanguage(SystemLanguage.ChineseSimplified) &&
                             !LoadAndSetLanguage(SystemLanguage.Chinese))
                         {
@@ -89,7 +82,6 @@ namespace CombatMaid.Localization
             {
                 CMDebug.Log("开始刷新本地化系统...");
 
-                // 清除缓存的 Provider，强制重新读取文件
                 LoadedProviders.Clear();
                 _currentProvider = null;
 
@@ -101,7 +93,6 @@ namespace CombatMaid.Localization
                 }
                 else
                 {
-                    // 尝试回滚到英文
                     CMDebug.LogWarning($"刷新后加载 {_currentLanguage} 失败，尝试使用 English");
                     LoadAndSetLanguage(SystemLanguage.English);
                 }
@@ -123,16 +114,12 @@ namespace CombatMaid.Localization
         // ==================== 调试功能 ====================
 
         /// <summary>
-        /// 调试热重载检测，建议在 ModBehaviour.Update 中调用
+        /// 调试热重载检测
         /// </summary>
         public static void HotReloadLocalization()
         {
-            // 按下 F9 进行重载
-            if (Input.GetKeyDown(KeyCode.F9))
-            {
-                CMDebug.Log("[Debug] 检测到 F9 按下，正在重载本地化文件...");
-                Refresh();
-            }
+            CMDebug.Log("正在重载本地化文件...");
+            Refresh();
         }
 
         // ==================== 公共接口 ====================
@@ -144,7 +131,6 @@ namespace CombatMaid.Localization
                 return fallback ?? key;
             }
 
-            // CSVFileLocalizor.Get 会处理转义字符
             string val = _currentProvider.Get(key);
             if (val != null)
             {
@@ -180,7 +166,6 @@ namespace CombatMaid.Localization
 
             if (!File.Exists(filePath))
             {
-                // 中文特殊回退逻辑
                 if (language == SystemLanguage.Chinese)
                 {
                     string simPath = Path.Combine(_modDirectory, LocalizationFolderName, "ChineseSimplified.csv");
@@ -222,39 +207,33 @@ namespace CombatMaid.Localization
         private static void InjectToGameManager(CSVFileLocalizor provider)
         {
             if (provider == null) return;
-            
-            // 检查游戏核心字典是否可用
-            if (SodaCraft.Localizations.LocalizationManager.overrideTexts == null)
-            {
-                CMDebug.LogError("SodaCraft.Localizations.LocalizationManager.overrideTexts 为 null，无法注入文本！");
-                return;
-            }
-
             if (_csvDicField == null)
             {
-                CMDebug.LogError("反射字段未获取，无法读取 CSVFileLocalizor 字典。");
+                CMDebug.LogError("反射字段 _csvDicField 未初始化，无法注入文本");
                 return;
             }
 
             try
             {
-                // 反射获取内部字典
                 var internalDic = _csvDicField.GetValue(provider) as Dictionary<string, DataEntry>;
-                
-                if (internalDic == null) return;
+                if (internalDic == null)
+                {
+                    CMDebug.LogWarning("无法从 provider 获取有效的内部字典数据");
+                    return;
+                }
 
                 int count = 0;
-                var targetDict = SodaCraft.Localizations.LocalizationManager.overrideTexts;
 
                 foreach (var kvp in internalDic)
                 {
                     string key = kvp.Key;
-                    
-                    // 筛选前缀：Item_ 或 Perk_
+                    if (string.IsNullOrEmpty(key)) continue;
+
+                    // 筛选匹配前缀的条目
                     bool match = false;
-                    for (int i = 0; i < AutoRegisterPrefixes.Length; i++)
+                    foreach (var prefix in AutoRegisterPrefixes)
                     {
-                        if (key.StartsWith(AutoRegisterPrefixes[i]))
+                        if (key.StartsWith(prefix))
                         {
                             match = true;
                             break;
@@ -263,23 +242,23 @@ namespace CombatMaid.Localization
 
                     if (match)
                     {
-                        // 使用 provider.Get 确保获取到处理过转义符的正确文本
-                        string value = provider.Get(key); 
-                        
-                        // 注入到游戏字典
-                        targetDict[key] = value;
+                        string value = provider.Get(key);
+                        SodaCraft.Localizations.LocalizationManager.SetOverrideText(key, value);
                         count++;
                     }
                 }
 
-                CMDebug.LogInfo($"[Localization] 已注入 {count} 个条目到游戏核心 (Item_/Perk_)");
+                if (count > 0)
+                {
+                    CMDebug.LogInfo($"注入了 {count} 个本地化条目。");
+                }
             }
             catch (Exception ex)
             {
-                CMDebug.LogError($"注入文本时发生错误: {ex.Message}");
+                CMDebug.LogError($"注入文本时发生错误: {ex.Message}\n{ex.StackTrace}");
             }
         }
-
+        
         private static string GetLanguageFileName(SystemLanguage language)
         {
             switch (language)

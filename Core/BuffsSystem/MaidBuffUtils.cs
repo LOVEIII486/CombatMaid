@@ -11,7 +11,6 @@ namespace CombatMaid.Core.BuffsSystem
     /// </summary>
     public static class MaidBuffUtils
     {
-        // 缓存：ID -> Buff对象
         private static Dictionary<int, Buff> _buffCache;
         private static bool _isInitialized = false;
 
@@ -79,7 +78,7 @@ namespace CombatMaid.Core.BuffsSystem
 
             if (_buffCache.TryGetValue(buffId, out Buff buffPrefab))
             {
-                // 获取本地化名称 (Duckov 原生属性)
+                // 获取本地化名称
                 buffName = buffPrefab.DisplayName; 
         
                 target.AddBuff(buffPrefab, fromWho, 1);
@@ -87,7 +86,7 @@ namespace CombatMaid.Core.BuffsSystem
             }
             else
             {
-                CMDebug.LogWarning($"[MaidBuffUtils] 未找到 ID 为 {buffId} 的 Buff");
+                CMDebug.LogWarning($"未找到 ID 为 {buffId} 的 Buff");
                 return false;
             }
         }

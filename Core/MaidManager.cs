@@ -375,15 +375,21 @@ namespace CombatMaid.Core
                     var player = CharacterMainControl.Main;
                     if (player != null) player.PopText("正在重载技能树...");
 
-                    CombatMaid.Localization.LocalizationManager.HotReloadLocalization();
+                    
                 }
             }
-
-            // F8 重载配置: 调用 Spawner
+            
+            // F8 重载本地化
             if (Input.GetKeyDown(KeyCode.F8))
             {
-                MaidSpawner.Instance?.LoadAllCustomPresets();
+                CombatMaid.Localization.LocalizationManager.HotReloadLocalization();
             }
+
+            // // F8 重载配置: 调用 Spawner
+            // if (Input.GetKeyDown(KeyCode.F8))
+            // {
+            //     MaidSpawner.Instance?.LoadAllCustomPresets();
+            // }
 
             // F9 调试输出
             if (Input.GetKeyDown(KeyCode.F9))

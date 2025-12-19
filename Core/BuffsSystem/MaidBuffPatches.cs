@@ -36,13 +36,8 @@ namespace CombatMaid.Core.BuffsSystem
 
             try
             {
-                // 1. 执行自定义逻辑
+                // 执行自定义逻辑
                 effect.OnBuffSetup(__instance, target);
-                
-                // 2. 尝试设置本地化名称 "Buff_MaidBuff_Berserk_Name"
-                string locKey = $"Buff_{buffName}_Name";
-                string localizedName = LocalizationManager.GetText(locKey, buffName);
-                ___displayName = localizedName;
             }
             catch (Exception ex)
             {
@@ -50,7 +45,7 @@ namespace CombatMaid.Core.BuffsSystem
             }
         }
 
-        // 辅助方法：判断是否是本模组的 Buff
+        // 断是否是本模组的 Buff
         private static bool IsMaidBuff(string name) => name != null && name.StartsWith("MaidBuff_");
 
         private static string ExtractBuffName(string fullName)
@@ -85,7 +80,6 @@ namespace CombatMaid.Core.BuffsSystem
             }
             
             // 自动清理该 Buff 注册的所有数值修改器
-            // 只要你是通过 MaidBuffModifierManager 注册的 Modifier，这里都会自动移除
             MaidBuffModifierManager.Instance.CleanupModifiers(__instance.GetInstanceID());
         }
 

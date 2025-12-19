@@ -14,11 +14,10 @@ namespace CombatMaid.Core.WineFox
     {
         private const string SaveFileName = "WineFox_Data.json";
         private const string DefaultPresetName = "ContractMaid_WineFox.json";
-        private const string SaveFolderName = "CombatMaidSaves"; // 新的存档文件夹名
+        private const string SaveFolderName = "CombatMaidSaves";
         
         public static MaidProfileData CurrentData { get; private set; }
 
-        // 序列化设置 (保留之前的修复)
         private static readonly JsonSerializerSettings _saveSettings = new JsonSerializerSettings
         {
             Formatting = Formatting.Indented,
@@ -27,17 +26,16 @@ namespace CombatMaid.Core.WineFox
         };
 
         /// <summary>
-        /// [修改] 获取存档目录：指向游戏根目录/CombatMaidSaves
+        /// 获取存档目录：根目录/CombatMaidSaves
         /// </summary>
         public static string GetSaveDir()
         {
-            // Directory.GetCurrentDirectory() 通常就是游戏的 .exe 所在目录
             string gameRoot = Directory.GetCurrentDirectory();
             return Path.Combine(gameRoot, SaveFolderName);
         }
 
         /// <summary>
-        /// 获取 Mod 安装目录 (用于读取只读的默认预设)
+        /// 获取 Mod 安装目录
         /// </summary>
         private static string GetModDir()
         {
@@ -46,7 +44,6 @@ namespace CombatMaid.Core.WineFox
 
         public static MaidProfileData LoadOrInit()
         {
-            // 1. 尝试从【游戏根目录】加载玩家存档
             string saveDir = GetSaveDir();
             string savePath = Path.Combine(saveDir, SaveFileName);
 
@@ -56,15 +53,15 @@ namespace CombatMaid.Core.WineFox
                 {
                     string json = File.ReadAllText(savePath);
                     CurrentData = JsonConvert.DeserializeObject<MaidProfileData>(json);
-                    CMDebug.Log($"[WineFox] 成功加载存档: {savePath}");
+                    CMDebug.Log($"成功加载存档: {savePath}");
                 }
                 catch (System.Exception ex)
                 {
-                    CMDebug.LogError($"[WineFox] 存档损坏: {ex.Message}");
+                    CMDebug.LogError($"存档损坏: {ex.Message}");
                 }
             }
 
-            // 2. 如果无存档，从【Mod目录】读取默认预设
+            // 如果无存档，从Mod目录读取默认预设
             if (CurrentData == null)
             {
                 string modDir = GetModDir();
@@ -74,11 +71,11 @@ namespace CombatMaid.Core.WineFox
                 {
                     string json = File.ReadAllText(defaultPath);
                     CurrentData = JsonConvert.DeserializeObject<MaidProfileData>(json);
-                    CMDebug.Log($"[WineFox] 已初始化默认数据 (源: {DefaultPresetName})");
+                    CMDebug.Log($"已初始化默认数据 (源: {DefaultPresetName})");
                 }
                 else
                 {
-                    CMDebug.LogError($"[WineFox] 严重错误：找不到默认配置文件 {defaultPath}");
+                    CMDebug.LogError($"严重错误：找不到默认配置文件 {defaultPath}");
                     return null;
                 }
             }
@@ -100,11 +97,11 @@ namespace CombatMaid.Core.WineFox
                 string json = JsonConvert.SerializeObject(CurrentData, _saveSettings);
                 File.WriteAllText(savePath, json);
                 
-                CMDebug.Log($"[WineFox] 数据已保存至: {savePath}");
+                CMDebug.Log($"数据已保存至: {savePath}");
             }
             catch (System.Exception ex)
             {
-                CMDebug.LogError($"[WineFox] 保存失败: {ex.Message}");
+                CMDebug.LogError($"保存失败: {ex.Message}");
             }
         }
 

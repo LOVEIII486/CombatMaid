@@ -9,7 +9,7 @@ namespace CombatMaid.Core.Utilities
 {
     public static class InventorySerializer
     {
-        #region 保存逻辑 (Serialize)
+        #region 保存逻辑
 
         /// <summary>
         /// 将角色的物品数据（装备栏 + 背包）序列化为数据对象
@@ -142,7 +142,7 @@ namespace CombatMaid.Core.Utilities
 
         #endregion
 
-        #region 读取逻辑 (Deserialize)
+        #region 读取逻辑
 
         /// <summary>
         /// 异步恢复角色的物品数据
