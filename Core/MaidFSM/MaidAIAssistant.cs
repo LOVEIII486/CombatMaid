@@ -14,7 +14,7 @@ namespace CombatMaid.Core.MaidFSM
 
         private const float BackDetectionRadius = 8f;     // 背后检测半径
         private const float AdjustInterval = 0.4f;         // 决策频率
-        private const float RetreatStepDistance = 5f;     // 每次拉扯向后移动的步长
+        private const float RetreatStepDistance = 3f;     // 每次拉扯向后移动的步长
         
         // 动态射程比例
         private const float RangeRetreatThresholdPercent = 0.35f; 
