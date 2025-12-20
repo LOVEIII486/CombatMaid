@@ -828,7 +828,7 @@
       "IconFileName": "perk_combat_pro.png",
       "CostMoney": 10000,
       "CostItems": {
-        "108": 1,
+        "108": 3,
         "878": 3,
         "438": 3
       },
@@ -866,6 +866,9 @@
       "IconFileName": "perk_combat_pro.png",
       "CostMoney": 15000,
       "CostItems": {
+        "1256": 1,
+        "987": 1,
+        "872": 3
       },
       "RequiredLevel": 20,
       "Position": {
