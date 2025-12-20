@@ -884,8 +884,8 @@
           "Type": "SetVector2",
           "Attribute": "ShootTimeRange",
           "VectorValue": {
-            "x": 1,
-            "y": 2
+            "x": 0.8,
+            "y": 1.6
           }
         },
         {
