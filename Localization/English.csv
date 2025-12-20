@@ -141,3 +141,7 @@ Perk_Maid_FreezeNova,Freeze Nova,2.2.3,Perks
 Perk_Maid_FreezeNova_Desc,"Unlocks the [Freeze Nova] skill.\nThe Wine Fox releases ice energy, freezing all enemies within a 15m radius, dealing continuous damage and rendering them immobile.\nCooldown: <color=#F3D38A>60s</color>.",2.2.3,Perks
 Skill_FreezeNova_Success,<color=#00FFFF>Freeze Nova</color>: <color=#7FFFD4>{0}</color> targets frozen!,2.2.3,Skill
 Buff_MaidBuff_SuperRegen_Name,Super Regen,2.2.3,Buffs
+Perk_Combat_Pro_1,Spirit Fox Arts I,2.2.3,Perks
+Perk_Combat_Pro_1_Desc,"With her keen Spirit Fox intuition, Wine Fox can catch an enemy's slightest movement in the blink of an eye, making her combat steps even more graceful and nimble.\n\nReaction Delay <color=#7FE8D8>-70%</color>\nPreparation Time <color=#7FE8D8>-60%</color>\nNight Adaptation <color=#7FE8D8>+50%</color>",2.2.3,Perks
+Perk_Combat_Pro_2,Spirit Fox Arts II,2.2.3,Perks
+Perk_Combat_Pro_2_Desc,"The deep bond with her Master has blossomed into wondrous magic, making Wine Fox's offensive rhythm as continuous as a dream, never giving the bad guys a chance to catch their breath!\n\nMagic Burst Duration <color=#7FE8D8>1.0 - 2.0s</color>\nSpell Interval <color=#7FE8D8>0.5 - 1.0s</color>\nNimble Leap Cooldown <color=#7FE8D8>1.5 - 3.0s</color>",2.2.3,Perks

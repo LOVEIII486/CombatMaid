@@ -141,3 +141,7 @@ Perk_Maid_FreezeNova,寒冰新星,2.2.3,Perks
 Perk_Maid_FreezeNova_Desc,解锁[寒冰新星]技能。\n酒狐释放寒冰能量，冻结半径15米内的所有敌人，持续伤害并使其无法行动。\n冷却时间：<color=#F3D38A>60秒</color>。,2.2.3,Perks
 Skill_FreezeNova_Success,<color=#00FFFF>寒冰新星</color>：已冻结 <color=#7FFFD4>{0}</color> 个目标！,2.2.3,Skill
 Buff_MaidBuff_SuperRegen_Name,超级再生,2.2.3,Buffs
+Perk_Combat_Pro_1,灵狐战技 I,2.2.3,Perks
+Perk_Combat_Pro_1_Desc,酒狐凭借敏锐的灵狐直觉，能在瞬间捕捉到敌人的小动作，战斗时的姿态变得更加轻盈灵动。\n\n反应延迟 <color=#7FE8D8>-70%</color>\n准备时间 <color=#7FE8D8>-60%</color>\n暗夜适应力 <color=#7FE8D8>+50%</color>,2.2.3,Perks
+Perk_Combat_Pro_2,灵狐战技 II,2.2.3,Perks
+Perk_Combat_Pro_2_Desc,与主人的深深牵绊化作了不可思议的魔法，酒狐的进攻节奏如同幻梦般连绵不绝，不再给坏人喘息的机会。\n\n射击爆发时长 <color=#7FE8D8>1.0 - 2.0秒</color>\n射击间隔 <color=#7FE8D8>0.5 - 1.0秒</color>\n闪避冷却 <color=#7FE8D8>1.5 - 3.0秒</color>,2.2.3,Perks

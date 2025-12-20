@@ -22,14 +22,15 @@ namespace CombatMaid.Core.SkillTreeSystem
             MultiplyAttribute, // 乘法属性
             AddSkill, // 添加技能
             UnlockItem, // 解锁物品
-            CustomLogic // 自定义逻辑
+            CustomLogic, // 自定义逻辑
+            SetVector2
         }
 
         public ModifierType Type;
 
         public string AttributeKey;
         public float AttributeValue;
-
+        public Vector2 VectorValue;
         public string SkillID;
         public Dictionary<string, object> SkillParams;
 
@@ -122,6 +123,9 @@ namespace CombatMaid.Core.SkillTreeSystem
 
                     case SkillTreeModifier.ModifierType.CustomLogic:
                         return ApplyCustomLogic(modifier, data);
+                    
+                    case SkillTreeModifier.ModifierType.SetVector2:
+                        return ApplySetVector2(modifier, data.PresetConfig);
 
                     default:
                         CMDebug.LogWarning($"[ModifyWineFoxData] 未处理的修改器类型: {modifier.Type}");
@@ -311,7 +315,22 @@ namespace CombatMaid.Core.SkillTreeSystem
                     return false;
             }
         }
-
+        
+        private bool ApplySetVector2(SkillTreeModifier modifier, MaidConfig config)
+        {
+            string key = modifier.AttributeKey;
+            var field = typeof(MaidConfig).GetField(key);
+    
+            if (field != null && field.FieldType == typeof(Vector2))
+            {
+                field.SetValue(config, modifier.VectorValue);
+                CMDebug.Log($"  [SetVector2] {key} 已成功修改为: {modifier.VectorValue}");
+                return true;
+            }
+            CMDebug.LogWarning($"[ModifyWineFoxData] 属性 {key} 不是 Vector2 或不存在");
+            return false;
+        }
+        
         #endregion
 
         #region 辅助函数

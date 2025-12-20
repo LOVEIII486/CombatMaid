@@ -61,5 +61,7 @@ namespace CombatMaid.Core.SkillTreeSystem
         
         // 用于自定义逻辑
         public string CustomAction;
+        
+        public Vector2 VectorValue;
     }
 }

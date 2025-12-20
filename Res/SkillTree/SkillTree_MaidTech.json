@@ -821,6 +821,89 @@
       ]
     },
     {
+      "//": "========== 战斗分支：战斗AI强化 ==========",
+      "ID": "maid_combat_pro_1",
+      "DisplayName": "Perk_Combat_Pro_1",
+      "Description": "Perk_Combat_Pro_1_Desc",
+      "IconFileName": "perk_combat_pro.png",
+      "CostMoney": 10000,
+      "CostItems": {
+        "108": 1,
+        "878": 3,
+        "438": 3
+      },
+      "RequiredLevel": 19,
+      "Position": {
+        "x": 180,
+        "y": 680
+      },
+      "PrerequisiteIDs": [
+        "maid_combat_dmg_4"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "MultiplyAttribute",
+          "Attribute": "ReactionTime",
+          "Value": 0.3
+        },
+        {
+          "Type": "MultiplyAttribute",
+          "Attribute": "ShootDelay",
+          "Value": 0.4
+        },
+        {
+          "Type": "MultiplyAttribute",
+          "Attribute": "NightReactionTimeFactor",
+          "Value": 0.5
+        }
+      ]
+    },
+    {
+      "ID": "maid_combat_pro_2",
+      "DisplayName": "Perk_Combat_Pro_2",
+      "Description": "Perk_Combat_Pro_2_Desc",
+      "IconFileName": "perk_combat_pro.png",
+      "CostMoney": 15000,
+      "CostItems": {
+      },
+      "RequiredLevel": 20,
+      "Position": {
+        "x": 180,
+        "y": 830
+      },
+      "PrerequisiteIDs": [
+        "maid_combat_pro_1"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "SetVector2",
+          "Attribute": "ShootTimeRange",
+          "VectorValue": {
+            "x": 1,
+            "y": 2
+          }
+        },
+        {
+          "Type": "SetVector2",
+          "Attribute": "ShootTimeSpaceRange",
+          "VectorValue": {
+            "x": 0.5,
+            "y": 1
+          }
+        },
+        {
+          "Type": "SetVector2",
+          "Attribute": "DashCoolTimeRange",
+          "VectorValue": {
+            "x": 1.5,
+            "y": 3
+          }
+        }
+      ]
+    },
+    {
       "//": "========== 分支3：主动技能 (x: 60) ==========",
       "ID": "maid_skill_selfheal",
       "DisplayName": "Perk_Maid_SelfHeal",

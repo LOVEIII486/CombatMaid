@@ -184,6 +184,12 @@ namespace CombatMaid.Core.SkillTreeSystem
                     modifier.Type = SkillTreeModifier.ModifierType.CustomLogic;
                     modifier.CustomActionID = config.CustomAction;
                     break;
+                
+                case "setvector2":
+                    modifier.Type = SkillTreeModifier.ModifierType.SetVector2;
+                    modifier.AttributeKey = config.Attribute;
+                    modifier.VectorValue = config.VectorValue;
+                    break;
 
                 default:
                     CMDebug.LogWarning($"[SkillTreeConfigLoader] 未知的修改器类型: {config.Type}");
