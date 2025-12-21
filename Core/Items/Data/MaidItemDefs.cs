@@ -84,7 +84,7 @@ namespace CombatMaid.Core.Items.Data
                     },
                     ShopMerchantId = MerchantIds.Mud,
                     ShopMaxStock = 6,
-                    ShopPriceFactor = 2f,
+                    ShopPriceFactor = 1f,
                     ShopPossibility = 1.0f,
                     ShopForceUnlock = false
                 },
@@ -95,7 +95,7 @@ namespace CombatMaid.Core.Items.Data
                     localizationDesc = "Item_VialMaid_II_Desc",
                     spritePath = "VialMaid_II.png",
 
-                    value = 15000,
+                    value = 10000,
                     weight = 1.2f,
                     maxStackCount = 2,
                     maxDurability = 0f,
@@ -127,7 +127,7 @@ namespace CombatMaid.Core.Items.Data
                     },
                     ShopMerchantId = MerchantIds.Mud,
                     ShopMaxStock = 2,
-                    ShopPriceFactor = 2f,
+                    ShopPriceFactor = 1f,
                     ShopPossibility = 1f,
                     ShopForceUnlock = false
                 },
@@ -138,7 +138,7 @@ namespace CombatMaid.Core.Items.Data
                     localizationDesc = "Item_VialMaid_III_Desc",
                     spritePath = "VialMaid_III.png",
 
-                    value = 30000,
+                    value = 20000,
                     weight = 1.5f,
                     maxStackCount = 1,
                     maxDurability = 0f,
@@ -170,7 +170,7 @@ namespace CombatMaid.Core.Items.Data
                     },
                     ShopMerchantId = MerchantIds.Mud,
                     ShopMaxStock = 1,
-                    ShopPriceFactor = 2f,
+                    ShopPriceFactor = 1f,
                     ShopPossibility = 1f,
                     ShopForceUnlock = false
                 },
@@ -276,7 +276,7 @@ namespace CombatMaid.Core.Items.Data
                     ShopPossibility = 1.0f,
                     ShopForceUnlock = false
                 },
-                new MaidItemInfo 
+                new MaidItemInfo  // 体检套装 88104
                 {
                     itemId = 88104,
                     localizationKey = "Item_MaidScanner", 
