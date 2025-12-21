@@ -1,121 +1,146 @@
 ﻿using UnityEngine;
-using CombatMaid.Core;
-using ItemStatsSystem;
-using UnityEngine.AI;
-using Random = UnityEngine.Random;
+using Pathfinding;
 
 namespace CombatMaid.Core.MaidFSM.States
 {
-    /// <summary>
-    /// 自主模式：把控制权交给原生AI，闲置时分散巡逻
-    /// </summary>
     public class State_Autonomous : MaidStateBase
     {
-        // 配置参数
-        private const float IdleThreshold = 3.0f;     // 判定为闲置的时间
-        private const float PatrolRadiusMin = 2.0f;  // 最小巡逻半径
-        private const float PatrolRadiusMax = 5.0f;  // 最大巡逻半径
-        private const float ChangePosInterval = 5.0f;// 闲置时多久换一次位置
+        private const float IdleThreshold = 2.5f;
+        private const float PatrolRadiusMax = 8.0f;
+        private const float ChangePosInterval = 4.0f;
 
-        // 运行时变量
         private Vector3 _lastOwnerPos;
         private float _idleTimer;
         private float _nextPatrolMoveTime;
+        private bool _isPatrolling;
+        private Vector3? _currentPatrolPoint;
+
+        // 缓存原始参数
+        private float _originForceTraceDist;
+        private float _originPatrolRange;
+        private CharacterMainControl _originLeader; // 缓存原生领袖
 
         public override void Enter()
         {
             SetNativeBrainActive(true);
-            
             _idleTimer = 0f;
             _nextPatrolMoveTime = 0f;
+            _isPatrolling = false;
+            _currentPatrolPoint = null;
 
             if (Controller.MainOwner != null)
-            {
                 _lastOwnerPos = Controller.MainOwner.transform.position;
-                // 进入状态时先跟随一次
-                UpdatePatrolPosition(Controller.MainOwner.transform.position);
+
+            if (Controller.AI != null)
+            {
+                _originForceTraceDist = Controller.AI.forceTracePlayerDistance;
+                _originPatrolRange = Controller.AI.patrolRange;
+                _originLeader = Controller.AI.leader; // 备份玩家引用
             }
         }
 
         public override void Update()
         {
             if (Controller.MainOwner == null || Controller.AI == null) return;
-            
+
             Controller.AIAssistant.OnTick();
 
-            // 如果离得太远，优先切换到强制跟随
+            // 1. 距离检查：超过 Mod 安全距离则切换到强制跟随
             if (Controller.IsTooFarFromOwner())
             {
+                ResetNativeParameters();
                 Machine.ChangeState<State_ForceFollow>();
                 return;
             }
 
-            // 检测玩家是否移动
             Vector3 ownerCurrentPos = Controller.MainOwner.transform.position;
-            bool isPlayerMoving = (ownerCurrentPos - _lastOwnerPos).sqrMagnitude > 0.01f;
+            bool isPlayerMoving = (ownerCurrentPos - _lastOwnerPos).sqrMagnitude > 1.44f;
             
-            _lastOwnerPos = ownerCurrentPos;
-
             if (isPlayerMoving)
             {
-                // 玩家移动
+                _lastOwnerPos = ownerCurrentPos; 
+                ResetNativeParameters();
                 _idleTimer = 0f;
-                // 紧跟模式：直接设置目标为玩家位置
-                UpdatePatrolPosition(ownerCurrentPos);
+                Controller.ManualMoveTarget = null;
             }
             else
             {
-                // 玩家静止
-                _idleTimer += Time.deltaTime;
+                if (_isPatrolling && _currentPatrolPoint.HasValue)
+                {
+                    Controller.AI.patrolPosition = _currentPatrolPoint.Value;
+                    Controller.AI.patrolRange = 1.0f;
+                }
 
+                _idleTimer += Time.deltaTime;
                 if (_idleTimer > IdleThreshold)
                 {
-                    // 超过3秒，开始分散闲逛
                     HandleIdlePatrol(ownerCurrentPos);
                 }
-                else
-                {
-                    // 3秒内保持当前位置
-                    UpdatePatrolPosition(ownerCurrentPos);
-                }
             }
         }
 
-        /// <summary>
-        /// 处理闲置时的巡逻逻辑
-        /// </summary>
         private void HandleIdlePatrol(Vector3 centerPos)
         {
-            if (Time.time >= _nextPatrolMoveTime)
-            {
-                Vector2 randomCircle = Random.insideUnitCircle;
-                Vector3 offset = new Vector3(randomCircle.x, 0, randomCircle.y);
-                float distance = Random.Range(PatrolRadiusMin, PatrolRadiusMax);
-                Vector3 roughTargetPos = centerPos + (offset.normalized * distance);
+            if (Time.time < _nextPatrolMoveTime) return;
 
-                NavMeshHit hit;
-                if (NavMesh.SamplePosition(roughTargetPos, out hit, 2.0f, NavMesh.AllAreas))
+            float angle = Random.Range(0f, Mathf.PI * 2f);
+            Vector3 dir = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
+            Vector3 roughTarget = centerPos + (dir * Random.Range(4f, PatrolRadiusMax));
+
+            if (AstarPath.active != null)
+            {
+                var nearest = AstarPath.active.GetNearest(roughTarget, NNConstraint.Default);
+                if (nearest.node != null && nearest.node.Walkable)
                 {
-                    UpdatePatrolPosition(hit.position);
-                    // CMDebug.Log($"[{Controller.name}] 闲逛目标已修正: {roughTargetPos} -> {hit.position}");
+                    Vector3 validPos = (Vector3)nearest.node.position;
+                    
+                    _isPatrolling = true;
+                    _currentPatrolPoint = validPos;
+                    Controller.ManualMoveTarget = validPos;
+
+                    // --- 核心修复：彻底阻断跟随欲望 ---
+                    // 1. 暂时移除原生领袖引用，使其失去“归巢”目标
+                    // 仅在非战斗状态下移除，确保战斗时能识别队友
+                    if (!Controller.AI.noticed && !Controller.AI.alert) 
+                    {
+                        Controller.AI.leader = null;
+                    }
+
+                    // 2. 设置原生巡逻参数
+                    Controller.AI.patrolPosition = validPos;
+                    Controller.AI.patrolRange = 1.0f;
+                    Controller.AI.forceTracePlayerDistance = 25.0f;
+
+                    // 3. 执行移动指令
+                    Controller.AI.MoveToPos(validPos); 
+                    
+                    //CMDebug.Log($"[自主巡逻] 已重置原生锚点至: {validPos}");
                 }
-                else
-                {
-                    // CMDebug.LogWarning($"[{SkillName}] 随机点无效，放弃移动");
-                }
-                _nextPatrolMoveTime = Time.time + ChangePosInterval + Random.Range(0f, 2.0f);
             }
+
+            _nextPatrolMoveTime = Time.time + ChangePosInterval + Random.Range(0f, 3.0f);
         }
 
-        /// <summary>
-        /// 封装设置AI巡逻点的方法
-        /// </summary>
-        private void UpdatePatrolPosition(Vector3 pos)
+        private void ResetNativeParameters()
         {
-            if (Controller.AI != null)
-            {
-                Controller.AI.patrolPosition = pos;
-            }
+            if (Controller.AI == null || !_isPatrolling) return;
+
+            // 恢复原始参数和领袖引用
+            Controller.AI.leader = _originLeader ?? Controller.MainOwner;
+            Controller.AI.forceTracePlayerDistance = _originForceTraceDist;
+            Controller.AI.patrolRange = _originPatrolRange;
+            
+            // 清除当前路径，让其立刻重新评估并跟随玩家
+            Controller.AI.MoveToPos(Controller.MainOwner.transform.position);
+            
+            _isPatrolling = false;
+            _currentPatrolPoint = null;
+        }
+
+        public override void Exit()
+        {
+            ResetNativeParameters();
+            base.Exit();
         }
     }
 }

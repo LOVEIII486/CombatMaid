@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using CombatMaid.Core.MaidFSM.States;
 using HarmonyLib;
 
 namespace CombatMaid.Core.Patches
@@ -27,7 +28,7 @@ namespace CombatMaid.Core.Patches
 
         public static void ClearProvocations() => _provokedEntityIds.Clear();
 
-        #region Harmony Patches
+        #region 攻击中立
 
         [HarmonyPatch(typeof(DamageReceiver), nameof(DamageReceiver.Hurt))]
         [HarmonyPrefix]

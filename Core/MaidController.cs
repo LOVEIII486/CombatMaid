@@ -40,6 +40,8 @@ namespace CombatMaid.Core
         private CharacterMainControl _cachedCharacter;
         
         public MaidAIAssistant AIAssistant { get; private set; }
+        
+        public Vector3? ManualMoveTarget { get; set; } = null;
 
         #endregion
 
