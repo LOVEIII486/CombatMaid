@@ -109,6 +109,7 @@ namespace CombatMaid.Core
         private void Update()
         {
             if (AI == null || MaidCharacter == null || MaidCharacter.Health.IsDead) return;
+            //AIAssistant?.OnTick();
             StateMachine?.Update();
         }
 

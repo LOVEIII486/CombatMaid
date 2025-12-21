@@ -1,4 +1,5 @@
-﻿using Duckov.Utilities;
+﻿using CombatMaid.Core.Patches;
+using Duckov.Utilities;
 using UnityEngine;
 
 namespace CombatMaid.Core.MaidFSM
@@ -13,7 +14,7 @@ namespace CombatMaid.Core.MaidFSM
         private CharacterMainControl _character;
 
         private const float BackDetectionRadius = 8f;     // 背后检测半径
-        private const float AdjustInterval = 0.4f;         // 决策频率
+        private const float AdjustInterval = 0.5f;         // 决策频率
         private const float RetreatStepDistance = 3f;     // 每次拉扯向后移动的步长
         
         // 动态射程比例
@@ -108,12 +109,16 @@ namespace CombatMaid.Core.MaidFSM
                     if (col == null) continue;
 
                     var dr = col.GetComponent<DamageReceiver>();
-                    // 修复点：必须同时检查 dr 和 dr.health，因为 dr.Team 依赖于 health 或初始化
                     if (dr != null && dr.health != null && !dr.health.IsDead)
                     {
                         if (Team.IsEnemy(_character.Team, dr.Team))
                         {
-                            CMDebug.Log($"[AIAssistant] 察觉背后威胁: {dr.name}");
+                            // 同时过滤 middle 和 all
+                            if ((dr.Team == Teams.middle || dr.Team == Teams.all) && !MaidNeutralAIStrategy.IsProvoked(dr))
+                            {
+                                continue; 
+                            }
+                            CMDebug.Log($"[AIAssistant] 察觉背后威胁: {dr.name} (Team: {dr.Team})");
                             _aiCtrl.searchedEnemy = dr;
                             _aiCtrl.noticed = true;
                             break; 

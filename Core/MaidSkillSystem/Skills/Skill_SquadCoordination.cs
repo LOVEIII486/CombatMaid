@@ -1,5 +1,6 @@
 ﻿using System;
 using CombatMaid.Core.MaidFSM.States;
+using CombatMaid.Core.Patches;
 using CombatMaid.Localization;
 
 namespace CombatMaid.Core.MaidSkillSystem.Skills
@@ -37,21 +38,25 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
             var target = MaidManager.Instance.FocusTarget;
             if (target == null) return false;
 
+            if (target.mainDamageReceiver != null && 
+                (target.mainDamageReceiver.Team == Teams.middle || target.mainDamageReceiver.Team == Teams.all))
+            {
+                MaidNeutralAIStrategy.MarkAsEnemy(target.mainDamageReceiver);
+            }
             var ai = Controller.AI;
 
             ai.searchedEnemy = target.mainDamageReceiver;
             ai.aimTarget = target.transform;
-            
+    
             if (!ai.alert || !ai.noticed)
             {
                 ai.alert = true;
                 ai.noticed = true;
                 Owner.PopText(_txtExecute.Value);
             }
-            
-            // CMDebug.Log($"[{Owner.name}] 执行集火 -> {target.name}");
-
+            //CMDebug.Log($"[{Owner.name}] 执行集火 -> {target.name}");
             return true;
         }
+        
     }
 }
