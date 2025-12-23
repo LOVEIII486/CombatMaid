@@ -14,7 +14,7 @@ namespace CombatMaid.Core.MaidFSM.States
         // ================= 参数配置 =================
         private const float SearchRadius = 12.0f;       // 搜索范围
         private const float OwnerTetherRadius = 18.0f;  // 主人牵引范围
-        private const float InteractionThreshold = 1.1f;  // 交互距离
+        private const float InteractionThreshold = 1.3f;  // 交互距离
         private const float VerticalInteractionRange = 2.5f;
         
         // 搜刮耗时配置

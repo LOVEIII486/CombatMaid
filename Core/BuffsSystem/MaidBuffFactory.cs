@@ -15,6 +15,8 @@ namespace CombatMaid.Core.BuffsSystem
         private static readonly Dictionary<int, Buff> SharedBuffs = new Dictionary<int, Buff>();
 
         private static FieldInfo _idField;
+        private static FieldInfo _displayNameField; // 用于设置本地化 Key
+        private static FieldInfo _descriptionField; // 用于设置描述 Key
         private static FieldInfo _limitedLifeTimeField;
         private static FieldInfo _totalLifeTimeField;
         private static bool _fieldsInitialized = false;
@@ -35,9 +37,6 @@ namespace CombatMaid.Core.BuffsSystem
             }
         }
 
-        /// <summary>
-        /// 获取或创建共享 Buff 模板
-        /// </summary>
         public static Buff GetOrCreateSharedBuff(BuffConfig config)
         {
             if (SharedBuffs.TryGetValue(config.Id, out Buff existing))
@@ -52,7 +51,6 @@ namespace CombatMaid.Core.BuffsSystem
         {
             try
             {
-                // 借用游戏的 BaseBuff 作为模板
                 Buff baseBuff = GameplayDataSettings.Buffs.BaseBuff;
                 if (baseBuff == null)
                 {
@@ -67,6 +65,8 @@ namespace CombatMaid.Core.BuffsSystem
                 InitializeReflection();
         
                 _idField?.SetValue(newBuff, config.Id);
+                _displayNameField?.SetValue(newBuff, $"Buff_{config.Name}_Name");
+                _descriptionField?.SetValue(newBuff, $"Buff_{config.Name}_Desc");
                 _limitedLifeTimeField?.SetValue(newBuff, config.LimitedLifeTime);
                 _totalLifeTimeField?.SetValue(newBuff, config.Duration);
 
@@ -75,7 +75,7 @@ namespace CombatMaid.Core.BuffsSystem
             }
             catch (Exception ex)
             {
-                CMDebug.LogError($"创建失败: {ex.Message}");
+                CMDebug.LogError($"创建 Buff {config.Name} 失败: {ex.Message}");
                 return null;
             }
         }
@@ -96,6 +96,8 @@ namespace CombatMaid.Core.BuffsSystem
             if (_fieldsInitialized) return;
             var t = typeof(Buff);
             _idField = t.GetField("id", BindingFlags.Instance | BindingFlags.NonPublic);
+            _displayNameField = t.GetField("displayName", BindingFlags.Instance | BindingFlags.NonPublic);
+            _descriptionField = t.GetField("description", BindingFlags.Instance | BindingFlags.NonPublic);
             _limitedLifeTimeField = t.GetField("limitedLifeTime", BindingFlags.Instance | BindingFlags.NonPublic);
             _totalLifeTimeField = t.GetField("totalLifeTime", BindingFlags.Instance | BindingFlags.NonPublic);
             _fieldsInitialized = true;

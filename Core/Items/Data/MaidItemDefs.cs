@@ -309,6 +309,37 @@ namespace CombatMaid.Core.Items.Data
                     ShopPossibility = 1.0f,
                     ShopForceUnlock = true
                 },
+                new MaidItemInfo // 酒狐的心意曲奇 88105
+                {
+                    itemId = 88105,
+                    spritePath = "WineFoxCookie.png",
+                    localizationKey = "Item_WineFoxCookie",
+                    localizationDesc = "Item_WineFoxCookie_Desc",
+                    value = 520,
+                    weight = 0.1f,
+                    maxStackCount = 1,
+                    maxDurability = 6f,
+                    quality = 4,
+                    displayQuality = DisplayQuality.Purple,
+                    tags = new List<string> { "Food" },
+                    usages = new UsageData
+                    {
+                        useTime = 0.6f,
+                        useSound = string.Empty,
+                        actionSound = string.Empty,
+                        useDurability = true,
+                        durabilityUsage = 1,
+                        behaviors = new List<UsageBehaviorData>()
+                    }, 
+                    VisualReferenceId = 15,
+                    CustomComponentType = typeof(Component_WineFoxCookie),
+                    CustomConstants = new Dictionary<string, object>
+                    {
+                        { "ConsumeOnUse", false }
+                    },
+                    ShopMerchantId = null,
+                    ShopForceUnlock = true
+                },
             };
         }
     }

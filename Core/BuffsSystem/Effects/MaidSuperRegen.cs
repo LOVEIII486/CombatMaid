@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using CombatMaid.Core.BuffsSystem;
 using Duckov.Buffs;
 
 namespace CombatMaid.Core.BuffsSystem.Effects

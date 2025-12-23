@@ -1,0 +1,50 @@
+﻿using Duckov.Buffs;
+using CombatMaid.Core.AttributeModifiers;
+using ItemStatsSystem.Stats;
+using CombatMaid.Localization;
+
+namespace CombatMaid.Core.BuffsSystem.Effects
+{
+    /// <summary>
+    /// 酒狐的心意曲奇效果：增加 50 点生命上限
+    /// </summary>
+    public class MaidCookieEffect : IMaidBuffEffect
+    {
+        public string BuffName => "MaidBuff_WineFoxCookie";
+        public int BuffID => 888003;
+
+        private const float ExtraHP = 50f;
+
+        public void OnBuffSetup(Buff buff, CharacterMainControl target)
+        {
+            if (target == null || target.CharacterItem == null) return;
+
+            var modifier = StatModifier.AddModifier(
+                target, 
+                StatModifier.Attributes.MaxHealth, 
+                ExtraHP, 
+                ModifierType.Add
+            );
+
+            if (modifier != null)
+            {
+                var stat = target.CharacterItem.GetStat(StatModifier.Attributes.MaxHealth);
+                if (stat != null)
+                {
+                    // 追踪修改器，以便 Buff 结束时由管理器自动清理
+                    MaidBuffModifierManager.Instance.TrackModifier(buff.GetInstanceID(), stat, modifier);
+                }
+            }
+            target.Health.AddHealth(ExtraHP);
+
+            string popTemplate = LocalizationManager.GetText("Buff_WineFoxCookie_Pop");
+            string finalMsg = string.Format(popTemplate, ExtraHP);
+            target.PopText(finalMsg);
+        }
+
+        public void OnBuffDestroy(Buff buff, CharacterMainControl target)
+        {
+            //CMDebug.Log($"[{BuffName}] 效果结束：生命上限已还原");
+        }
+    }
+}
