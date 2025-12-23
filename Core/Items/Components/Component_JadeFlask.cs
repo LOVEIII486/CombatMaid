@@ -10,6 +10,7 @@ namespace CombatMaid.Core.Items.Components
     {
         private const int BlessingBuffID = 888004; // 祝福 Buff ID
         private const float BlessingDuration = 180f;
+        private const float WaterAmount = 30f;
 
         public override bool CanBeUsed(Item item, object user)
         {
@@ -28,7 +29,8 @@ namespace CombatMaid.Core.Items.Components
             {
                 character.AddBuff(buffPfb, character);
             }
-
+            
+            character.AddWater(WaterAmount);
             //CMDebug.Log($"[衔玉酒瓶] 使用者 {character.name} 已获得衔玉之护。");
         }
     }

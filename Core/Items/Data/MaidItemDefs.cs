@@ -288,6 +288,7 @@ namespace CombatMaid.Core.Items.Data
                     maxDurability = 10f,
                     quality = 3,
                     displayQuality = DisplayQuality.Blue,
+                    tags = new List<string> { "Tool" },
                     usages = new UsageData
                     {
                         useTime = 0.3f,
@@ -319,8 +320,8 @@ namespace CombatMaid.Core.Items.Data
                     weight = 0.1f,
                     maxStackCount = 1,
                     maxDurability = 6f,
-                    quality = 4,
-                    displayQuality = DisplayQuality.Purple,
+                    quality = 5,
+                    displayQuality = DisplayQuality.Orange,
                     tags = new List<string> { "Food" },
                     usages = new UsageData
                     {
@@ -381,8 +382,9 @@ namespace CombatMaid.Core.Items.Data
                     weight = 1.0f,
                     maxStackCount = 1,
                     maxDurability = 0f,
-                    quality = 7,
-                    displayQuality = DisplayQuality.Q7,
+                    quality = 8,
+                    displayQuality = DisplayQuality.Q8,
+                    tags = new List<string> { "Luxury" },
                     usages = new UsageData
                     {
                         useTime = 1.5f,

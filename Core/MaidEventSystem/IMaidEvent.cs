@@ -2,7 +2,8 @@
 {
     public interface IMaidEvent
     {
-        // 注册入队时触发
+        bool IsDateActive();
+
         void OnMaidRegistered(MaidController maid, CharacterMainControl player);
     }
 }
