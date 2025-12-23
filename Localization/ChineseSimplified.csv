@@ -146,15 +146,17 @@ Perk_Combat_Pro_1_Desc,酒狐凭借敏锐的灵狐直觉，能在瞬间捕捉到
 Perk_Combat_Pro_2,灵狐战技 II,2.2.3,Perks
 Perk_Combat_Pro_2_Desc,与主人的深深牵绊化作了不可思议的魔法，酒狐的进攻节奏如同幻梦般连绵不绝，不再给坏人喘息的机会。\n\n射击爆发时长 <color=#7FE8D8>1.0 - 2.0秒</color>\n射击间隔 <color=#7FE8D8>0.5 - 1.0秒</color>\n闪避冷却 <color=#7FE8D8>1.5 - 3.0秒</color>,2.2.3,Perks
 Item_GiftBox,酒狐的圣诞礼物,2.2.4,MaidItem
-Item_GiftBox_Desc,酒狐为主人精心准备的圣诞礼物，沉甸甸的包装中封存着神秘的魔力，在打开之前没人知道会迎来怎样的惊喜。\n<color=#FFD700>效果：</color>打开后获得几件独特礼物。\n<i>“圣诞快乐，主人~~~”</i>,2.2.4,MaidItem
+Item_GiftBox_Desc,酒狐为主人精心准备的圣诞礼物，沉甸甸的包装中封存着神秘的魔力，在打开之前没人知道会迎来怎样的惊喜。\n<color=#FFD700>效果：</color>打开后获得几件独特礼物。\n<i>“圣诞快乐，狗修金sama~~~”</i>,2.2.4,MaidItem
 Item_WineFoxCookie,酒狐的心意曲奇,2.2.4,MaidItem
-Item_WineFoxCookie_Desc,由酒狐亲手烘焙的点心，曲奇被制成狐狸头像与六角雪花的形状，散发着奶油的甜香与温暖的魔力。\n<color=#FFD700>效果：</color>食用后恢复<color=#00FFFF>30</color>点饱食度，获得<color=#00FFFF>50</color>点临时生命值，并立即恢复至<b>满生命值</b>。\n<i>“这是我第一次尝试人类的烹饪方式……希望它能在寒冷的冬日守护主人的灵魂。”</i>,2.2.4,MaidItem
+Item_WineFoxCookie_Desc,"由酒狐亲手烘焙的点心，曲奇散发着奶油的甜香与温暖的魔力。\n<color=#FFD700>效果：</color>食用后恢复获得<color=#00FFFF>50</color>点临时生命值，并立即恢复至<b>满生命值</b>。\n<i>“这是我第一次学着用人类的方法烤点心呢，我还在曲奇里注入了魔力哦，这样就能更好地守护主人啦~”</i>
+",2.2.4,MaidItem
 Item_JadeFlask,酒狐的衔玉酒瓶,2.2.4,MaidItem
-Item_JadeFlask_Desc,一个华丽的附魔玉制清酒瓶，瓶口处一只微型金雕灵狐衔着赤红宝石，仿佛在默默守护饮下它的人。\n<color=#FFD700>效果：</color>获得持续<color=#00FFFF>180秒</color>的祝福，期间若受到致命伤害则消耗祝福，保留<b>1点生命值</b>并获得<color=#00FFFF>5秒</color>无敌。\n<i>“别害怕，主人……真正危险的瞬间，我会替你挡下来的。”</i>,2.2.4,MaidItem
+Item_JadeFlask_Desc,"一个华丽的附魔玉制清酒瓶，瓶口处一只金雕灵狐衔着赤红宝石，仿佛在默默守护饮下它的人。\n<color=#FFD700>效果：</color>获得持续<color=#00FFFF>180秒</color>的祝福，期间若受到致命伤害则消耗祝福，保留<b>1点生命值</b>并获得<color=#00FFFF>5秒</color>无敌。\n<i>“主人贴近我就好啦，在最危险的时候，我会一直挡在主人前面的。”</i>
+",2.2.4,MaidItem
 Buff_MaidBuff_WineFoxCookie_Name,心意曲奇,2.2.4,Buffs
 Buff_WineFoxCookie_Pop,<color=#FFD700>酒狐的守护：生命上限 +{0}</color>,2.2.4,Buffs
 Buff_MaidBuff_JadeBlessing_Name,衔玉之护,2.2.4,Buffs
 Buff_MaidBuff_JadeInvincible_Name,衔玉无敌,2.2.4,Buffs
 Buff_JadeBlessing_Trigger_Pop,<color=#FFD700>衔玉之护触发！</color>,2.2.4,Buffs
-Item_GiftBox_Open_Pop,<color=#FF4D4D>圣诞快乐！</color>,2.2.4,MaidItem
+Item_GiftBox_Open_Pop,<color=#FF4D4D>圣诞快乐！狗修金sama~~~</color>,2.2.4,MaidItem
 Item_GiftBox_Received_Msg,<color=#00FF7F>酒狐从行囊里拿出了准备已久的礼物！</color>,2.2.4,MaidEvents

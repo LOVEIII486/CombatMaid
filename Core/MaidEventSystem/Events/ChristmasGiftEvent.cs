@@ -13,7 +13,7 @@ namespace CombatMaid.Core.MaidEventSystem.Events
         {
             DateTime now = DateTime.Now;
             // 圣诞节判定范围：12.24 - 12.26
-            return now.Month == 12 && now.Day >= 20 && now.Day <= 26;
+            return now.Month == 12 && now.Day >= 24 && now.Day <= 26;
         }
 
         public void OnMaidRegistered(MaidController maid, CharacterMainControl player)
