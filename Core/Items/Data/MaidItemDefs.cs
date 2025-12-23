@@ -315,7 +315,7 @@ namespace CombatMaid.Core.Items.Data
                     spritePath = "WineFoxCookie.png",
                     localizationKey = "Item_WineFoxCookie",
                     localizationDesc = "Item_WineFoxCookie_Desc",
-                    value = 520,
+                    value = 1040, // 520 * 2
                     weight = 0.1f,
                     maxStackCount = 1,
                     maxDurability = 6f,
@@ -331,7 +331,7 @@ namespace CombatMaid.Core.Items.Data
                         durabilityUsage = 1,
                         behaviors = new List<UsageBehaviorData>()
                     }, 
-                    VisualReferenceId = 15,
+                    VisualReferenceId = 13,
                     CustomComponentType = typeof(Component_WineFoxCookie),
                     CustomConstants = new Dictionary<string, object>
                     {
@@ -346,7 +346,7 @@ namespace CombatMaid.Core.Items.Data
                     spritePath = "JadeFlask.png",
                     localizationKey = "Item_JadeFlask",
                     localizationDesc = "Item_JadeFlask_Desc",
-                    value = 1314,
+                    value = 2628, // 1314 * 2
                     weight = 0.5f,
                     maxStackCount = 1,
                     maxDurability = 3f,
@@ -362,11 +362,41 @@ namespace CombatMaid.Core.Items.Data
                         durabilityUsage = 1,
                         behaviors = new List<UsageBehaviorData>()
                     },
-                    VisualReferenceId = 15,
+                    VisualReferenceId = 108,
                     CustomComponentType = typeof(Component_JadeFlask),
                     CustomConstants = new Dictionary<string, object>
                     {
                         { "ConsumeOnUse", false }
+                    },
+                    ShopMerchantId = null,
+                    ShopForceUnlock = true
+                },
+                new MaidItemInfo // 酒狐的圣诞礼物 88107
+                {
+                    itemId = 88107,
+                    localizationKey = "Item_GiftBox",
+                    localizationDesc = "Item_GiftBox_Desc",
+                    spritePath = "GiftBox.png",
+                    value = 2450, // 1225 * 2
+                    weight = 1.0f,
+                    maxStackCount = 1,
+                    maxDurability = 0f,
+                    quality = 7,
+                    displayQuality = DisplayQuality.Q7,
+                    usages = new UsageData
+                    {
+                        useTime = 1.5f,
+                        useSound = "",
+                        actionSound = "",
+                        useDurability = false,
+                        durabilityUsage = 0,
+                        behaviors = new List<UsageBehaviorData>()
+                    },
+                    VisualReferenceId = 1178,
+                    CustomComponentType = typeof(Component_GiftBox),
+                    CustomConstants = new Dictionary<string, object>
+                    {
+                        { "ConsumeOnUse", true },
                     },
                     ShopMerchantId = null,
                     ShopForceUnlock = true

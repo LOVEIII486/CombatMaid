@@ -145,3 +145,16 @@ Perk_Combat_Pro_1,Spirit Fox Arts I,2.2.3,Perks
 Perk_Combat_Pro_1_Desc,"With her keen Spirit Fox intuition, Wine Fox can catch an enemy's slightest movement in the blink of an eye, making her combat steps even more graceful and nimble.\n\nReaction Delay <color=#7FE8D8>-70%</color>\nPreparation Time <color=#7FE8D8>-60%</color>\nNight Adaptation <color=#7FE8D8>+50%</color>",2.2.3,Perks
 Perk_Combat_Pro_2,Spirit Fox Arts II,2.2.3,Perks
 Perk_Combat_Pro_2_Desc,"The deep bond with her Master has blossomed into wondrous magic, making Wine Fox's offensive rhythm as continuous as a dream, never giving the bad guys a chance to catch their breath!\n\nMagic Burst Duration <color=#7FE8D8>1.0 - 2.0s</color>\nSpell Interval <color=#7FE8D8>0.5 - 1.0s</color>\nNimble Leap Cooldown <color=#7FE8D8>1.5 - 3.0s</color>",2.2.3,Perks
+Item_GiftBox,Wine Fox’s Christmas Gift,2.2.4,MaidItem
+Item_GiftBox_Desc,"A Christmas present carefully prepared by the Wine Fox for her master. The heavy wrapping seals mysterious magic within — no one knows what kind of surprise awaits until it is opened.\n<color=#FFD700>Effect:</color> Open to receive several unique gifts.\n<i>“Merry Christmas, Master~~~”</i>",2.2.4,MaidItem
+Item_WineFoxCookie,Wine Fox’s Heartfelt Cookie,2.2.4,MaidItem
+Item_WineFoxCookie_Desc,"A sweet treat personally baked by the Wine Fox. The cookies are shaped like fox faces and hexagonal snowflakes, carrying a creamy aroma and warm magic.\n<color=#FFD700>Effect:</color> Consume to restore <color=#00FFFF>30</color> Satiety, gain <color=#00FFFF>50</color> temporary HP, and instantly recover to <b>full HP</b>.\n<i>“This is my first time trying human-style cooking… I hope it can protect Master’s soul during the cold winter.”</i>",2.2.4,MaidItem
+Item_JadeFlask,Wine Fox’s Jade-Flask Sake Bottle,2.2.4,MaidItem
+Item_JadeFlask_Desc,"A magnificent enchanted jade sake bottle. At the mouth of the flask, a miniature golden-carved spirit fox holds a crimson gem in its jaws, silently guarding the one who drinks from it.\n<color=#FFD700>Effect:</color> Gain a blessing lasting <color=#00FFFF>180 seconds</color>. If lethal damage is taken during this time, the blessing is consumed to remain at <b>1 HP</b> and gain <color=#00FFFF>5 seconds</color> of invincibility.\n<i>“Don’t be afraid, Master… At the truly dangerous moment, I will block it for you.”</i>",2.2.4,MaidItem
+Buff_MaidBuff_WineFoxCookie_Name,Heartfelt Cookie,2.2.4,Buffs
+Buff_WineFoxCookie_Pop,<color=#FFD700>Wine Fox’s Protection: Max HP +{0}</color>,2.2.4,Buffs
+Buff_MaidBuff_JadeBlessing_Name,Jadebound Protection,2.2.4,Buffs
+Buff_MaidBuff_JadeInvincible_Name,Jadebound Invincibility,2.2.4,Buffs
+Buff_JadeBlessing_Trigger_Pop,<color=#FFD700>Jadebound Protection Triggered!</color>,2.2.4,Buffs
+Item_GiftBox_Open_Pop,<color=#FF4D4D>Merry Christmas!</color>,2.2.4,MaidItem
+Item_GiftBox_Received_Msg,<color=#00FF7F>The Wine Fox takes out the long-prepared gifts from her pack!</color>,2.2.4,MaidEvents

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using CombatMaid.Core.MaidEventSystem;
 using CombatMaid.Core.SkillTreeSystem;
 using UnityEngine;
 using CombatMaid.Core.WineFox;
@@ -64,6 +65,7 @@ namespace CombatMaid.Core
             if (maid != null && !_activeMaids.Contains(maid))
             {
                 _activeMaids.Add(maid);
+                MaidEventManager.OnMaidJoinTeam(maid);
                 CMDebug.Log($"女仆归队: {maid.MaidCharacter.characterPreset.DisplayName} (当前队伍: {_activeMaids.Count})");
             }
         }
