@@ -320,8 +320,8 @@ namespace CombatMaid.Core.Items.Data
                     weight = 0.1f,
                     maxStackCount = 1,
                     maxDurability = 6f,
-                    quality = 5,
-                    displayQuality = DisplayQuality.Orange,
+                    quality = 4,
+                    displayQuality = DisplayQuality.Purple,
                     tags = new List<string> { "Food" },
                     usages = new UsageData
                     {
