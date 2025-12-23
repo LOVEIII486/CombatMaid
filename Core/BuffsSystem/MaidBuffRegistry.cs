@@ -18,6 +18,8 @@ namespace CombatMaid.Core.BuffsSystem
             RegisterEffect(new CombatMaid.Core.BuffsSystem.Effects.MaidTearEffect());
             RegisterEffect(new CombatMaid.Core.BuffsSystem.Effects.MaidSuperRegenEffect());
             RegisterEffect(new CombatMaid.Core.BuffsSystem.Effects.MaidCookieEffect());
+            RegisterEffect(new CombatMaid.Core.BuffsSystem.Effects.MaidJadeBlessingEffect());
+            RegisterEffect(new CombatMaid.Core.BuffsSystem.Effects.MaidJadeInvincibleEffect());
             
             CMDebug.Log($"初始化完成，已注册 {_effects.Count} 个自定义Buff效果");
         }

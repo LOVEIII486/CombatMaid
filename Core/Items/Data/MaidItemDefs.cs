@@ -340,6 +340,37 @@ namespace CombatMaid.Core.Items.Data
                     ShopMerchantId = null,
                     ShopForceUnlock = true
                 },
+                new MaidItemInfo // 酒狐的衔玉酒瓶 88106
+                {
+                    itemId = 88106,
+                    spritePath = "JadeFlask.png",
+                    localizationKey = "Item_JadeFlask",
+                    localizationDesc = "Item_JadeFlask_Desc",
+                    value = 1314,
+                    weight = 0.5f,
+                    maxStackCount = 1,
+                    maxDurability = 3f,
+                    quality = 5,
+                    displayQuality = DisplayQuality.Orange,
+                    tags = new List<string> { "Food" },
+                    usages = new UsageData
+                    {
+                        useTime = 1.0f,
+                        useSound = "", 
+                        actionSound = "",
+                        useDurability = true,
+                        durabilityUsage = 1,
+                        behaviors = new List<UsageBehaviorData>()
+                    },
+                    VisualReferenceId = 15,
+                    CustomComponentType = typeof(Component_JadeFlask),
+                    CustomConstants = new Dictionary<string, object>
+                    {
+                        { "ConsumeOnUse", false }
+                    },
+                    ShopMerchantId = null,
+                    ShopForceUnlock = true
+                },
             };
         }
     }

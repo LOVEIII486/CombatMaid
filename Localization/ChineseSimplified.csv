@@ -150,9 +150,9 @@ Item_GiftBox_Desc,酒狐为主人精心准备的圣诞礼物，沉甸甸的包�
 Item_WineFoxCookie,酒狐的心意曲奇,2.2.3,MaidItem
 Item_WineFoxCookie_Desc,由酒狐亲手烘焙的点心，曲奇被制成狐狸头像与六角雪花的形状，散发着奶油的甜香与温暖的魔力。\n<color=#FFD700>效果：</color>食用后恢复<color=#00FFFF>30</color>点饱食度，获得<color=#00FFFF>50</color>点临时生命值，并立即恢复至<b>满生命值</b>。\n<i>“这是我第一次尝试人类的烹饪方式……希望它能在寒冷的冬日守护主人的灵魂。”</i>,2.2.3,MaidItem
 Item_JadeFlask,酒狐的衔玉酒瓶,2.2.3,MaidItem
-Item_JadeFlask_Desc,一个华丽的附魔玉制清酒瓶，瓶口处一只微型金雕灵狐衔着赤红宝石，仿佛在默默守护饮下它的人。\n<color=#FFD700>效果：</color>获得持续<color=#00FFFF>60秒</color>的祝福，期间若受到致命伤害则消耗祝福，保留<b>1点生命值</b>并获得<color=#00FFFF>5秒</color>无敌。\n<i>“别害怕，主人……真正危险的瞬间，我会替你挡下来的。”</i>,2.2.3,MaidItem
+Item_JadeFlask_Desc,一个华丽的附魔玉制清酒瓶，瓶口处一只微型金雕灵狐衔着赤红宝石，仿佛在默默守护饮下它的人。\n<color=#FFD700>效果：</color>获得持续<color=#00FFFF>180秒</color>的祝福，期间若受到致命伤害则消耗祝福，保留<b>1点生命值</b>并获得<color=#00FFFF>5秒</color>无敌。\n<i>“别害怕，主人……真正危险的瞬间，我会替你挡下来的。”</i>,2.2.3,MaidItem
 Buff_MaidBuff_WineFoxCookie_Name,心意曲奇,2.2.3,Buffs
-Buff_WineFoxCookie_Pop,酒狐的守护：生命上限 +{0},2.2.3,Buffs
+Buff_WineFoxCookie_Pop,<color=#FFD700>酒狐的守护：生命上限 +{0}</color>,2.2.3,Buffs
 Buff_MaidBuff_JadeBlessing_Name,衔玉之护,2.2.3,Buffs
 Buff_MaidBuff_JadeInvincible_Name,衔玉无敌,2.2.3,Buffs
-Buff_JadeBlessing_Trigger_Pop,<color=#FFD700>衔玉之护已触发！获得 {0} 秒无敌状态！</color>,2.2.3,Buffs
+Buff_JadeBlessing_Trigger_Pop,<color=#FFD700>衔玉之护触发！</color>,2.2.3,Buffs
