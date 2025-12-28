@@ -41,7 +41,7 @@ namespace CombatMaid.Core.Items.Data
                     },
                     ShopMerchantId = MerchantIds.Mud,
                     ShopMaxStock = 2,
-                    ShopPriceFactor = 1f,
+                    ShopPriceFactor = 0.5f,
                     ShopPossibility = 1f,
                     ShopForceUnlock = false
                 },
@@ -60,8 +60,8 @@ namespace CombatMaid.Core.Items.Data
                     order = 0,
                     tags = new List<string> { },
 
-                    quality = 4,
-                    displayQuality = DisplayQuality.Purple,
+                    quality = 3,
+                    displayQuality = DisplayQuality.Blue,
 
                     usages = new UsageData
                     {
@@ -84,7 +84,7 @@ namespace CombatMaid.Core.Items.Data
                     },
                     ShopMerchantId = MerchantIds.Mud,
                     ShopMaxStock = 6,
-                    ShopPriceFactor = 1f,
+                    ShopPriceFactor = 0.7f,
                     ShopPossibility = 1.0f,
                     ShopForceUnlock = false
                 },
@@ -103,8 +103,8 @@ namespace CombatMaid.Core.Items.Data
                     order = 1,
                     tags = new List<string> { },
 
-                    quality = 5,
-                    displayQuality = DisplayQuality.Orange,
+                    quality = 4,
+                    displayQuality = DisplayQuality.Purple,
 
                     usages = new UsageData
                     {
@@ -127,7 +127,7 @@ namespace CombatMaid.Core.Items.Data
                     },
                     ShopMerchantId = MerchantIds.Mud,
                     ShopMaxStock = 2,
-                    ShopPriceFactor = 1f,
+                    ShopPriceFactor = 0.7f,
                     ShopPossibility = 1f,
                     ShopForceUnlock = false
                 },
@@ -146,8 +146,8 @@ namespace CombatMaid.Core.Items.Data
                     order = 2,
                     tags = new List<string> { },
 
-                    quality = 6,
-                    displayQuality = DisplayQuality.Red,
+                    quality = 5,
+                    displayQuality = DisplayQuality.Orange,
 
                     usages = new UsageData
                     {
@@ -170,7 +170,7 @@ namespace CombatMaid.Core.Items.Data
                     },
                     ShopMerchantId = MerchantIds.Mud,
                     ShopMaxStock = 1,
-                    ShopPriceFactor = 1f,
+                    ShopPriceFactor = 0.7f,
                     ShopPossibility = 1f,
                     ShopForceUnlock = false
                 },
