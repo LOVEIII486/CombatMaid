@@ -158,3 +158,22 @@ Buff_MaidBuff_JadeInvincible_Name,Jadebound Invincibility,2.2.4,Buffs
 Buff_JadeBlessing_Trigger_Pop,<color=#FFD700>Jadebound Protection Triggered!</color>,2.2.4,Buffs
 Item_GiftBox_Open_Pop,<color=#FF4D4D>Merry Christmas!</color>,2.2.4,MaidItem
 Item_GiftBox_Received_Msg,<color=#00FF7F>The Wine Fox takes out the long-prepared gifts from her pack!</color>,2.2.4,MaidEvents
+Msg_Maid_TacticalMove,Tactical Move!,2.2.5,MaidMsg
+Msg_Maid_ManualHeal,Manual Healing!,2.2.5,MaidMsg
+Msg_Maid_NoHealSkill,I don't know this skill yet...,2.2.5,MaidMsg
+Msg_Maid_ScavengeBase,"This is home, I can't just take things!",2.2.5,MaidMsg
+Msg_Maid_ScavengeCancel,Scavenge canceled,2.2.5,MaidMsg
+Msg_Maid_LootEmpty,"Master, I don't have anything on me...",2.2.5,MaidMsg
+Msg_Maid_LootSuccess,"Master, here is the loot I scavenged today!",2.2.5,MaidMsg
+Msg_Maid_InventoryLocked,Don't look at my private items!,2.2.5,MaidMsg
+Msg_Maid_InventoryTooFar,"Master, please come a bit closer...",2.2.5,MaidMsg
+Msg_Maid_ModeFree,Entering Free Mode,2.2.5,MaidMsg
+Msg_Maid_ModePassive,Entering Peaceful Mode,2.2.5,MaidMsg
+Msg_SkillTree_Reloading,Reloading skill tree...,2.2.5,MaidMsg
+Msg_Checker_NoMaid,<color=#FF4500>No active maid found</color>,2.2.5,MaidMsg
+Msg_Checker_Scanning,<color=#FFD700>▌Scanning...</color>,2.2.5,MaidMsg
+Msg_Maid_HoldStart,Holding position,2.2.5,MaidMsg
+Msg_Maid_HoldFarAway,Too far away - Abandoning guard,2.2.5,MaidMsg
+Msg_Maid_HoldStop,Stopping guard,2.2.5,MaidMsg
+Msg_Maid_FullHealth,"Master, I'm already at full health!",2.2.5,MaidMsg
+Msg_Maid_Busy,"Master, I'm a bit busy right now...",2.2.5,MaidMsg

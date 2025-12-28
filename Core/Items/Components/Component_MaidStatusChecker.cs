@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
+using CombatMaid.Localization;
 using ItemStatsSystem;
 using Duckov.UI.DialogueBubbles;
 using Cysharp.Threading.Tasks;
@@ -10,13 +12,16 @@ namespace CombatMaid.Core.Items.Components
     /// </summary>
     public class Component_MaidStatusChecker : UsageBehavior
     {
+        private readonly Lazy<string> _txtNoMaid = new Lazy<string>(() => LocalizationManager.GetText("Msg_Checker_NoMaid"));
+        private readonly Lazy<string> _txtScanning = new Lazy<string>(() => LocalizationManager.GetText("Msg_Checker_Scanning"));
+        
         public override bool CanBeUsed(Item item, object user)
         {
             return user is CharacterMainControl && 
                    MaidManager.Instance != null && 
                    MaidManager.Instance.ActiveMaidCount > 0;
         }
-
+    
         protected override void OnUse(Item item, object user)
         {
             var player = user as CharacterMainControl;
@@ -25,11 +30,11 @@ namespace CombatMaid.Core.Items.Components
             var maids = MaidManager.Instance.GetAllActiveMaids();
             if (maids.Count == 0)
             {
-                player.PopText("<color=#FF4500>未发现活跃女仆</color>");
+                player.PopText(_txtNoMaid.Value);
                 return;
             }
 
-            player.PopText("<color=#FFD700>▌体检中...</color>");
+            player.PopText(_txtScanning.Value);
 
             foreach (var maid in maids)
             {

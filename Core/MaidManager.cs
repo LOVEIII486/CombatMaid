@@ -1,8 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using CombatMaid.Core.MaidEventSystem;
 using CombatMaid.Core.SkillTreeSystem;
 using UnityEngine;
 using CombatMaid.Core.WineFox;
+using CombatMaid.Localization;
+using Random = UnityEngine.Random;
 
 namespace CombatMaid.Core
 {
@@ -142,6 +145,9 @@ namespace CombatMaid.Core
         private int _enemyLayerMask;
         private static readonly int CommandMask = LayerMask.GetMask("Default", "Wall", "Ground", "Interactable", "Door", "HalfObsticle", "Wall_FowBlock");
         
+        private readonly Lazy<string> _txtTacticalMove = new Lazy<string>(() => LocalizationManager.GetText("Msg_Maid_TacticalMove"));
+        private readonly Lazy<string> _txtManualHeal = new Lazy<string>(() => LocalizationManager.GetText("Msg_Maid_ManualHeal"));
+        
         private void HandleCommandInput()
         {
             if (Input.GetKeyDown(Settings.CombatMaidConfig.KeyMove))
@@ -257,7 +263,7 @@ namespace CombatMaid.Core
                 {
                     Vector3 offset = new Vector3(Random.Range(-0.5f, 0.5f), 0, Random.Range(-0.5f, 0.5f));
                     maid.ForceMoveTo(targetPos + offset);
-                    maid.MaidCharacter.PopText("战术移动！");
+                    maid.MaidCharacter.PopText(_txtTacticalMove.Value);
                 }
             }
         }
@@ -268,7 +274,7 @@ namespace CombatMaid.Core
             {
                 var maid = _activeMaids[i];
                 maid.ForceHeal();
-                CharacterMainControl.Main.PopText("手动治疗！");
+                CharacterMainControl.Main.PopText(_txtManualHeal.Value);
             }
         }
 
@@ -381,6 +387,8 @@ namespace CombatMaid.Core
             if (Input.GetKeyDown(KeyCode.F8))
             {
                 CombatMaid.Localization.LocalizationManager.HotReloadLocalization();
+                var player = CharacterMainControl.Main;
+                if (player != null) player.PopText("已重载本地化文件...");
             }
 
             // // F8 重载配置: 调用 Spawner
@@ -396,6 +404,9 @@ namespace CombatMaid.Core
                 {
                     MaidSpawner.Instance.DebugListAllKeys();
                     MaidSpawner.Instance.DebugExportReferenceStats();
+                    
+                    var player = CharacterMainControl.Main;
+                    if (player != null) player.PopText("参考预设key和preset已输出...");
                 }
             }
         }

@@ -21,7 +21,8 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
 
         // 受击保护时间
         private const float HurtSafeWindow = 3.0f;
-
+        
+        // 女仆可以使用类似可乐这类未在白名单中的特殊医疗品
         private readonly HashSet<int> _normalMedIds = new HashSet<int>
             { 88101, 15, 16, 17, 20, 10, 875, 1245, 1244, 1243, 1246 };
 
@@ -33,6 +34,12 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
 
         private readonly Lazy<string> _txtNoDrug = new Lazy<string>(() =>
             LocalizationManager.GetText("Skill_SelfHeal_NoDrug"));
+        
+        private readonly Lazy<string> _txtFullHealth = new Lazy<string>(() =>
+            LocalizationManager.GetText("Msg_Maid_FullHealth"));
+        
+        private readonly Lazy<string> _txtBusy = new Lazy<string>(() =>
+            LocalizationManager.GetText("Msg_Maid_Busy"));
 
         protected override bool CheckTriggerCondition()
         {
@@ -80,9 +87,15 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
             var inventory = Owner.CharacterItem.Inventory;
             if (inventory == null) return false;
 
+            if (isForce && Owner.Health.CurrentHealth >= Owner.Health.MaxHealth)
+            {
+                Owner.PopText(_txtFullHealth.Value);
+                return false;
+            }
+
             if (!Owner.CanUseHand())
             {
-                if (isForce) Owner.PopText("忙碌中");
+                if (isForce) Owner.PopText(_txtBusy.Value);
                 return false;
             }
 
@@ -106,10 +119,10 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
                 {
                     Controller.SkillSystem.TriggerGlobalCooldown(TriggerGCDDuration);
                 }
-
                 return true;
             }
 
+            // 只有在真的找不到可用药品且非满血时才报“没有药”
             if (isForce) Owner.PopText(_txtNoDrug.Value);
             return false;
         }

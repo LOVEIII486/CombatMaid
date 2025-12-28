@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using CombatMaid.Core.MaidFSM;
@@ -6,6 +7,7 @@ using CombatMaid.Core.MaidFSM.States;
 using CombatMaid.Core.MaidSkillSystem;
 using CombatMaid.Core.MaidSkillSystem.Skills;
 using CombatMaid.Core.SkillTreeSystem;
+using CombatMaid.Localization;
 using Duckov.Scenes;
 using ItemStatsSystem;
 using UnityEngine.SceneManagement;
@@ -61,6 +63,20 @@ namespace CombatMaid.Core
 
         #endregion
 
+        #region 本地化字符串
+
+        private readonly Lazy<string> _txtNoHeal = new Lazy<string>(() => LocalizationManager.GetText("Msg_Maid_NoHealSkill"));
+        private readonly Lazy<string> _txtScavengeBase = new Lazy<string>(() => LocalizationManager.GetText("Msg_Maid_ScavengeBase"));
+        private readonly Lazy<string> _txtScavengeCancel = new Lazy<string>(() => LocalizationManager.GetText("Msg_Maid_ScavengeCancel"));
+        private readonly Lazy<string> _txtLootEmpty = new Lazy<string>(() => LocalizationManager.GetText("Msg_Maid_LootEmpty"));
+        private readonly Lazy<string> _txtLootSuccess = new Lazy<string>(() => LocalizationManager.GetText("Msg_Maid_LootSuccess"));
+        private readonly Lazy<string> _txtInvLocked = new Lazy<string>(() => LocalizationManager.GetText("Msg_Maid_InventoryLocked"));
+        private readonly Lazy<string> _txtInvTooFar = new Lazy<string>(() => LocalizationManager.GetText("Msg_Maid_InventoryTooFar"));
+        private readonly Lazy<string> _txtModeFree = new Lazy<string>(() => LocalizationManager.GetText("Msg_Maid_ModeFree"));
+        private readonly Lazy<string> _txtModePassive = new Lazy<string>(() => LocalizationManager.GetText("Msg_Maid_ModePassive"));
+
+        #endregion
+        
         #region 基础
 
         public void Initialize(MaidProfileData profileData, CharacterMainControl player,
@@ -183,7 +199,7 @@ namespace CombatMaid.Core
             }
             else
             {
-                MaidCharacter.PopText("我还不会这个技能...");
+                MaidCharacter.PopText(_txtNoHeal.Value);
             }
         }
 
@@ -211,14 +227,14 @@ namespace CombatMaid.Core
         {
             if (LevelManager.Instance != null && LevelManager.Instance.IsBaseLevel)
             {
-                MaidCharacter?.PopText("这是家里，不可以乱拿东西！");
+                MaidCharacter?.PopText(_txtScavengeBase.Value);
                 return;
             }
 
             if (StateMachine.CurrentState is State_Scavenge)
             {
                 StateMachine.ChangeState<State_Autonomous>(); // 再次按键取消
-                MaidCharacter?.PopText("取消搜刮");
+                MaidCharacter?.PopText(_txtScavengeCancel.Value);
             }
             else
             {
@@ -240,7 +256,7 @@ namespace CombatMaid.Core
 
             if (validItems.Count == 0)
             {
-                MaidCharacter.PopText("主人我身上没有东西了。。。");
+                MaidCharacter.PopText(_txtLootEmpty.Value);
                 LootHistory.Clear();
                 return;
             }
@@ -268,7 +284,7 @@ namespace CombatMaid.Core
             }
 
             LootHistory.Clear();
-            MaidCharacter.PopText("主人这是今天搜刮到的战利品！");
+            MaidCharacter.PopText(_txtLootSuccess.Value);
         }
 
         /// <summary>
@@ -278,7 +294,7 @@ namespace CombatMaid.Core
         {
             if (!SkillTreeManager.Instance.IsSkillUnlocked("maid_backpack_access"))
             {
-                MaidCharacter?.PopText("不许看人家的私人物品！");
+                MaidCharacter?.PopText(_txtInvLocked.Value);
                 return;
             }
 
@@ -291,7 +307,7 @@ namespace CombatMaid.Core
                 float dist = Vector3.Distance(transform.position, MainOwner.transform.position);
                 if (dist > 5.0f)
                 {
-                    MaidCharacter?.PopText("主人，请靠近一点...");
+                    MaidCharacter?.PopText(_txtInvTooFar.Value);
                     return;
                 }
 
@@ -304,12 +320,12 @@ namespace CombatMaid.Core
             if (StateMachine.CurrentState is State_PassiveFollow)
             {
                 StateMachine.ChangeState<State_Autonomous>();
-                MaidCharacter?.PopText("进入自由模式");
+                MaidCharacter?.PopText(_txtModeFree.Value);
             }
             else
             {
                 StateMachine.ChangeState<State_PassiveFollow>();
-                MaidCharacter?.PopText("进入和平模式");
+                MaidCharacter?.PopText(_txtModePassive.Value);
             }
         }
 
