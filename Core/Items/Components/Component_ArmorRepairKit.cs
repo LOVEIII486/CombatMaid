@@ -1,6 +1,5 @@
 ﻿using System;
 using UnityEngine;
-using Duckov.ItemUsage; 
 using ItemStatsSystem;   
 using CombatMaid.Localization;
 
@@ -49,9 +48,6 @@ namespace CombatMaid.Core.Items.Components
             }
         }
 
-        /// <summary>
-        /// 检查角色身上是否有受损的防具
-        /// </summary>
         private bool HasDamagedArmor(CharacterMainControl character)
         {
             var rootItem = character.CharacterItem;
@@ -86,12 +82,11 @@ namespace CombatMaid.Core.Items.Components
 
                 if (IsArmor(equipment) && equipment.Durability < equipment.MaxDurabilityWithLoss)
                 {
-                    float repairValue = equipment.MaxDurabilityWithLoss * RepairPercent;
+                    float repairValue = equipment.MaxDurability * RepairPercent;
                     
-                    // 至少修复 1 点耐久
                     if (repairValue < 1f) repairValue = 1f;
 
-                    // 不超过磨损上限
+                    // 修复后不得超过 MaxDurabilityWithLoss
                     float targetDurability = Mathf.Min(equipment.Durability + repairValue, equipment.MaxDurabilityWithLoss);
                     
                     equipment.Durability = targetDurability;
@@ -101,24 +96,17 @@ namespace CombatMaid.Core.Items.Components
             return count;
         }
 
-        /// <summary>
-        /// 判断是否为防具
-        /// </summary>
         private bool IsArmor(Item item)
         {
             if (item == null) return false;
-            
-            // 排除武器
             if (item.Tags.Contains("Weapon")) return false;
 
-            // 再次注意是Helmat！！！
             if (item.Tags.Contains("Armor") || item.Tags.Contains("BodyArmor") ||
                 item.Tags.Contains("Helmat") || item.Tags.Contains("HeadArmor")) 
             {
                 return true;
             }
 
-            // 属性检查
             if (item.GetStatValue(_headArmorHash) > 0f || 
                 item.GetStatValue(_bodyArmorHash) > 0f || 
                 item.GetStatValue(_helmatHash) > 0f || 
