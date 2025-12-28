@@ -180,3 +180,9 @@ Msg_Maid_HoldStop,停止驻守,2.2.5,MaidMsg
 Msg_Maid_FullHealth,主人，我已经满血啦！,2.2.5,MaidMsg
 Msg_Maid_Busy,主人，我现在正忙着呢...,2.2.5,MaidMsg
 SkillTree_InteractTitle,战斗女仆: 战术技能,2.2.5,Perks
+Item_MaidRecycleBottle_NoTarget,当前没有可回收的瓶中女仆。,2.2.5,MaidItem
+Item_MaidRecycleBottle_Success,回收成功！女仆已重新封印。,2.2.5,MaidItem
+Item_MaidRecycleBottle,空白契约瓶,2.2.5,MaidItem
+Item_MaidRecycleBottle_Desc,用于回收场上瓶中女仆的特殊契约道具。使用后会将所有活跃的瓶中女仆（酒狐除外）转化为对应的原始契约瓶并掉落在原地。最多可使用5次。,2.2.5,MaidItem
+Perk_RecycleBottle,契灵回封,2.2.5,Perks
+Perk_RecycleBottle_Desc,掌握将活跃女仆重新封印回契约容器的高阶术式。使用后可将场上所有活跃的瓶中女仆（酒狐除外）重新转化为对应的契约瓶并掉落在其脚下。\n解锁物品：<color=#F3D38A>空白契约瓶</color>（泥巴商店出售）。,2.2.5,Perks

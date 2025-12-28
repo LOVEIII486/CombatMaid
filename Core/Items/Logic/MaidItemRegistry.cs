@@ -257,7 +257,6 @@ namespace CombatMaid.Core.Items.Logic
             switch (itemId)
             {
                 // 契约
-                // case 88888: // 贝拉契约
                 case 88000: // 酒狐契约
                     return "maid_core_license";
 
@@ -269,6 +268,9 @@ namespace CombatMaid.Core.Items.Logic
                 // 女仆物品
                 case 88101: return "maid_skill_selfheal"; // 治疗药
                 case 88103: return "maid_skill_repair";
+                
+                case 88108: 
+                    return "maid_special_recycle_bottle"; // 空白契约瓶
 
                 default: 
                     return null;

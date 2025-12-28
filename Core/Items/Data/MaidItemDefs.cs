@@ -84,7 +84,7 @@ namespace CombatMaid.Core.Items.Data
                     },
                     ShopMerchantId = MerchantIds.Mud,
                     ShopMaxStock = 6,
-                    ShopPriceFactor = 0.7f,
+                    ShopPriceFactor = 0.8f,
                     ShopPossibility = 1.0f,
                     ShopForceUnlock = false
                 },
@@ -127,7 +127,7 @@ namespace CombatMaid.Core.Items.Data
                     },
                     ShopMerchantId = MerchantIds.Mud,
                     ShopMaxStock = 2,
-                    ShopPriceFactor = 0.7f,
+                    ShopPriceFactor = 0.8f,
                     ShopPossibility = 1f,
                     ShopForceUnlock = false
                 },
@@ -170,7 +170,7 @@ namespace CombatMaid.Core.Items.Data
                     },
                     ShopMerchantId = MerchantIds.Mud,
                     ShopMaxStock = 1,
-                    ShopPriceFactor = 0.7f,
+                    ShopPriceFactor = 0.8f,
                     ShopPossibility = 1f,
                     ShopForceUnlock = false
                 },
@@ -402,6 +402,38 @@ namespace CombatMaid.Core.Items.Data
                     },
                     ShopMerchantId = null,
                     ShopForceUnlock = true
+                },
+                new MaidItemInfo // 空白契约瓶 88108
+                {
+                    itemId = 88108,
+                    localizationKey = "Item_MaidRecycleBottle",
+                    localizationDesc = "Item_MaidRecycleBottle_Desc",
+                    spritePath = "MaidRecycleBottle.png",
+                    value = 10000,
+                    weight = 0.3f,
+                    maxStackCount = 1,
+                    maxDurability = 3f,
+                    quality = 5,
+                    displayQuality = DisplayQuality.Orange,
+                    tags = new List<string> { "Tool" },
+                    usages = new UsageData
+                    {
+                        useTime = 2.0f,
+                        useDurability = true,
+                        durabilityUsage = 1,
+                        behaviors = new List<UsageBehaviorData>()
+                    },
+                    VisualReferenceId = 29,
+                    CustomComponentType = typeof(Component_MaidRecycleBottle),
+                    CustomConstants = new Dictionary<string, object>
+                    {
+                        { "ConsumeOnUse", false }
+                    },
+                    ShopMerchantId = MerchantIds.Mud,
+                    ShopMaxStock = 1,
+                    ShopPriceFactor = 0.7f,
+                    ShopPossibility = 1.0f,
+                    ShopForceUnlock = false
                 },
             };
         }

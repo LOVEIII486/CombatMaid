@@ -1227,7 +1227,7 @@
       "DisplayName": "Perk_Bottle_Lv1",
       "Description": "Perk_Bottle_Lv1_Desc",
       "IconFileName": "perk_bottle_1.png",
-      "CostMoney": 5000,
+      "CostMoney": 3000,
       "CostItems": {
         "29": 1,
         "308": 5,
@@ -1235,7 +1235,7 @@
       },
       "RequiredLevel": 5,
       "Position": {
-        "x": 450,
+        "x": 560,
         "y": 0
       },
       "PrerequisiteIDs": [],
@@ -1247,7 +1247,7 @@
       "DisplayName": "Perk_Bottle_Lv2",
       "Description": "Perk_Bottle_Lv2_Desc",
       "IconFileName": "perk_bottle_2.png",
-      "CostMoney": 10000,
+      "CostMoney": 5000,
       "CostItems": {
         "29": 1,
         "308": 6,
@@ -1256,8 +1256,8 @@
       },
       "RequiredLevel": 10,
       "Position": {
-        "x": 450,
-        "y": 80
+        "x": 560,
+        "y": 70
       },
       "PrerequisiteIDs": [
         "maid_special_bottle_1"
@@ -1270,7 +1270,7 @@
       "DisplayName": "Perk_Bottle_Lv3",
       "Description": "Perk_Bottle_Lv3_Desc",
       "IconFileName": "perk_bottle_3.png",
-      "CostMoney": 20000,
+      "CostMoney": 10000,
       "CostItems": {
         "29": 1,
         "308": 10,
@@ -1280,11 +1280,34 @@
       },
       "RequiredLevel": 15,
       "Position": {
-        "x": 450,
-        "y": 160
+        "x": 560,
+        "y": 140
       },
       "PrerequisiteIDs": [
         "maid_special_bottle_2"
+      ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": []
+    },
+    {
+      "ID": "maid_special_recycle_bottle",
+      "DisplayName": "Perk_RecycleBottle",
+      "Description": "Perk_RecycleBottle_Desc",
+      "IconFileName": "perk_recycle_bottle.png",
+      "CostMoney": 5000,
+      "CostItems": {
+        "29": 1,
+        "429": 1,
+        "88102": 1,
+        "1165": 50
+      },
+      "RequiredLevel": 18,
+      "Position": {
+        "x": 560,
+        "y": 210
+      },
+      "PrerequisiteIDs": [
+        "maid_special_bottle_3"
       ],
       "PlayerStatModifiers": {},
       "MaidModifiers": []

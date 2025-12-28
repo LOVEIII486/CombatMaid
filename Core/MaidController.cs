@@ -44,6 +44,8 @@ namespace CombatMaid.Core
         public MaidAIAssistant AIAssistant { get; private set; }
         
         public Vector3? ManualMoveTarget { get; set; } = null;
+        
+        public string ProfileID { get; private set; }
 
         #endregion
 
@@ -82,6 +84,7 @@ namespace CombatMaid.Core
         public void Initialize(MaidProfileData profileData, CharacterMainControl player,
             AICharacterController preCachedAI = null)
         {
+            this.ProfileID = profileData.ProfileName;
             MainOwner = player;
 
             AI = preCachedAI != null ? preCachedAI : GetComponentInChildren<AICharacterController>();
