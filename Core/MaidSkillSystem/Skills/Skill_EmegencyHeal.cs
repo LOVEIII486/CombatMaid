@@ -1,5 +1,4 @@
 ﻿using System;
-using UnityEngine;
 using CombatMaid.Core.BuffsSystem;
 using CombatMaid.Localization;
 
@@ -24,7 +23,7 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
         private readonly Lazy<string> _txtExecute = new Lazy<string>(() => 
             LocalizationManager.GetText("Skill_EmergencyHeal_Execute"));
         
-        public Skill_EmergencyHeal(string buffName, int buffId, float duration = 10f)
+        public Skill_EmergencyHeal(string buffName, int buffId, float duration = 15f)
         {
             _buffName = buffName;
             _buffId = buffId;

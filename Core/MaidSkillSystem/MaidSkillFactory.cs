@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using CombatMaid.Core.BuffsSystem;
 using CombatMaid.Core.MaidSkillSystem.Skills;
 using Newtonsoft.Json.Linq;
-using UnityEngine;
 
 namespace CombatMaid.Core.MaidSkillSystem
 {
@@ -90,8 +89,6 @@ namespace CombatMaid.Core.MaidSkillSystem
                     if (string.IsNullOrEmpty(p.BuffName)) continue;
 
                     int finalId = p.BuffID;
-
-                    // 如果 JSON 里没填 ID，则去注册表里查
                     if (finalId == 0)
                     {
                         var effect = MaidBuffRegistry.Instance.GetEffect(p.BuffName);
@@ -101,7 +98,7 @@ namespace CombatMaid.Core.MaidSkillSystem
                         }
                         else
                         {
-                            CMDebug.LogWarning($"[SkillFactory] 未找到注册的 Buff 效果: {p.BuffName}，请检查拼写或是否已注册。");
+                            CMDebug.LogWarning($"未找到注册的 Buff 效果: {p.BuffName}");
                             continue;
                         }
                     }
@@ -115,7 +112,7 @@ namespace CombatMaid.Core.MaidSkillSystem
                 return new Skill_BuffPlayer(buffList);
             }
 
-            CMDebug.LogWarning($"[CreateBuffPlayer] 配置无效: 没有找到有效的 Buff");
+            CMDebug.LogWarning($"配置无效: 没有找到有效的 Buff");
             return null;
         }
 
@@ -128,7 +125,7 @@ namespace CombatMaid.Core.MaidSkillSystem
                 return new Skill_VanillaBuff(buffIds);
             }
 
-            CMDebug.LogWarning($"[CreateVanillaBuff] 配置无效: 'BuffIDs' 列表缺失或为空");
+            CMDebug.LogWarning($"配置无效: 'BuffIDs' 列表缺失或为空");
             return null;
         }
         
@@ -136,7 +133,8 @@ namespace CombatMaid.Core.MaidSkillSystem
         {
             string buffName = GetParam(parameters, "BuffName", "MaidBuff_SuperRegen");
             int buffId = GetParam(parameters, "BuffID", 888002);
-            float duration = GetParam(parameters, "Duration", 5.0f);
+            float duration = GetParam(parameters, "Duration", 15.0f);
+            if (duration < 10f) { duration = 10f; } // 用于兼容旧版本存档5s，现在加强到持续10s
 
             return new Skill_EmergencyHeal(buffName, buffId, duration);
         }

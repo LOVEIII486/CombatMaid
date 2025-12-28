@@ -1156,7 +1156,7 @@
           "SkillParams": {
             "BuffName": "MaidBuff_SuperRegen",
             "BuffID": 888002,
-            "Duration": 5.0
+            "Duration": 10.0
           }
         }
       ]

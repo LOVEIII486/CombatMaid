@@ -4,7 +4,7 @@ using Duckov.Buffs;
 namespace CombatMaid.Core.BuffsSystem.Effects
 {
     /// <summary>
-    /// 超级再生效果：每 0.5秒 恢复 10% 最大生命值
+    /// 超级再生效果：每 0.2秒 恢复 6% 最大生命值
     /// </summary>
     public class MaidSuperRegenEffect : IMaidBuffEffect
     {
@@ -37,17 +37,14 @@ namespace CombatMaid.Core.BuffsSystem.Effects
             }
         }
 
-        // =========================================================
-        // 内部计时器组件 (负责每 0.5s 执行一次回血)
-        // =========================================================
+
         private class SuperRegenTicker : MonoBehaviour
         {
             private CharacterMainControl _target;
             private float _timer;
             
-            // 配置参数
-            private const float Interval = 0.5f; // 时间间隔
-            private const float HealPercent = 0.10f; // 每次回复 10%
+            private const float Interval = 0.2f; // 时间间隔
+            private const float HealPercent = 0.6f; // 每次回复 6%
 
             public void Initialize(CharacterMainControl target)
             {
@@ -70,14 +67,8 @@ namespace CombatMaid.Core.BuffsSystem.Effects
             private void PerformHeal()
             {
                 if (_target.Health == null) return;
-
-                // 计算回复量：最大生命值 * 10%
                 float healAmount = _target.Health.MaxHealth * HealPercent;
-                
-                // 执行回复
                 _target.Health.AddHealth(healAmount);
-                
-                // 飘字提示
                 _target.PopText($"<color=#00FF00>+{healAmount:F0}</color>");
             }
         }
