@@ -179,3 +179,4 @@ Msg_Maid_HoldFarAway,距离过远-放弃驻守,2.2.5,MaidMsg
 Msg_Maid_HoldStop,停止驻守,2.2.5,MaidMsg
 Msg_Maid_FullHealth,主人，我已经满血啦！,2.2.5,MaidMsg
 Msg_Maid_Busy,主人，我现在正忙着呢...,2.2.5,MaidMsg
+SkillTree_InteractTitle,战斗女仆: 战术技能,2.2.5,Perks

@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using CombatMaid.Localization;
 using UnityEngine;
 using Duckov.Scenes;
 using Duckov.PerkTrees;
@@ -47,7 +48,7 @@ namespace CombatMaid.Core.SkillTreeSystem
         {
             if (scene.name == "Base_SceneV2")
             {
-                CMDebug.Log($"[SkillTreeManager] 检测到基地场景: {scene.name}");
+                CMDebug.Log($"检测到基地场景: {scene.name}");
                 StartCoroutine(InitSkillTreeRoutine());
             }
         }
@@ -63,7 +64,7 @@ namespace CombatMaid.Core.SkillTreeSystem
             float timer = 0f;
             float checkInterval = 0.5f;
 
-            CMDebug.Log("[SkillTreeManager] 开始寻找 SkillMachine...");
+            CMDebug.Log("开始寻找 SkillMachine...");
 
             while (skillBuilding == null && timer < timeOut)
             {
@@ -71,7 +72,7 @@ namespace CombatMaid.Core.SkillTreeSystem
 
                 if (skillBuilding != null)
                 {
-                    CMDebug.Log($"[SkillTreeManager] 成功找到 SkillMachine (耗时: {timer:F1}s)");
+                    CMDebug.Log($"成功找到 SkillMachine (耗时: {timer:F1}s)");
                     break;
                 }
 
@@ -81,7 +82,7 @@ namespace CombatMaid.Core.SkillTreeSystem
 
             if (skillBuilding == null)
             {
-                CMDebug.LogWarning($"[SkillTreeManager] 初始化失败：在 {timeOut} 秒内未找到 SkillMachine，跳过技能树构建。");
+                CMDebug.LogWarning($"初始化失败：在 {timeOut} 秒内未找到 SkillMachine，跳过技能树构建。");
                 _isInitializing = false; // 务必在退出前重置状态
                 yield break;
             }
@@ -90,12 +91,12 @@ namespace CombatMaid.Core.SkillTreeSystem
             {
                 if (_customTree != null)
                 {
-                    CMDebug.Log("[SkillTreeManager] 检测到跨场景残留的技能树，正在清理...");
+                    CMDebug.Log("检测到跨场景残留的技能树，正在清理...");
                     if (_customTree.gameObject != null) Destroy(_customTree.gameObject);
                     _customTree = null;
                 }
 
-                CMDebug.Log("[SkillTreeManager] 开始构建新场景的技能树...");
+                CMDebug.Log("开始构建新场景的技能树...");
 
                 // 1. 清理旧数据
                 _isTreeBuilt = false;
@@ -115,14 +116,14 @@ namespace CombatMaid.Core.SkillTreeSystem
                 if (_customTree != null)
                 {
                     _isTreeBuilt = true;
-                    // 注册交互
-                    SkillTreeBuilder.RegisterInteraction(skillBuilding, TREE_ID, INTERACT_KEY, "战斗女仆: 战术技能");
-                    CMDebug.LogInfo("[SkillTreeManager] ✓ 技能树初始化完毕");
+                    string interactTitle = LocalizationManager.GetText("SkillTree_InteractTitle");
+                    SkillTreeBuilder.RegisterInteraction(skillBuilding, TREE_ID, INTERACT_KEY, interactTitle);
+                    CMDebug.LogInfo("技能树初始化完毕");
                 }
             }
             catch (System.Exception ex)
             {
-                CMDebug.LogError($"[SkillTreeManager] 初始化异常: {ex}");
+                CMDebug.LogError($"初始化异常: {ex}");
             }
             finally
             {
@@ -153,7 +154,7 @@ namespace CombatMaid.Core.SkillTreeSystem
 
         private void BuildSkillTree()
         {
-            CMDebug.Log("[SkillTreeManager] 开始构建技能树...");
+            CMDebug.Log("开始构建技能树...");
             _runtimePerks.Clear();
             _nodeDefsMap.Clear();
 
@@ -327,7 +328,7 @@ namespace CombatMaid.Core.SkillTreeSystem
 
         public void ReloadTree()
         {
-            CMDebug.LogWarning("[SkillTreeManager] 开始执行热重载...");
+            CMDebug.LogWarning("开始执行热重载...");
 
             if (_customTree != null)
             {
@@ -343,7 +344,7 @@ namespace CombatMaid.Core.SkillTreeSystem
 
             StartCoroutine(InitSkillTreeRoutine());
 
-            CMDebug.LogInfo("[SkillTreeManager] 热重载请求已发送");
+            CMDebug.LogInfo("热重载请求已发送");
         }
     }
 }

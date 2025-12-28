@@ -177,3 +177,4 @@ Msg_Maid_HoldFarAway,Too far away - Abandoning guard,2.2.5,MaidMsg
 Msg_Maid_HoldStop,Stopping guard,2.2.5,MaidMsg
 Msg_Maid_FullHealth,"Master, I'm already at full health!",2.2.5,MaidMsg
 Msg_Maid_Busy,"Master, I'm a bit busy right now...",2.2.5,MaidMsg
+SkillTree_InteractTitle,Combat Maid: Tactical Tech,2.2.5,Perks
