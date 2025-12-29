@@ -36,6 +36,7 @@ namespace CombatMaid.Settings
         public const string Key_LootMinVal = "LootMinValue";
         public const string Key_IgnoreSearched = "IgnoreSearched";
         public const string Key_EnableElementalGrenades = "EnableElementalGrenades";
+        public const string Key_TransferKillToOwner = "TransferKillToOwner";
         
         // ==================== 本地化 Key ====================
         
@@ -66,7 +67,9 @@ namespace CombatMaid.Settings
         private const string Default_BuffBlockList = "";
         
         private const int Default_LootMinVal = 0;
+        private const bool Default_IgnoreSearched = true;
         private const bool Default_EnableElementalGrenades = true;
+        private const bool Default_TransferKillToOwner = true;
 
         // ==================== 静态变量 ====================
         
@@ -91,8 +94,9 @@ namespace CombatMaid.Settings
         
         // 高级AI配置
         public static int LootMinVal { get; set; } = Default_LootMinVal;
-        public static bool IgnoreSearched { get; set; } = true;
+        public static bool IgnoreSearched { get; set; } = Default_IgnoreSearched;
         public static bool EnableElementalGrenades { get; set; } = Default_EnableElementalGrenades;
+        public static bool TransferKillToOwner { get; set; } = Default_TransferKillToOwner;
     
         // 解析后的黑名单集合，用于游戏逻辑快速查询
         public static HashSet<int> BlockedBuffIDs { get; private set; } = new HashSet<int>();
@@ -337,8 +341,11 @@ namespace CombatMaid.Settings
             {
                 EnableElementalGrenades = savedEnableElem;
             }
+            if (ModSettingAPI.GetSavedValue(Key_TransferKillToOwner, out bool savedTransfer))
+            {
+                TransferKillToOwner = savedTransfer;
+            }
             
-
             
             if (!hasModSettingValues || 
                 (string.IsNullOrEmpty(CustomMaidName) && 

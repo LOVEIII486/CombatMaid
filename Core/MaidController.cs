@@ -21,7 +21,10 @@ namespace CombatMaid.Core
     {
         private static readonly Dictionary<AICharacterController, MaidController> _maidRegistry
             = new Dictionary<AICharacterController, MaidController>();
-
+            
+        private static readonly Dictionary<CharacterMainControl, MaidController> _characterRegistry 
+            = new Dictionary<CharacterMainControl, MaidController>();    
+        
         public List<Item> LootHistory { get; private set; } = new List<Item>();
 
         public static MaidController GetMaid(AICharacterController ai)
@@ -95,6 +98,7 @@ namespace CombatMaid.Core
             }
 
             if (!_maidRegistry.ContainsKey(AI)) _maidRegistry.Add(AI, this);
+            if (!_characterRegistry.ContainsKey(MaidCharacter)) _characterRegistry.Add(MaidCharacter, this);
 
             _cachedCharacter = MaidCharacter;
             if (_cachedCharacter != null)
@@ -145,6 +149,11 @@ namespace CombatMaid.Core
             {
                 _maidRegistry.Remove(AI);
             }
+
+            if (MaidCharacter != null)
+            {
+                _characterRegistry.Remove(MaidCharacter);
+            }
         }
 
         #endregion
@@ -169,7 +178,13 @@ namespace CombatMaid.Core
         #endregion
 
         #region 对外api
-
+        
+        public static MaidController GetMaidByCharacter(CharacterMainControl character)
+        {
+            if (character == null) return null;
+            return _characterRegistry.TryGetValue(character, out var maid) ? maid : null;
+        }
+        
         /// <summary>
         /// 强制移动指令 (G键)
         /// </summary>

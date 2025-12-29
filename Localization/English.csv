@@ -184,3 +184,4 @@ Item_MaidRecycleBottle,Empty Seal Bottle,2.2.5,MaidItem
 Item_MaidRecycleBottle_Desc,"A mystical vessel etched with ancient returning runes. It resonates with maid spirits, forcing them back into their original contract vials. Magical energy: 3 charges.",2.2.5,MaidItem
 Perk_RecycleBottle,Spirit Sealing Art,2.2.5,Perks
 Perk_RecycleBottle_Desc,"Master high-tier sealing arts to return active spirits to their vessels. Guides all active bottled maids (except WineFox) back into their original vial forms, dropping them at their feet.\nUnlocked Item: <color=#F3D38A>Empty Seal Bottle</color> (Sold at Mud's Shop).",2.2.5,Perks
+Settings_TransferKillToOwner,Transfer Maid Kills to Player (Enabling allows normal quest completion and XP gain),2.2.5,GeneralSettings

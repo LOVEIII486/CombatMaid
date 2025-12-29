@@ -118,6 +118,15 @@ namespace CombatMaid.Settings
                     CombatMaidConfig.EnableElementalGrenades = value;
                 }
             );
+            ModSettingAPI.AddToggle(
+                CombatMaidConfig.Key_TransferKillToOwner,
+                LocalizationManager.GetText("Settings_TransferKillToOwner"), 
+                CombatMaidConfig.TransferKillToOwner,
+                (value) => 
+                {
+                    CombatMaidConfig.TransferKillToOwner = value;
+                }
+            );
 
             // ==================== 3. 自定义女仆配置 ====================
 
@@ -215,7 +224,8 @@ namespace CombatMaid.Settings
                 {
                     CombatMaidConfig.Key_LootMinVal,
                     CombatMaidConfig.Key_IgnoreSearched,
-                    CombatMaidConfig.Key_EnableElementalGrenades
+                    CombatMaidConfig.Key_EnableElementalGrenades,
+                    CombatMaidConfig.Key_TransferKillToOwner
                 },
                 0.7f, false, false
             );
