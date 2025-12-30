@@ -5,6 +5,7 @@ using Duckov.PerkTrees.Behaviours;
 using CombatMaid.Core.WineFox;
 using CombatMaid.Core.MaidConfigs;
 using Duckov.PerkTrees;
+using Newtonsoft.Json.Linq;
 
 namespace CombatMaid.Core.SkillTreeSystem
 {
@@ -219,20 +220,59 @@ namespace CombatMaid.Core.SkillTreeSystem
         {
             if (newParams == null) return false;
             bool changed = false;
+
             foreach (var kvp in newParams)
             {
-                if (kvp.Key == "ItemIDs" || kvp.Key == "BuffIDs" || kvp.Key == "Buffs")
+                // 针对 ID 列表进行特殊处理
+                if (kvp.Key == "ItemIDs" || kvp.Key == "BuffIDs")
                 {
-                    skill.Params[kvp.Key] = kvp.Value; 
-                    changed = true;
+                    List<int> currentList = GetAsListInt(skill.Params, kvp.Key);
+                    List<int> incomingList = GetAsListInt(newParams, kvp.Key);
+
+                    foreach (int id in incomingList)
+                    {
+                        if (!currentList.Contains(id))
+                        {
+                            currentList.Add(id);
+                            changed = true;
+                        }
+                    }
+                    skill.Params[kvp.Key] = currentList;
                 }
-                else if (!skill.Params.ContainsKey(kvp.Key) || !skill.Params[kvp.Key].Equals(kvp.Value))
+                else
                 {
-                    skill.Params[kvp.Key] = kvp.Value;
-                    changed = true;
+                    // 普通参数维持覆盖逻辑
+                    if (!skill.Params.ContainsKey(kvp.Key) || !skill.Params[kvp.Key].Equals(kvp.Value))
+                    {
+                        skill.Params[kvp.Key] = kvp.Value;
+                        changed = true;
+                    }
                 }
             }
             return changed;
+        }
+        
+        private static List<int> GetAsListInt(Dictionary<string, object> dict, string key)
+        {
+            if (!dict.TryGetValue(key, out object val) || val == null)
+                return new List<int>();
+
+            if (val is JArray jArray)
+            {
+                return jArray.ToObject<List<int>>();
+            }
+            if (val is List<int> list)
+            {
+                return new List<int>(list);
+            }
+            if (val is IEnumerable<object> enumerable)
+            {
+                var result = new List<int>();
+                foreach (var item in enumerable) result.Add(Convert.ToInt32(item));
+                return result;
+            }
+
+            return new List<int>();
         }
 
         #endregion
