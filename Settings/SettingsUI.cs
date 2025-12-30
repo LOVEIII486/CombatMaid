@@ -16,7 +16,7 @@ namespace CombatMaid.Settings
             if (!ModSettingAPI.IsInit) return;
             ModSettingAPI.Clear();
 
-            // ==================== 1. 属性倍率 ====================
+            #region 属性倍率
 
             ModSettingAPI.AddSlider(
                 CombatMaidConfig.Key_HealthMultiplier,
@@ -44,38 +44,40 @@ namespace CombatMaid.Settings
                 (value) => CombatMaidConfig.MoveSpeedMultiplier = value,
                 1, 5
             );
+            
+            #endregion
 
-            // ==================== 2. 按键绑定 ====================
+            #region 按键绑定
 
             ModSettingAPI.AddKeybinding(
                 CombatMaidConfig.Key_Bind_Move,
                 LocalizationManager.GetText("Setting_Key_Move"),
-                CombatMaidConfig.KeyMove, KeyCode.G, (v) => CombatMaidConfig.KeyMove = v);
+                CombatMaidConfig.KeyMove, CombatMaidConfig.Default_KeyMove, (v) => CombatMaidConfig.KeyMove = v);
 
             ModSettingAPI.AddKeybinding(
                 CombatMaidConfig.Key_Bind_Heal,
                 LocalizationManager.GetText("Setting_Key_Heal"),
-                CombatMaidConfig.KeyHeal, KeyCode.H, (v) => CombatMaidConfig.KeyHeal = v);
+                CombatMaidConfig.KeyHeal, CombatMaidConfig.Default_KeyHeal, (v) => CombatMaidConfig.KeyHeal = v);
 
             ModSettingAPI.AddKeybinding(
                 CombatMaidConfig.Key_Bind_Hold,
                 LocalizationManager.GetText("Setting_Key_Hold"),
-                CombatMaidConfig.KeyHold, KeyCode.J, (v) => CombatMaidConfig.KeyHold = v);
+                CombatMaidConfig.KeyHold, CombatMaidConfig.Default_KeyHold, (v) => CombatMaidConfig.KeyHold = v);
             
             ModSettingAPI.AddKeybinding(
                 CombatMaidConfig.Key_Bind_Scavenge,
                 LocalizationManager.GetText("Setting_Key_Scavenge"),
-                CombatMaidConfig.KeyScavenge, KeyCode.L, (v) => CombatMaidConfig.KeyScavenge = v);
+                CombatMaidConfig.KeyScavenge, CombatMaidConfig.Default_KeyScavenge, (v) => CombatMaidConfig.KeyScavenge = v);
 
             ModSettingAPI.AddKeybinding(
                 CombatMaidConfig.Key_Bind_Drop,
                 LocalizationManager.GetText("Setting_Key_Drop"),
-                CombatMaidConfig.KeyDrop, KeyCode.K, (v) => CombatMaidConfig.KeyDrop = v);
+                CombatMaidConfig.KeyDrop, CombatMaidConfig.Default_KeyDrop, (v) => CombatMaidConfig.KeyDrop = v);
             
             ModSettingAPI.AddKeybinding(
                 CombatMaidConfig.Key_Bind_InvManage,
                 LocalizationManager.GetText("Setting_Key_InvManage"),
-                CombatMaidConfig.KeyInventoryManage,KeyCode.B,
+                CombatMaidConfig.KeyInventoryManage,CombatMaidConfig.Default_KeyInventoryManage,
                 (v) => CombatMaidConfig.KeyInventoryManage = v
             );
             
@@ -83,11 +85,13 @@ namespace CombatMaid.Settings
                 CombatMaidConfig.Key_Bind_Passive,
                 LocalizationManager.GetText("Settings_Key_Passive"),
                 CombatMaidConfig.KeyPassive, 
-                KeyCode.Z, 
+                CombatMaidConfig.Default_KeyPassive, 
                 (v) => CombatMaidConfig.KeyPassive = v
             );
-            
-            // ==================== 高级AI配置 ====================
+
+            #endregion
+
+            #region 高级AI设置
             
             ModSettingAPI.AddSlider(
                 CombatMaidConfig.Key_LootMinVal,
@@ -128,7 +132,9 @@ namespace CombatMaid.Settings
                 }
             );
 
-            // ==================== 3. 自定义女仆配置 ====================
+            #endregion
+            
+            #region 自定义女仆配置
 
             ModSettingAPI.AddInput(
                 CombatMaidConfig.Key_CustomMaidName,
@@ -177,11 +183,11 @@ namespace CombatMaid.Settings
                 LocalizationManager.GetText(CombatMaidConfig.LocalKey_BuffBlockList), 
                 CombatMaidConfig.BuffBlockListString,
                 100,
-                (value) => CombatMaidConfig.ParseBuffBlockList(value)
+                CombatMaidConfig.ParseBuffBlockList
             );
             
             ModSettingAPI.AddButton(
-                "OpenSaveFolder",
+                CombatMaidConfig.Key_OpenSaveFolder,
                 LocalizationManager.GetText(CombatMaidConfig.LocalKey_OpenSaveFolder),
                 LocalizationManager.GetText(CombatMaidConfig.LocalKey_OpenSaveFolderButton),
                 OpenSaveFolderAction
@@ -191,13 +197,12 @@ namespace CombatMaid.Settings
                 CombatMaidConfig.Key_Button_RebuildWineFox,
                 LocalizationManager.GetText(CombatMaidConfig.LocalKey_Button_RebuildDesc),
                 LocalizationManager.GetText(CombatMaidConfig.LocalKey_Button_RebuildName),
-                () => 
-                {
-                    WineFoxDataManager.SafeRebuildWineFoxSaveData();
-                }
+                WineFoxDataManager.RebuildWineFoxSaveData
             );
 
-            // ==================== 4. 注册分组 ====================
+            #endregion
+            
+            #region 注册分组
 
             ModSettingAPI.AddGroup(
                 "CombatMaid_StatsGroup",
@@ -229,7 +234,7 @@ namespace CombatMaid.Settings
             
             ModSettingAPI.AddGroup(
                 "CombatMaid_AIGroup",
-                LocalizationManager.GetText("Settings_Group_AI"),
+                LocalizationManager.GetText(CombatMaidConfig.LocalKey_Group_AI),
                 new List<string>
                 {
                     CombatMaidConfig.Key_LootMinVal,
@@ -250,17 +255,17 @@ namespace CombatMaid.Settings
                     CombatMaidConfig.Key_MaidAlertVolume,
                     CombatMaidConfig.Key_MaidVoiceVolume,
                     CombatMaidConfig.Key_BuffBlockList,
-                    "OpenSaveFolder",
+                    CombatMaidConfig.Key_OpenSaveFolder,
                     CombatMaidConfig.Key_Button_RebuildWineFox
                 },
                 0.7f, false, false
             );
+
+            #endregion
         }
 
+        #region 辅助函数
 
-        /// <summary>
-        /// 女仆名称变化回调
-        /// </summary>
         private static void OnCustomMaidNameChanged(string value)
         {
             CombatMaidConfig.CustomMaidName = value;
@@ -268,9 +273,6 @@ namespace CombatMaid.Settings
             CombatMaidConfig.ApplyCustomMaidName(value);
         }
 
-        /// <summary>
-        /// 模型ID变化回调
-        /// </summary>
         private static void OnCustomMaidModelIDChanged(string value)
         {
             CombatMaidConfig.CustomMaidModelID = value;
@@ -329,5 +331,7 @@ namespace CombatMaid.Settings
                 CMDebug.LogError($"打开文件夹失败: {ex.Message}");
             }
         }
+
+        #endregion
     }
 }

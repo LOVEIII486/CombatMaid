@@ -1,18 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
-using Newtonsoft.Json.Linq;
 using Duckov.PerkTrees.Behaviours;
 using CombatMaid.Core.WineFox;
 using CombatMaid.Core.MaidConfigs;
-using CombatMaid.Core.MaidSkillSystem;
 using Duckov.PerkTrees;
 
 namespace CombatMaid.Core.SkillTreeSystem
 {
     /// <summary>
-    /// 技能树修改器数据结构 (用于 Unity 检查器面板)
+    /// 技能树修改器数据结构
     /// </summary>
     [Serializable]
     public class SkillTreeModifier

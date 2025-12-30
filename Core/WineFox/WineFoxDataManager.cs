@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using UnityEngine;
 using Newtonsoft.Json;
-using CombatMaid.Core.MaidConfigs;
 using System.Reflection;
 using CombatMaid.Core.SkillTreeSystem;
 using Newtonsoft.Json.Serialization;
@@ -109,19 +107,19 @@ namespace CombatMaid.Core.WineFox
         }
 
         /// <summary>
-        /// 【重构存档】保留个性化数据，基于最新平衡性配置重算属性
+        /// 基于最新平衡性配置重算属性
         /// </summary>
-        public static void SafeRebuildWineFoxSaveData()
+        public static void RebuildWineFoxSaveData()
         {
             var data = CurrentData ?? LoadOrInit();
             if (data == null || data.PresetConfig == null) return;
 
             string savedName = data.PresetConfig.CustomName;
-            CMDebug.LogInfo("[WineFoxData] 开始执行存档安全重构...");
+            CMDebug.LogInfo("开始执行存档安全重构...");
 
             try
             {
-                // 1. 加载白板预设并覆盖
+                // 加载白板预设并覆盖
                 string modDir = GetModDir();
                 string defaultPath = Path.Combine(modDir, "MaidPreset", DefaultPresetName);
                 string json = File.ReadAllText(defaultPath);
@@ -130,7 +128,7 @@ namespace CombatMaid.Core.WineFox
                 data.PresetConfig = freshProfile.PresetConfig;
                 data.PresetConfig.CustomName = savedName; // 还原姓名
 
-                // 2. 清空并重算技能加成
+                // 清空并重算技能加成
                 if (data.ExtraData == null) data.ExtraData = new MaidExtraInfo();
                 if (data.ExtraData.AppliedModifierKeys == null) data.ExtraData.AppliedModifierKeys = new List<string>();
                 data.ExtraData.AppliedModifierKeys.Clear();
@@ -143,13 +141,11 @@ namespace CombatMaid.Core.WineFox
                     var treeConfig = SkillTreeConfigLoader.LoadFromFile(modDir, "SkillTree_MaidTech.json");
                     if (treeConfig != null && treeConfig.Nodes != null)
                     {
-                        // 建立快速索引
                         var nodeMap = new Dictionary<string, SkillNodeConfig>();
                         foreach (var n in treeConfig.Nodes) nodeMap[n.ID] = n;
 
                         foreach (var id in unlockedIds)
                         {
-                            // 调用 SkillTreeConfig.cs 中定义的 MaidModifiers
                             if (nodeMap.TryGetValue(id, out var nodeCfg) && nodeCfg.MaidModifiers != null)
                             {
                                 SkillTreeDataModifier.ApplyMaidModifiers(id, nodeCfg.MaidModifiers, data);
@@ -158,15 +154,14 @@ namespace CombatMaid.Core.WineFox
                     }
                 }
 
-                // 3. 保存与同步
                 SaveData();
                 if (MaidSpawner.Instance != null) MaidSpawner.Instance.RefreshWineFoxCache();
 
-                CMDebug.LogInfo($"[WineFoxData] ✓ 重构完成。保留了名字与模型ID，同步了 {unlockedIds.Count} 个节点的加成。");
+                CMDebug.LogInfo($"重构完成。同步了 {unlockedIds.Count} 个节点的加成。");
             }
             catch (Exception ex)
             {
-                CMDebug.LogError($"[WineFoxData] 重构失败: {ex.Message}");
+                CMDebug.LogError($"重构失败: {ex.Message}");
             }
         }
 
