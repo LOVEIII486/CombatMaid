@@ -338,7 +338,10 @@ namespace CombatMaid.Core.Items.Data
                     {
                         { "ConsumeOnUse", false }
                     },
-                    ShopMerchantId = null,
+                    ShopMerchantId = MerchantIds.Myst,
+                    ShopMaxStock = 2,
+                    ShopPriceFactor = 5.0f,
+                    ShopPossibility = 1f,
                     ShopForceUnlock = true
                 },
                 new MaidItemInfo // 酒狐的衔玉酒瓶 88106
@@ -369,7 +372,10 @@ namespace CombatMaid.Core.Items.Data
                     {
                         { "ConsumeOnUse", false }
                     },
-                    ShopMerchantId = null,
+                    ShopMerchantId = MerchantIds.Myst,
+                    ShopMaxStock = 1,
+                    ShopPriceFactor = 5.0f,
+                    ShopPossibility = 1f,
                     ShopForceUnlock = true
                 },
                 new MaidItemInfo // 酒狐的圣诞礼物 88107
