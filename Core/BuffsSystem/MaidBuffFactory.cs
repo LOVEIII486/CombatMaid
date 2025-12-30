@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using Duckov.Buffs;
 using Duckov.Utilities;
-using UnityEngine;
 
 namespace CombatMaid.Core.BuffsSystem
 {
@@ -12,7 +11,7 @@ namespace CombatMaid.Core.BuffsSystem
     /// </summary>
     public static class MaidBuffFactory
     {
-        private static readonly Dictionary<int, Buff> SharedBuffs = new Dictionary<int, Buff>();
+        private static readonly Dictionary<string, Buff> SharedBuffs = new Dictionary<string, Buff>();
 
         private static FieldInfo _idField;
         private static FieldInfo _displayNameField; // 用于设置本地化 Key
@@ -39,27 +38,29 @@ namespace CombatMaid.Core.BuffsSystem
 
         public static Buff GetOrCreateSharedBuff(BuffConfig config)
         {
-            if (SharedBuffs.TryGetValue(config.Id, out Buff existing))
+            // 生成复合 Key：ID + 是否限时
+            // 这样 888004_True (限时) 和 888004_False (永久) 将拥有各自的独立模板
+            string cacheKey = $"{config.Id}_{config.LimitedLifeTime}";
+
+            if (SharedBuffs.TryGetValue(cacheKey, out Buff existing))
             {
                 if (existing != null) return existing;
-                SharedBuffs.Remove(config.Id);
+                SharedBuffs.Remove(cacheKey);
             }
-            return CreateSharedBuff(config);
+            return CreateSharedBuff(config, cacheKey);
         }
 
-        private static Buff CreateSharedBuff(BuffConfig config)
+        private static Buff CreateSharedBuff(BuffConfig config, string cacheKey)
         {
             try
             {
                 Buff baseBuff = GameplayDataSettings.Buffs.BaseBuff;
-                if (baseBuff == null)
-                {
-                    CMDebug.LogError($"严重错误：BaseBuff 未找到");
-                    return null;
-                }
+                if (baseBuff == null) return null;
 
                 Buff newBuff = UnityEngine.Object.Instantiate(baseBuff);
-                newBuff.name = config.Name;
+                
+                newBuff.name = config.LimitedLifeTime ? config.Name : $"{config.Name}_Permanent";
+                
                 UnityEngine.Object.DontDestroyOnLoad(newBuff.gameObject);
 
                 InitializeReflection();
@@ -70,7 +71,7 @@ namespace CombatMaid.Core.BuffsSystem
                 _limitedLifeTimeField?.SetValue(newBuff, config.LimitedLifeTime);
                 _totalLifeTimeField?.SetValue(newBuff, config.Duration);
 
-                SharedBuffs[config.Id] = newBuff;
+                SharedBuffs[cacheKey] = newBuff;
                 return newBuff;
             }
             catch (Exception ex)

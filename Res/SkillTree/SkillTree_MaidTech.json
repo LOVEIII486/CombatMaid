@@ -926,7 +926,7 @@
       "ID": "maid_skill_selfheal",
       "DisplayName": "Perk_Maid_SelfHeal",
       "Description": "Perk_Maid_SelfHeal_Desc",
-      "IconFileName": "perk_skill.png",
+      "IconFileName": "perk_selfheal.png",
       "CostMoney": 1500,
       "CostItems": {
         "17": 1,
@@ -1177,6 +1177,33 @@
       ]
     },
     {
+      "ID": "maid_perk_fox_guard",
+      "DisplayName": "Perk_Maid_FoxGuard",
+      "Description": "Perk_Maid_FoxGuard_Desc",
+      "IconFileName": "perk_foxguard.png",
+      "CostMoney": 6000,
+      "CostItems": {
+        "29": 2,
+        "108": 1,
+        "1256": 1
+      },
+      "RequiredLevel": 12,
+      "Position": { "x": 90, "y": 600 },
+      "PrerequisiteIDs": [ "maid_skill_emergency_heal" ],
+      "PlayerStatModifiers": {},
+      "MaidModifiers": [
+        {
+          "Type": "AddSkill",
+          "SkillID": "FoxGuard",
+          "SkillParams": {
+            "InvincibleDuration": 5.0,
+            "HealPercent": 0.5,
+            "TriggerOnce": true
+          }
+        }
+      ]
+    },
+    {
       "ID": "maid_skill_repair",
       "DisplayName": "Perk_Maid_Repair",
       "Description": "Perk_Maid_Repair_Desc",
@@ -1192,7 +1219,7 @@
       "RequiredLevel": 15,
       "Position": {
         "x": 0,
-        "y": 600
+        "y": 680
       },
       "PrerequisiteIDs": [
         "maid_skill_emergency_heal"
@@ -1221,7 +1248,7 @@
       "RequiredLevel": 18,
       "Position": {
         "x": 0,
-        "y": 680
+        "y": 750
       },
       "PrerequisiteIDs": [
         "maid_skill_repair"
@@ -1236,7 +1263,6 @@
       ]
     },
     {
-      "//": "========== 特殊物品：瓶中女仆 (x: -60) ==========",
       "ID": "maid_special_bottle_1",
       "DisplayName": "Perk_Bottle_Lv1",
       "Description": "Perk_Bottle_Lv1_Desc",
@@ -1352,7 +1378,6 @@
       ]
     },
     {
-      "//": "========== 提示节点：酒狐操作指南 ==========",
       "ID": "maid_backpack_access",
       "DisplayName": "Perk_Maid_BackpackAccess_Title",
       "Description": "Perk_Maid_BackpackAccess_Desc",
@@ -1369,7 +1394,6 @@
       "MaidModifiers": []
     },
     {
-      "//": "========== 左中分支：背包扩容  ==========",
       "ID": "maid_backpack_upgrade_1",
       "DisplayName": "Perk_Backpack_1",
       "Description": "Perk_Backpack_1_Desc",

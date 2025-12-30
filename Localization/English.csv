@@ -150,12 +150,12 @@ Item_GiftBox_Desc,"A Christmas present carefully prepared by the Wine Fox for he
 Item_WineFoxCookie,Wine Fox’s Heartfelt Cookie,2.2.4,MaidItem
 Item_WineFoxCookie_Desc,"A sweet treat personally baked by the Wine Fox. The cookies are shaped like fox faces and hexagonal snowflakes, carrying a creamy aroma and warm magic.\n<color=#FFD700>Effect:</color> Consume to restore <color=#00FFFF>30</color> Satiety, gain <color=#00FFFF>50</color> temporary HP, and instantly recover to <b>full HP</b>.\n<i>“This is my first time trying human-style cooking… I hope it can protect Master’s soul during the cold winter.”</i>",2.2.4,MaidItem
 Item_JadeFlask,Wine Fox’s Jade-Flask Sake Bottle,2.2.4,MaidItem
-Item_JadeFlask_Desc,"A magnificent enchanted jade sake bottle. At the mouth of the flask, a miniature golden-carved spirit fox holds a crimson gem in its jaws, silently guarding the one who drinks from it.\n<color=#FFD700>Effect:</color> Gain a blessing lasting <color=#00FFFF>180 seconds</color>. If lethal damage is taken during this time, the blessing is consumed to remain at <b>1 HP</b> and gain <color=#00FFFF>5 seconds</color> of invincibility.\n<i>“Don’t be afraid, Master… At the truly dangerous moment, I will block it for you.”</i>",2.2.4,MaidItem
+Item_JadeFlask_Desc,"A magnificent enchanted jade sake bottle. At the mouth of the flask, a miniature golden-carved spirit fox holds a crimson gem in its jaws, silently guarding the one who drinks from it.\n<color=#FFD700>Effect:</color> Gain a blessing lasting <color=#00FFFF>180 seconds</color>. If lethal damage is taken during this time, the blessing is consumed to heal <b>50% HP</b> and gain <color=#00FFFF>5 seconds</color> of invincibility.\n<i>“Don’t be afraid, Master… At the truly dangerous moment, I will block it for you.”</i>",2.2.4,MaidItem
 Buff_MaidBuff_WineFoxCookie_Name,Heartfelt Cookie,2.2.4,Buffs
 Buff_WineFoxCookie_Pop,<color=#FFD700>Wine Fox’s Protection: Max HP +{0}</color>,2.2.4,Buffs
 Buff_MaidBuff_JadeBlessing_Name,Jadebound Protection,2.2.4,Buffs
 Buff_MaidBuff_JadeInvincible_Name,Jadebound Invincibility,2.2.4,Buffs
-Buff_JadeBlessing_Trigger_Pop,<color=#FFD700>Jadebound Protection Triggered!</color>,2.2.4,Buffs
+Buff_JadeBlessing_Trigger_Pop,<color=#FFD700>Jadebound Invincibility!</color>,2.2.4,Buffs
 Item_GiftBox_Open_Pop,<color=#FF4D4D>Merry Christmas!</color>,2.2.4,MaidItem
 Item_GiftBox_Received_Msg,<color=#00FF7F>The Wine Fox takes out the long-prepared gifts from her pack!</color>,2.2.4,MaidEvents
 Msg_Maid_TacticalMove,Tactical Move!,2.2.5,MaidMsg
@@ -187,3 +187,5 @@ Perk_RecycleBottle_Desc,"Master high-tier sealing arts to return active spirits 
 Settings_TransferKillToOwner,Transfer Maid Kills to Player (Enabling allows normal quest completion and XP gain),2.2.5,GeneralSettings
 Settings_RebuildWineFox_Name,Sync Maid Stat Balance,2.2.5,GeneralSettings
 Settings_RebuildWineFox_Desc,Recalculate Wine Fox stats based on the latest skill tree effects. Only combat values influenced by the skill tree will be updated.,2.2.5,GeneralSettings
+Perk_Maid_FoxGuard,Fox Guard Sigil,2.2.5,Perks
+Perk_Maid_FoxGuard_Desc,"Unlocks the [Fox Guard Sigil] skill.\nWhen Wine Fox’s HP is about to reach zero, the engraved protective magic will automatically activate, instantly restoring her to half HP and granting invincibility for <color=#7FE8D8>5 seconds.\nThis effect can only trigger once per deployment.",2.2.5,Perks

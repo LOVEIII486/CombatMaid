@@ -1,5 +1,4 @@
 ﻿using HarmonyLib;
-using Duckov.Buffs;
 using CombatMaid.Localization;
 
 namespace CombatMaid.Core.BuffsSystem
@@ -13,24 +12,35 @@ namespace CombatMaid.Core.BuffsSystem
         [HarmonyPrefix]
         public static bool Prefix(Health __instance, DamageInfo damageInfo)
         {
-            if (__instance.IsDead || !__instance.IsMainCharacterHealth) return true;
+            if (__instance.IsDead || __instance.Invincible) return true;
+
+            // 致死判定
             if (damageInfo.damageValue < __instance.CurrentHealth) return true;
-
-            // 检查是否有祝福 Buff
+            
             var character = __instance.TryGetCharacter();
+            // 检查该角色是否携带了指定的触发 Buff
             if (character == null || !character.HasBuff(BlessingBuffID)) return true;
+            
+            // 恢复至最大生命值的 50%
+            float recoveryAmount = __instance.MaxHealth * 0.5f;
+            __instance.SetHealth(recoveryAmount);
 
-            __instance.SetHealth(1f);
-            // 移除祝福，施加 5秒 无敌
+            // 移除消耗性 Buff，并施加 5秒 无敌 Buff
             character.RemoveBuff(BlessingBuffID, false);
+            
             var invincConfig = new MaidBuffFactory.BuffConfig("MaidBuff_JadeInvincible", InvincibleBuffID, 5f);
             var buffPfb = MaidBuffFactory.GetOrCreateSharedBuff(invincConfig);
-            if (buffPfb != null) character.AddBuff(buffPfb, character);
+            if (buffPfb != null)
+            {
+                character.AddBuff(buffPfb, character);
+            }
 
             string triggerMsg = LocalizationManager.GetText("Buff_JadeBlessing_Trigger_Pop");
             character.PopText(string.Format(triggerMsg, 5)); 
-
-            //CMDebug.Log($"[衔玉之护] 为 {character.name} 抵挡了致命伤害。");
+                
+            // 玩家触发时没有preset，无法输出displayname，只能用name
+            // CMDebug.Log($"衔玉无敌在 {character.name} 上激活。恢复血量: {recoveryAmount}，施加5秒无敌。");
+            
             return false;
         }
     }

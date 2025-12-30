@@ -45,6 +45,8 @@ namespace CombatMaid.Core.MaidSkillSystem
                         return new Skill_AutoRepairArmor();
                     case "FreezeNova":
                         return new Skill_FreezeNova();
+                    case "FoxGuard":
+                        return new Skill_FoxGuard(config.Params);
                     default:
                         CMDebug.LogWarning($"未知的技能类型: {config.SkillID}");
                         return null;
