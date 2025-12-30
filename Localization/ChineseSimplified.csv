@@ -50,18 +50,18 @@ Perk_WineFox_Health_4_Desc,扩展契约护甲的保护范围，使生命力与�
 Perk_WineFox_Health_5,强化契约躯体 V,2.2.2,Perks
 Perk_WineFox_Health_5_Desc,将契约之躯锻造成高阶守护形态，使酒狐在极端环境下仍能稳固作战。\n最大生命值 <color=#FF8A8A>+70</color>，物理伤害减免 <color=#FF8A8A>-20%</color>。,2.2.2,Perks
 Perk_Flexibility_1,灵活战姿 I,2.2.2,Perks
-Perk_Flexibility_1_Desc,提升基础移动节奏。\n主人~ 我开始做机动训练啦！这样就能在战场上灵活地跟紧你，不会掉队的喔！\n移动速度：<color=#7FE8D8>+10%</color>，并解锁冲刺能力。,2.2.2,Perks
+Perk_Flexibility_1_Desc,提升基础移动节奏。\n主人~ 我开始做机动训练啦！这样就能在战场上灵活地跟紧你，不会掉队的喔！\n移动速度：<color=#7FE8D8>+15%</color>，并解锁冲刺能力。,2.2.2,Perks
 Perk_Flexibility_2,灵活战姿 II,2.2.2,Perks
-Perk_Flexibility_2_Desc,强化步伐节奏与转身协调。\n现在的我不仅跑得更快，转身瞄准也变得更顺滑了呢！\n移动速度：<color=#7FE8D8>+10%</color>，转向速度：<color=#7FE8D8>+10%</color>。,2.2.2,Perks
+Perk_Flexibility_2_Desc,强化步伐节奏与转身协调。\n现在的我不仅跑得更快，转身瞄准也变得更顺滑了呢！\n移动速度：<color=#7FE8D8>+15%</color>，转向速度：<color=#7FE8D8>+10%</color>。,2.2.2,Perks
 Perk_Flexibility_3,灵活战姿 III,2.2.2,Perks
-Perk_Flexibility_3_Desc,将机动训练提升至战术级别。\n嘿嘿~ 主人，现在的我连高速移动中也能稳稳保持姿态啦~\n移动速度：<color=#7FE8D8>+10%</color>，转向速度：<color=#7FE8D8>+20%</color>，并解锁移动射击能力。,2.2.2,Perks
-Perk_WineFox_Dmg_1_Desc,初步解放酒狐的战斗潜能，提高中远距离的命中效率。\n伤害 <color=#FFC572>+10%</color>。,2.2.2,Perks
-Perk_WineFox_Dmg_2_Desc,优化火力与弹道演算，使中远距离输出更加稳定。\n伤害 <color=#FFC572>+5%</color>，子弹速度 <color=#FFC572>+10%</color>。,2.2.2,Perks
-Perk_WineFox_Dmg_3_Desc,升级战斗弹道模块，使其在更远距离仍保持可靠输出。\n伤害 <color=#FFC572>+5%</color>，射程 <color=#FFC572>+15%</color>。,2.2.2,Perks
+Perk_Flexibility_3_Desc,将机动训练提升至战术级别。\n嘿嘿~ 主人，现在的我连高速移动中也能稳稳保持姿态啦~\n移动速度：<color=#7FE8D8>+15%</color>，转向速度：<color=#7FE8D8>+20%</color>，并解锁移动射击能力。,2.2.2,Perks
+Perk_WineFox_Dmg_1_Desc,初步解放酒狐的战斗潜能，提高中远距离的命中效率。\n伤害 <color=#FFC572>+10%</color>，反应时间 <color=#FFC572>-20%</color>。,2.2.2,Perks
+Perk_WineFox_Dmg_2_Desc,优化火力与弹道演算，使中远距离输出更加稳定。\n伤害 <color=#FFC572>+10%</color>，子弹速度 <color=#FFC572>+20%</color>，反应时间 <color=#FFC572>-20%</color>。,2.2.2,Perks
+Perk_WineFox_Dmg_3_Desc,升级战斗弹道模块，使其在更远距离仍保持可靠输出。\n伤害 <color=#FFC572>+10%</color>，射程 <color=#FFC572>+30%</color>，，反应时间 <color=#FFC572>-20%</color>。,2.2.2,Perks
 Perk_WineFox_Dmg_4,战斗契约强化 IV,2.2.2,Perks
 Perk_WineFox_Dmg_4_Desc,将整体火力训练提升至精确射击课程等级。\n伤害 <color=#FFC572>+10%</color>，暴击率 <color=#FFC572>+5%</color>，散布 <color=#FFC572>-10%</color>，散布惩罚 <color=#FFC572>-10%</color>。,2.2.2,Perks
 Perk_WineFox_Dmg_5,战斗契约强化 V,2.2.2,Perks
-Perk_WineFox_Dmg_5_Desc,完成战斗契约的终阶强化，使酒狐达到高阶射击表现。\n伤害 <color=#FFC572>+10%</color>，暴击率 <color=#FFC572>+10%</color>，散布 <color=#FFC572>-10%</color>，散布惩罚 <color=#FFC572>-10%</color>。,2.2.2,Perks
+Perk_WineFox_Dmg_5_Desc,完成战斗契约的终阶强化，使酒狐达到高阶射击表现。\n伤害 <color=#FFC572>+15%</color>，暴击率 <color=#FFC572>+10%</color>，散布 <color=#FFC572>-20%</color>，散布惩罚 <color=#FFC572>-20%</color>。,2.2.2,Perks
 Perk_Maid_Flashbang,闪光弹支援,2.2.2,Perks
 Perk_Maid_Flashbang_Desc,让女仆掌握专用闪光弹的投掷战术。\n在交火时可迅速干扰敌人视线，协助主人创造安全的进攻或撤离窗口。\n解锁能力：<color=#F3D38A>闪光弹投掷</color>。,2.2.2,Perks
 Perk_Maid_Buff,增益支援契约,2.2.2,Perks
@@ -124,9 +124,9 @@ Skill_EmergencyHeal_Execute,紧急治疗！,2.2.3,Skill
 Skill_VanillaBuff_Happy,主人要开心哦~,2.2.3,Skill
 Skill_VanillaBuff_ExtraBuff,\n给主人buff了！ ({0}),2.2.3,Skill
 Perk_WineFox_Armor_1,岩石护盾 I,2.2.3,Perks
-Perk_WineFox_Armor_1_Desc,召唤大地元素附着于女仆周身，形成粗糙但坚硬的岩层，提供基础的物理防护。\n\n头部护甲 <color=#7FE8D8>+0.5</color>\n身体护甲 <color=#7FE8D8>+0.5</color>,2.2.3,Perks
+Perk_WineFox_Armor_1_Desc,召唤大地元素附着于女仆周身，形成粗糙但坚硬的岩层，提供基础的物理防护。\n\n头部护甲 <color=#7FE8D8>+0.7</color>\n身体护甲 <color=#7FE8D8>+0.7</color>,2.2.3,Perks
 Perk_WineFox_Armor_2,岩石护盾 II,2.2.3,Perks
-Perk_WineFox_Armor_2_Desc,进一步压缩岩石密度，使其如花岗岩般致密。这层岩石足以正面抵挡重火力的侵袭。\n\n头部护甲 <color=#7FE8D8>+0.8</color>\n身体护甲 <color=#7FE8D8>+0.8</color>,2.2.3,Perks
+Perk_WineFox_Armor_2_Desc,进一步压缩岩石密度，使其如花岗岩般致密。这层岩石足以正面抵挡重火力的侵袭。\n\n头部护甲 <color=#7FE8D8>+1.0</color>\n身体护甲 <color=#7FE8D8>+1.0</color>,2.2.3,Perks
 Item_ArmorRepairPotion_Used,装备已修复,2.2.3,MaidItem
 Item_ArmorRepairPotion_NoTarget,没有需要修复的护甲,2.2.3,MaidItem
 Item_ArmorRepairPotion,酒狐的魔力抛光剂,2.2.3,MaidItem
@@ -142,7 +142,7 @@ Perk_Maid_FreezeNova_Desc,解锁[寒冰新星]技能。\n酒狐释放寒冰能�
 Skill_FreezeNova_Success,<color=#00FFFF>寒冰新星</color>：已冻结 <color=#7FFFD4>{0}</color> 个目标！,2.2.3,Skill
 Buff_MaidBuff_SuperRegen_Name,超级再生,2.2.3,Buffs
 Perk_Combat_Pro_1,灵狐战技 I,2.2.3,Perks
-Perk_Combat_Pro_1_Desc,酒狐凭借敏锐的灵狐直觉，能在瞬间捕捉到敌人的小动作，战斗时的姿态变得更加轻盈灵动。\n\n反应延迟 <color=#7FE8D8>-70%</color>\n准备时间 <color=#7FE8D8>-60%</color>\n暗夜适应力 <color=#7FE8D8>+50%</color>,2.2.3,Perks
+Perk_Combat_Pro_1_Desc,酒狐凭借敏锐的灵狐直觉，能在瞬间捕捉到敌人的小动作，战斗时的姿态变得更加轻盈灵动。\n\n反应延迟 <color=#7FE8D8>-50%</color>\n射击延迟 <color=#7FE8D8>-60%</color>\n暗夜适应力 <color=#7FE8D8>+50%</color>,2.2.3,Perks
 Perk_Combat_Pro_2,灵狐战技 II,2.2.3,Perks
 Perk_Combat_Pro_2_Desc,与主人的深深牵绊化作了不可思议的魔法，酒狐的进攻节奏如同幻梦般连绵不绝，不再给坏人喘息的机会。\n\n射击爆发时长 <color=#7FE8D8>1.0 - 2.0秒</color>\n射击间隔 <color=#7FE8D8>0.5 - 1.0秒</color>\n闪避冷却 <color=#7FE8D8>1.5 - 3.0秒</color>,2.2.3,Perks
 Item_GiftBox,酒狐的圣诞礼物,2.2.4,MaidItem

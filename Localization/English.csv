@@ -50,18 +50,18 @@ Perk_WineFox_Health_4_Desc,"Expands the contract armor's protection range, synch
 Perk_WineFox_Health_5,Reinforced Contract Body V,2.2.2,Perks
 Perk_WineFox_Health_5_Desc,"Forges the contract body into a high-tier Guardian form, allowing Wine Fox to fight steadily even in extreme environments.\nMax Health <color=#FF8A8A>+70</color>, Physical Damage Reduction <color=#FF8A8A>-20%</color>.",2.2.2,Perks
 Perk_Flexibility_1,Flexible Stance I,2.2.2,Perks
-Perk_Flexibility_1_Desc,"Improves basic movement rhythm.\nMaster~ I've started mobility training! This way I can follow you nimbly on the battlefield without getting left behind!\nMove Speed: <color=#7FE8D8>+10%</color>, unlocks Dash ability.",2.2.2,Perks
+Perk_Flexibility_1_Desc,"Improves basic movement rhythm.\nMaster~ I've started mobility training! This way I can follow you nimbly on the battlefield without getting left behind!\nMove Speed: <color=#7FE8D8>+15%</color>, unlocks Dash ability.",2.2.2,Perks
 Perk_Flexibility_2,Flexible Stance II,2.2.2,Perks
-Perk_Flexibility_2_Desc,"Enhances pace rhythm and turning coordination.\nI can run faster now, and my turning aim has become much smoother!\nMove Speed: <color=#7FE8D8>+10%</color>, Turn Speed: <color=#7FE8D8>+10%</color>.",2.2.2,Perks
+Perk_Flexibility_2_Desc,"Enhances pace rhythm and turning coordination.\nI can run faster now, and my turning aim has become much smoother!\nMove Speed: <color=#7FE8D8>+15%</color>, Turn Speed: <color=#7FE8D8>+10%</color>.",2.2.2,Perks
 Perk_Flexibility_3,Flexible Stance III,2.2.2,Perks
-Perk_Flexibility_3_Desc,"Elevates mobility training to a tactical level.\nHehe~ Master, now I can maintain a steady posture even during high-speed movement!\nMove Speed: <color=#7FE8D8>+10%</color>, Turn Speed: <color=#7FE8D8>+20%</color>, unlocks Move & Shoot ability.",2.2.2,Perks
-Perk_WineFox_Dmg_1_Desc,"Initially releases Wine Fox's combat potential, improving hit efficiency at medium-to-long ranges.\nDamage <color=#FFC572>+10%</color>.",2.2.2,Perks
-Perk_WineFox_Dmg_2_Desc,"Optimizes firepower and ballistic calculations for more stable output at medium-to-long ranges.\nDamage <color=#FFC572>+5%</color>, Bullet Speed <color=#FFC572>+10%</color>.",2.2.2,Perks
-Perk_WineFox_Dmg_3_Desc,"Upgrades combat ballistic modules to maintain reliable output at greater distances.\nDamage <color=#FFC572>+5%</color>, Range <color=#FFC572>+15%</color>.",2.2.2,Perks
+Perk_Flexibility_3_Desc,"Elevates mobility training to a tactical level.\nHehe~ Master, now I can maintain a steady posture even during high-speed movement!\nMove Speed: <color=#7FE8D8>+15%</color>, Turn Speed: <color=#7FE8D8>+20%</color>, unlocks Move & Shoot ability.",2.2.2,Perks
+Perk_WineFox_Dmg_1_Desc,"Initially releases Wine Fox's combat potential, improving hit efficiency at medium-to-long ranges.\nDamage <color=#FFC572>+10%</color>, Reaction Time <color=#FFC572>-20%</color>.",2.2.2,Perks
+Perk_WineFox_Dmg_2_Desc,"Optimizes firepower and ballistic calculations for more stable output at medium-to-long ranges.\nDamage <color=#FFC572>+10%</color>, Bullet Speed <color=#FFC572>+20%</color>, Reaction Time <color=#FFC572>-20%</color>.",2.2.2,Perks
+Perk_WineFox_Dmg_3_Desc,"Upgrades combat ballistic modules to maintain reliable output at greater distances.\nDamage <color=#FFC572>+10%</color>, Range <color=#FFC572>+30%</color>, Reaction Time <color=#FFC572>-20%</color>.",2.2.2,Perks
 Perk_WineFox_Dmg_4,Combat Contract Enhancement IV,2.2.2,Perks
 Perk_WineFox_Dmg_4_Desc,"Elevates overall firepower training to Precision Shooting Course level.\nDamage <color=#FFC572>+10%</color>, Crit Rate <color=#FFC572>+5%</color>, Spread <color=#FFC572>-10%</color>, Spread Penalty <color=#FFC572>-10%</color>.",2.2.2,Perks
 Perk_WineFox_Dmg_5,Combat Contract Enhancement V,2.2.2,Perks
-Perk_WineFox_Dmg_5_Desc,"Completes the final stage of combat contract enhancement, allowing Wine Fox to achieve high-tier shooting performance.\nDamage <color=#FFC572>+10%</color>, Crit Rate <color=#FFC572>+10%</color>, Spread <color=#FFC572>-10%</color>, Spread Penalty <color=#FFC572>-10%</color>.",2.2.2,Perks
+Perk_WineFox_Dmg_5_Desc,"Completes the final stage of combat contract enhancement, allowing Wine Fox to achieve high-tier shooting performance.\nDamage <color=#FFC572>+15%</color>, Crit Rate <color=#FFC572>+10%</color>, Spread <color=#FFC572>-20%</color>, Spread Penalty <color=#FFC572>-20%</color>.",2.2.2,Perks
 Perk_Maid_Flashbang,Flashbang Support,2.2.2,Perks
 Perk_Maid_Flashbang_Desc,"Grants the maid tactics for using dedicated flashbangs.\nCan rapidly disrupt enemy vision during firefights, helping the Master create safe windows for attacking or retreating.\nUnlock Ability: <color=#F3D38A>Flashbang Throw</color>.",2.2.2,Perks
 Perk_Maid_Buff,Buff Support Contract,2.2.2,Perks
@@ -124,9 +124,9 @@ Skill_EmergencyHeal_Execute,Emergency heal!,2.2.3,Skill
 Skill_VanillaBuff_Happy,"Cheer up, Master~",2.2.3,Skill
 Skill_VanillaBuff_ExtraBuff,"\nI’ve buffed you, Master! ({0})",2.2.3,Skill
 Perk_WineFox_Armor_1,Rock Shield I,2.2.3,Perks
-Perk_WineFox_Armor_1_Desc,"Summons earth elements to surround the maid,  forming a rough yet tough rock layer that provides basic physical protection.\n\nHead Armor <color=#7FE8D8>+0.5</color>\nBody Armor <color=#7FE8D8>+0.5</color>",2.2.3,Perks
+Perk_WineFox_Armor_1_Desc,"Summons earth elements to surround the maid,  forming a rough yet tough rock layer that provides basic physical protection.\n\nHead Armor <color=#7FE8D8>+0.7</color>\nBody Armor <color=#7FE8D8>+0.7</color>",2.2.3,Perks
 Perk_WineFox_Armor_2,Rock Shield II,2.2.3,Perks
-Perk_WineFox_Armor_2_Desc,"Further compresses the rock density,  making it as solid as granite. This stone layer is capable of withstanding heavy firepower head-on.\n\nHead Armor <color=#7FE8D8>+0.8</color>\nBody Armor <color=#7FE8D8>+0.8</color>",2.2.3,Perks
+Perk_WineFox_Armor_2_Desc,"Further compresses the rock density,  making it as solid as granite. This stone layer is capable of withstanding heavy firepower head-on.\n\nHead Armor <color=#7FE8D8>+1.0</color>\nBody Armor <color=#7FE8D8>+1.0</color>",2.2.3,Perks
 Item_ArmorRepairPotion_Used,Equipment repaired,2.2.3,MaidItem
 Item_ArmorRepairPotion_NoTarget,No armor needs repairing,2.2.3,MaidItem
 Item_ArmorRepairPotion,Wine Fox's Magic Polish,2.2.3,MaidItem
@@ -142,7 +142,7 @@ Perk_Maid_FreezeNova_Desc,"Unlocks the [Freeze Nova] skill.\nThe Wine Fox releas
 Skill_FreezeNova_Success,<color=#00FFFF>Freeze Nova</color>: <color=#7FFFD4>{0}</color> targets frozen!,2.2.3,Skill
 Buff_MaidBuff_SuperRegen_Name,Super Regen,2.2.3,Buffs
 Perk_Combat_Pro_1,Spirit Fox Arts I,2.2.3,Perks
-Perk_Combat_Pro_1_Desc,"With her keen Spirit Fox intuition, Wine Fox can catch an enemy's slightest movement in the blink of an eye, making her combat steps even more graceful and nimble.\n\nReaction Delay <color=#7FE8D8>-70%</color>\nPreparation Time <color=#7FE8D8>-60%</color>\nNight Adaptation <color=#7FE8D8>+50%</color>",2.2.3,Perks
+Perk_Combat_Pro_1_Desc,"With her keen Spirit Fox intuition, Wine Fox can catch an enemy's slightest movement in the blink of an eye, making her combat steps even more graceful and nimble.\n\nReaction Delay <color=#7FE8D8>-50%</color>\nShoot Delay <color=#7FE8D8>-60%</color>\nNight Adaptation <color=#7FE8D8>+50%</color>",2.2.3,Perks
 Perk_Combat_Pro_2,Spirit Fox Arts II,2.2.3,Perks
 Perk_Combat_Pro_2_Desc,"The deep bond with her Master has blossomed into wondrous magic, making Wine Fox's offensive rhythm as continuous as a dream, never giving the bad guys a chance to catch their breath!\n\nMagic Burst Duration <color=#7FE8D8>1.0 - 2.0s</color>\nSpell Interval <color=#7FE8D8>0.5 - 1.0s</color>\nNimble Leap Cooldown <color=#7FE8D8>1.5 - 3.0s</color>",2.2.3,Perks
 Item_GiftBox,Wine Fox’s Christmas Gift,2.2.4,MaidItem
