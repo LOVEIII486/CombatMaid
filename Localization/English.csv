@@ -185,3 +185,5 @@ Item_MaidRecycleBottle_Desc,"A mystical vessel etched with ancient returning run
 Perk_RecycleBottle,Spirit Sealing Art,2.2.5,Perks
 Perk_RecycleBottle_Desc,"Master high-tier sealing arts to return active spirits to their vessels. Guides all active bottled maids (except WineFox) back into their original vial forms, dropping them at their feet.\nUnlocked Item: <color=#F3D38A>Empty Seal Bottle</color> (Sold at Mud's Shop).",2.2.5,Perks
 Settings_TransferKillToOwner,Transfer Maid Kills to Player (Enabling allows normal quest completion and XP gain),2.2.5,GeneralSettings
+Settings_RebuildWineFox_Name,Sync Maid Stat Balance,2.2.5,GeneralSettings
+Settings_RebuildWineFox_Desc,Recalculate Wine Fox stats based on the latest skill tree effects. Only combat values influenced by the skill tree will be updated.,2.2.5,GeneralSettings

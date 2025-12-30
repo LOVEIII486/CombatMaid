@@ -186,6 +186,16 @@ namespace CombatMaid.Settings
                 LocalizationManager.GetText(CombatMaidConfig.LocalKey_OpenSaveFolderButton),
                 OpenSaveFolderAction
             );
+            
+            ModSettingAPI.AddButton(
+                CombatMaidConfig.Key_Button_RebuildWineFox,
+                LocalizationManager.GetText(CombatMaidConfig.LocalKey_Button_RebuildDesc),
+                LocalizationManager.GetText(CombatMaidConfig.LocalKey_Button_RebuildName),
+                () => 
+                {
+                    WineFoxDataManager.SafeRebuildWineFoxSaveData();
+                }
+            );
 
             // ==================== 4. 注册分组 ====================
 
@@ -240,7 +250,8 @@ namespace CombatMaid.Settings
                     CombatMaidConfig.Key_MaidAlertVolume,
                     CombatMaidConfig.Key_MaidVoiceVolume,
                     CombatMaidConfig.Key_BuffBlockList,
-                    "OpenSaveFolder"
+                    "OpenSaveFolder",
+                    CombatMaidConfig.Key_Button_RebuildWineFox
                 },
                 0.7f, false, false
             );

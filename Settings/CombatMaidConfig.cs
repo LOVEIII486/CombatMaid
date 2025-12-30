@@ -10,12 +10,12 @@ namespace CombatMaid.Settings
     public static class CombatMaidConfig
     {
         // ==================== 配置项 Key ====================
-        
+
         // 属性倍率
         public const string Key_HealthMultiplier = "HealthMultiplier";
         public const string Key_AttackMultiplier = "AttackMultiplier";
         public const string Key_MoveSpeedMultiplier = "MoveSpeedMultiplier";
-        
+
         // 按键配置
         public const string Key_Bind_Move = "KeyBind_Move";
         public const string Key_Bind_Heal = "KeyBind_Heal";
@@ -24,27 +24,30 @@ namespace CombatMaid.Settings
         public const string Key_Bind_Drop = "KeyBind_Drop";
         public const string Key_Bind_InvManage = "KeyBind_InvManage";
         public const string Key_Bind_Passive = "KeyBind_Passive";
-        
+
         // 自定义女仆配置
         public const string Key_CustomMaidName = "CustomMaidName";
         public const string Key_CustomMaidModelID = "CustomMaidModelID";
         public const string Key_BuffBlockList = "BuffBlockList";
         public const string Key_MaidAlertVolume = "MaidAlertVolume";
         public const string Key_MaidVoiceVolume = "MaidVoiceVolume";
-        
+        public const string Key_Button_RebuildWineFox = "Button_RebuildWineFoxStats";
+
         // 高级AI配置
         public const string Key_LootMinVal = "LootMinValue";
         public const string Key_IgnoreSearched = "IgnoreSearched";
         public const string Key_EnableElementalGrenades = "EnableElementalGrenades";
         public const string Key_TransferKillToOwner = "TransferKillToOwner";
-        
-        // ==================== 本地化 Key ====================
-        
+
+        #region 本地化key
+
         // 组标题
         public const string LocalKey_Group_Stats = "Settings_CombatMaid_Stats";
         public const string LocalKey_Group_Keys = "Settings_CombatMaid_Keys";
         public const string LocalKey_Group_Customize = "Settings_CombatMaid_Customize";
-        
+        public const string LocalKey_Button_RebuildName = "Settings_RebuildWineFox_Name";
+        public const string LocalKey_Button_RebuildDesc = "Settings_RebuildWineFox_Desc";
+
         // 自定义女仆配置项
         public const string LocalKey_CustomMaidName = "Settings_CustomMaidName";
         public const string LocalKey_CustomMaidModelID = "Settings_CustomMaidModelID";
@@ -54,29 +57,31 @@ namespace CombatMaid.Settings
         public const string LocalKey_MaidAlertVolume = "Settings_MaidAlertVolume";
         public const string LocalKey_MaidVoiceVolume = "Settings_MaidVoiceVolume";
 
+        #endregion
+
         // ==================== 默认值 ====================
-        
+
         private const float Default_HealthMultiplier = 1.0f;
         private const float Default_AttackMultiplier = 1.0f;
         private const float Default_MoveSpeedMultiplier = 1.0f;
-        
+
         private const string Default_CustomMaidName = "";
         private const string Default_CustomMaidModelID = "";
         private const float Default_MaidAlertVolume = 0.5f;
         private const float Default_MaidVoiceVolume = 1.0f;
         private const string Default_BuffBlockList = "";
-        
+
         private const int Default_LootMinVal = 0;
         private const bool Default_IgnoreSearched = true;
         private const bool Default_EnableElementalGrenades = true;
         private const bool Default_TransferKillToOwner = true;
 
         // ==================== 静态变量 ====================
-        
+
         public static float HealthMultiplier { get; set; } = Default_HealthMultiplier;
         public static float AttackMultiplier { get; set; } = Default_AttackMultiplier;
         public static float MoveSpeedMultiplier { get; set; } = Default_MoveSpeedMultiplier;
-        
+
         public static KeyCode KeyMove { get; set; } = KeyCode.G;
         public static KeyCode KeyHeal { get; set; } = KeyCode.H;
         public static KeyCode KeyHold { get; set; } = KeyCode.J;
@@ -84,24 +89,24 @@ namespace CombatMaid.Settings
         public static KeyCode KeyDrop { get; set; } = KeyCode.K;
         public static KeyCode KeyInventoryManage { get; set; } = KeyCode.B;
         public static KeyCode KeyPassive { get; set; } = KeyCode.Z;
-        
+
         // 自定义女仆配置
         public static string CustomMaidName { get; set; } = Default_CustomMaidName;
         public static string CustomMaidModelID { get; set; } = Default_CustomMaidModelID;
         public static float MaidAlertVolume { get; set; } = Default_MaidAlertVolume;
         public static float MaidVoiceVolume { get; set; } = Default_MaidVoiceVolume;
         public static string BuffBlockListString { get; set; } = Default_BuffBlockList;
-        
+
         // 高级AI配置
         public static int LootMinVal { get; set; } = Default_LootMinVal;
         public static bool IgnoreSearched { get; set; } = Default_IgnoreSearched;
         public static bool EnableElementalGrenades { get; set; } = Default_EnableElementalGrenades;
         public static bool TransferKillToOwner { get; set; } = Default_TransferKillToOwner;
-    
+
         // 解析后的黑名单集合，用于游戏逻辑快速查询
         public static HashSet<int> BlockedBuffIDs { get; private set; } = new HashSet<int>();
         // ==================== 独立更新函数 ====================
-        
+
         /// <summary>
         /// 仅更新女仆名称
         /// </summary>
@@ -127,11 +132,11 @@ namespace CombatMaid.Settings
             }
 
             data.PresetConfig.CustomName = trimmedName;
-            
+
             // 保存
             return SaveWineFoxData(data, $"已更新女仆名称: {trimmedName}");
         }
-        
+
         /// <summary>
         /// 仅更新模型ID
         /// </summary>
@@ -145,7 +150,7 @@ namespace CombatMaid.Settings
                     CMDebug.LogWarning($"无效的模型ID: {newModelID}，必须是纯数字");
                     return false;
                 }
-                
+
                 if (testId < 0)
                 {
                     CMDebug.LogWarning("模型ID不能为负数");
@@ -164,7 +169,7 @@ namespace CombatMaid.Settings
 
             // 应用模型ID
             string targetModelID = string.IsNullOrWhiteSpace(newModelID) ? "" : newModelID.Trim();
-            
+
             if (data.ExtraData.CustomModelID == targetModelID)
             {
                 CMDebug.Log("模型ID无变化，跳过保存");
@@ -172,24 +177,24 @@ namespace CombatMaid.Settings
             }
 
             data.ExtraData.CustomModelID = targetModelID;
-            
+
             // 保存
-            string logMsg = string.IsNullOrEmpty(targetModelID) 
-                ? "已清除自定义模型ID（使用默认模型）" 
+            string logMsg = string.IsNullOrEmpty(targetModelID)
+                ? "已清除自定义模型ID（使用默认模型）"
                 : $"已更新模型ID: {targetModelID}";
-            
+
             return SaveWineFoxData(data, logMsg);
         }
 
         // ==================== 辅助函数 ====================
-        
+
         /// <summary>
         /// 加载酒狐存档
         /// </summary>
         private static MaidProfileData LoadWineFoxData()
         {
             var data = WineFoxDataManager.CurrentData ?? WineFoxDataManager.LoadOrInit();
-            
+
             if (data == null)
             {
                 CMDebug.LogWarning("酒狐存档尚未生成，请先生成一次酒狐后再修改配置");
@@ -204,7 +209,7 @@ namespace CombatMaid.Settings
 
             return data;
         }
-        
+
         /// <summary>
         /// 保存酒狐存档
         /// </summary>
@@ -217,7 +222,7 @@ namespace CombatMaid.Settings
                 {
                     MaidSpawner.Instance.RefreshWineFoxCache();
                 }
-                
+
                 CMDebug.Log($"✓ {logMessage}");
                 return true;
             }
@@ -227,14 +232,14 @@ namespace CombatMaid.Settings
                 return false;
             }
         }
-        
+
         /// <summary>
         /// 从酒狐存档加载配置到 UI
         /// </summary>
         public static void LoadCustomConfigFromWineFox()
         {
             var data = WineFoxDataManager.CurrentData ?? WineFoxDataManager.LoadOrInit();
-            
+
             if (data == null || data.PresetConfig == null)
             {
                 CMDebug.LogWarning("酒狐存档不存在，使用空白配置");
@@ -242,6 +247,7 @@ namespace CombatMaid.Settings
                 CustomMaidModelID = "";
                 return;
             }
+
             CustomMaidName = data.PresetConfig.CustomName ?? "";
             if (data.ExtraData != null && !string.IsNullOrEmpty(data.ExtraData.CustomModelID))
             {
@@ -251,15 +257,15 @@ namespace CombatMaid.Settings
             {
                 CustomMaidModelID = "";
             }
-           
+
             CMDebug.Log($"已从存档加载配置: 名称={CustomMaidName}, 模型={CustomMaidModelID}");
         }
-        
+
         public static void ParseBuffBlockList(string input)
         {
             BuffBlockListString = input;
             BlockedBuffIDs.Clear();
-        
+
             if (string.IsNullOrWhiteSpace(input)) return;
 
             var segments = input.Split(new[] { ',', '，', ';' }, System.StringSplitOptions.RemoveEmptyEntries);
@@ -270,21 +276,22 @@ namespace CombatMaid.Settings
                     BlockedBuffIDs.Add(id);
                 }
             }
+
             CMDebug.Log($"已更新Buff黑名单，共 {BlockedBuffIDs.Count} 个禁用项");
         }
-        
+
         /// <summary>
         /// 加载配置
         /// </summary>
         public static void Load()
         {
-            if (ModSettingAPI.GetSavedValue(Key_HealthMultiplier, out float savedHp) && savedHp > 0) 
+            if (ModSettingAPI.GetSavedValue(Key_HealthMultiplier, out float savedHp) && savedHp > 0)
                 HealthMultiplier = savedHp;
-            if (ModSettingAPI.GetSavedValue(Key_AttackMultiplier, out float savedAtk) && savedAtk > 0) 
+            if (ModSettingAPI.GetSavedValue(Key_AttackMultiplier, out float savedAtk) && savedAtk > 0)
                 AttackMultiplier = savedAtk;
-            if (ModSettingAPI.GetSavedValue(Key_MoveSpeedMultiplier, out float savedSpeed) && savedSpeed > 0) 
+            if (ModSettingAPI.GetSavedValue(Key_MoveSpeedMultiplier, out float savedSpeed) && savedSpeed > 0)
                 MoveSpeedMultiplier = savedSpeed;
-            
+
             if (ModSettingAPI.GetSavedValue(Key_Bind_Move, out KeyCode k1)) KeyMove = k1;
             if (ModSettingAPI.GetSavedValue(Key_Bind_Heal, out KeyCode k2)) KeyHeal = k2;
             if (ModSettingAPI.GetSavedValue(Key_Bind_Hold, out KeyCode k3)) KeyHold = k3;
@@ -292,23 +299,26 @@ namespace CombatMaid.Settings
             if (ModSettingAPI.GetSavedValue(Key_Bind_Drop, out KeyCode k5)) KeyDrop = k5;
             if (ModSettingAPI.GetSavedValue(Key_Bind_InvManage, out KeyCode kInv)) KeyInventoryManage = kInv;
             if (ModSettingAPI.GetSavedValue(Key_Bind_Passive, out KeyCode kPassive)) KeyPassive = kPassive;
-            
+
             bool hasModSettingValues = false;
-            
+
             if (ModSettingAPI.GetSavedValue(Key_CustomMaidName, out string savedName))
             {
                 CustomMaidName = savedName;
                 hasModSettingValues = true;
             }
+
             if (ModSettingAPI.GetSavedValue(Key_CustomMaidModelID, out string savedModelId))
             {
                 CustomMaidModelID = savedModelId;
                 hasModSettingValues = true;
             }
+
             if (ModSettingAPI.GetSavedValue(Key_MaidAlertVolume, out float savedAlertVol))
             {
                 MaidAlertVolume = savedAlertVol;
             }
+
             if (ModSettingAPI.GetSavedValue(Key_MaidVoiceVolume, out float savedVol))
             {
                 MaidVoiceVolume = Mathf.Clamp01(savedVol);
@@ -317,9 +327,10 @@ namespace CombatMaid.Settings
             {
                 MaidVoiceVolume = Default_MaidVoiceVolume;
             }
+
             CustomModelAudioPatcher.GlobalMaidVolume = MaidVoiceVolume;
-            
-            
+
+
             if (ModSettingAPI.GetSavedValue(Key_BuffBlockList, out string savedBlockList))
             {
                 ParseBuffBlockList(savedBlockList);
@@ -328,27 +339,30 @@ namespace CombatMaid.Settings
             {
                 ParseBuffBlockList(Default_BuffBlockList);
             }
-            
-            if (ModSettingAPI.GetSavedValue(Key_LootMinVal, out int savedVal)) 
+
+            if (ModSettingAPI.GetSavedValue(Key_LootMinVal, out int savedVal))
             {
                 LootMinVal = savedVal;
             }
+
             if (ModSettingAPI.GetSavedValue(Key_IgnoreSearched, out bool savedIgnore))
             {
                 IgnoreSearched = savedIgnore;
             }
+
             if (ModSettingAPI.GetSavedValue(Key_EnableElementalGrenades, out bool savedEnableElem))
             {
                 EnableElementalGrenades = savedEnableElem;
             }
+
             if (ModSettingAPI.GetSavedValue(Key_TransferKillToOwner, out bool savedTransfer))
             {
                 TransferKillToOwner = savedTransfer;
             }
-            
-            
-            if (!hasModSettingValues || 
-                (string.IsNullOrEmpty(CustomMaidName) && 
+
+
+            if (!hasModSettingValues ||
+                (string.IsNullOrEmpty(CustomMaidName) &&
                  string.IsNullOrEmpty(CustomMaidModelID)))
             {
                 LoadCustomConfigFromWineFox();
