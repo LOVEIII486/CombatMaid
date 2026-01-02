@@ -148,7 +148,7 @@ namespace CombatMaid.Settings
                 CombatMaidConfig.Key_CustomMaidModelID,
                 LocalizationManager.GetText(CombatMaidConfig.LocalKey_CustomMaidModelID),
                 CombatMaidConfig.CustomMaidModelID,
-                10,
+                50,
                 OnCustomMaidModelIDChanged
             );
             
