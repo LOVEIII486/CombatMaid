@@ -65,7 +65,7 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
             else
             {
                 // 如果不在维修模式，只有低于阈值才触发
-                if (lowestRatio < StartRepairThreshold && lowestRatio > 0)
+                if (lowestRatio < StartRepairThreshold && lowestRatio >= 0)
                 {
                     _isUnderMaintenance = true;
                     return true;
