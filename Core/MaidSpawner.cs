@@ -463,9 +463,9 @@ namespace CombatMaid.Core
             preset.nameKey = finalKey;
             preset.team = Teams.player;
 
-            // 注册本地化名称
-            // string displayName = !string.IsNullOrEmpty(config.CustomName) ? config.CustomName : "战斗女仆";
-            // LocalizationManager.SetOverrideText(finalKey, displayName);     
+            // 在这里再次注册覆盖本地化名称，这里用的是玩家修改后的名称
+            string displayName = !string.IsNullOrEmpty(config.CustomName) ? config.CustomName : "战斗女仆";
+            LocalizationManager.SetOverrideText(finalKey, displayName);     
 
             ApplyConfigToPreset(preset, config);
             // 给瓶中女仆默认强制加一个医疗箱

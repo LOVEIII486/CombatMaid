@@ -34,7 +34,7 @@ namespace CombatMaid.Core.CustomModel
                 if (modulesAsm != null)
                 {
                     var type = modulesAsm.GetType("DuckovCustomModel.Managers.ModelListManager");
-                    // 仅获取设置模型的方法
+                    // 新版设置模型接口
                     _setAiModelMethod = type?.GetMethod("SetModelInConfigForAICharacter", BindingFlags.Public | BindingFlags.Static);
                 }
 
@@ -42,41 +42,40 @@ namespace CombatMaid.Core.CustomModel
                 if (coreAsm != null)
                 {
                     var type = coreAsm.GetType("DuckovCustomModel.Core.Data.AICharacters");
+                    // 必须添加到白名单以便 DCM 识别 自定义预设的 AI 角色
                     _addWhitelistMethod = type?.GetMethod("AddAICharacters", BindingFlags.Public | BindingFlags.Static);
                 }
                 
-                if (IsAvailable()) CMDebug.Log("[CustomModelBridge] DCM 接口反射绑定成功。");
+                if (IsAvailable()) CMDebug.Log("DCM 接口反射绑定成功。");
             }
-            catch (Exception ex) { CMDebug.LogError($"[CustomModelBridge] 初始化异常: {ex.Message}"); }
+            catch (Exception ex) { CMDebug.LogError($"桥接器初始化异常: {ex.Message}"); }
         }
 
         /// <summary>
-        /// 智能注册：检查磁盘，若无配置则应用默认模型。盔甲显示逻辑已移除，交给玩家自行管理。
+        /// 为指定角色注册默认模型
         /// </summary>
         public static void RegisterMaid(string nameKey, string modelID)
         {
             if (!IsAvailable()) return;
 
-            // 1. 注入白名单（使 AI 在 DCM 中合法可见）
+            // 注入白名单
             _addWhitelistMethod.Invoke(null, new object[] { new List<string> { nameKey } });
 
-            // 2. 磁盘检测：如果已经配置过，则跳过默认设置以保护玩家自定义
+            // 检测是否已有配置，避免覆盖
             if (IsMaidConfiguredInFile(nameKey)) return;
 
-            // 3. 应用默认模型
+            // 应用默认模型
             try
             {
                 if (!string.IsNullOrEmpty(modelID))
                 {
-                    // 参数: (string nameKey, string modelID, bool saveConfig)
-                    // 直接设置为 true 触发保存
                     _setAiModelMethod.Invoke(null, new object[] { nameKey, modelID, true });
-                    CMDebug.Log($"[CustomModelBridge] 检测到 [{nameKey}] 为新角色，已应用默认预设: {modelID}");
+                    CMDebug.Log($"检测到 [{nameKey}] 为新角色，已应用默认预设: {modelID}");
                 }
             }
             catch (Exception ex)
             {
-                CMDebug.LogError($"[CustomModelBridge] 应用配置失败: {ex.Message}");
+                CMDebug.LogError($"应用配置失败: {ex.Message}");
             }
         }
 
@@ -85,19 +84,16 @@ namespace CombatMaid.Core.CustomModel
             try
             {
                 string baseDir = Directory.GetCurrentDirectory();
-                
-                // 使用修正后的路径
                 string path = Path.Combine(baseDir, "ModConfigs", "DuckovCustomModel", "UsingModel.json");
                 
-                // 兼容性路径修正
-                if (!File.Exists(path))
-                {
-                    path = Path.Combine(baseDir, "..", "ModConfigs", "DuckovCustomModel", "UsingModel.json");
-                }
+                // if (!File.Exists(path))
+                // {
+                //     path = Path.Combine(baseDir, "..", "ModConfigs", "DuckovCustomModel", "UsingModel.json");
+                // }
 
                 if (!File.Exists(path))
                 {
-                    // CMDebug.Log($"[DCM-Check] 未找到配置文件: {path}");
+                    CMDebug.LogWarning($"未找到DCM配置文件: {path}");
                     return false;
                 }
 
@@ -112,13 +108,13 @@ namespace CombatMaid.Core.CustomModel
                 string targetId = "built-in:AICharacter_" + nameKey;
                 if (targetDict.ContainsKey(targetId))
                 {
-                    CMDebug.Log($"[DCM-Check] 命中配置: [{targetId}] 已存在，跳过初始化。");
+                    CMDebug.Log($"DCM配置: [{targetId}] 已存在，跳过初始化。");
                     return true;
                 }
                 
                 return false;
             }
-            catch { return true; } // 报错时默认保护，不进行覆盖
+            catch { return true; }
         }
     }
 }
