@@ -46,7 +46,6 @@ namespace CombatMaid.Core
 
         private Egg _eggPrefab;
         private bool _isInitialized = false;
-        private bool _dcmRegistered = false;
 
         // 临时预设缓存
         private List<CharacterRandomPreset> _tempPresets = new List<CharacterRandomPreset>();
@@ -96,18 +95,12 @@ namespace CombatMaid.Core
                     _gameNativePresetMap.Add(preset.nameKey, preset);
                 }
             }
-            
-            if (!_dcmRegistered)
-            {
-                if (_maidProfiles.Count == 0) LoadAllCustomPresets();
-                PreRegisterAllMaidsToDcm();
-                _dcmRegistered = true;
-            }
+
 
             _isInitialized = true;
             CMDebug.LogInfo("MaidSpawner 逻辑运行环境初始化完成。");
         }
-        
+
         public void LoadAllCustomPresets()
         {
             _maidProfiles.Clear();
@@ -158,55 +151,36 @@ namespace CombatMaid.Core
                 CMDebug.LogError($"[初始化] 加载预设失败: {ex.Message}");
             }
         }
-        
+
         public void EarlyInitialize()
         {
-            // 1. 第一阶段：立即加载数据并注入“可见性”
+            // 1. 加载所有 JSON 配置
             LoadAllCustomPresets();
-    
+
+            // 2. 立即执行同步注册（白名单 + 本地化 + 模型 ID）
+            RegisterMaidsToDcm();
+
+            CMDebug.Log("[MaidSpawner] 早期初始化完成：已同步女仆身份与模型预设。");
+        }
+
+        private void RegisterMaidsToDcm()
+        {
+            if (!CustomModelBridge.IsAvailable()) return;
+
             foreach (var profile in _maidProfiles.Values)
             {
                 string finalKey = GetMaidNameKey(profile);
-        
-                // 注入本地化（确保管理器里显示的不是裸Key）
-                string displayName = !string.IsNullOrEmpty(profile.PresetConfig.CustomName) ? profile.PresetConfig.CustomName : "战斗女仆";
-                SodaCraft.Localizations.LocalizationManager.SetOverrideText(finalKey, displayName);
-        
-                // 注入白名单（确保管理器能列出这些女仆）
-                CustomModelBridge.OnlyRegisterWhitelist(finalKey);
-            }
-    
-            CMDebug.Log("[MaidSpawner] 女仆身份与本地化已立即注入，DCM 管理器现在可见。");
 
-            // 2. 第二阶段：异步等待 DCM 准备好后，再写入默认模型配置
-            StartCoroutine(WaitAndInitDcmConfigs());
-        }
-        
-        private IEnumerator WaitAndInitDcmConfigs()
-        {
-            float timeout = 60f; // 等待 60 秒
-            while (timeout > 0)
-            {
-                if (CustomModelBridge.IsDcmConfigReady())
-                {
-                    foreach (var profile in _maidProfiles.Values)
-                    {
-                        if (profile.ExtraData != null && !string.IsNullOrEmpty(profile.ExtraData.CustomModelID))
-                        {
-                            string finalKey = GetMaidNameKey(profile);
-                            // 只有这里才会触发磁盘 IO 检查和写入
-                            CustomModelBridge.OnlyTrySetDefaultModel(finalKey, profile.ExtraData.CustomModelID);
-                        }
-                    }
-                    _dcmRegistered = true;
-                    CMDebug.Log("[MaidSpawner] DCM 默认模型配置检查完成。");
-                    yield break;
-                }
-        
-                timeout -= Time.unscaledDeltaTime;
-                yield return null;
+                // A. 注入本地化文本
+                string displayName = !string.IsNullOrEmpty(profile.PresetConfig.CustomName)
+                    ? profile.PresetConfig.CustomName
+                    : "战斗女仆";
+                SodaCraft.Localizations.LocalizationManager.SetOverrideText(finalKey, displayName);
+
+                // B. 同时注入白名单和模型 ID
+                string modelId = profile.ExtraData?.CustomModelID;
+                CustomModelBridge.RegisterMaid(finalKey, modelId);
             }
-            CMDebug.LogWarning("[MaidSpawner] DCM 配置就绪超时。");
         }
 
 // 辅助函数：统一 Key 生成规则
@@ -215,28 +189,7 @@ namespace CombatMaid.Core
             string baseKey = profile.ExtraData?.BasePresetKey ?? "Cname_Usec";
             return baseKey + $"_CM_{profile.ProfileName}";
         }
-        
-        private void PreRegisterAllMaidsToDcm()
-        {
-            if (!CustomModelBridge.IsAvailable()) return;
 
-            foreach (var profile in _maidProfiles.Values)
-            {
-                // 统一获取 Key 的规则
-                string finalMaidKey = GetMaidNameKey(profile);
-
-                // 1. 同步注入本地化文本：确保 DCM UI 里的名字是正确的
-                string displayName = !string.IsNullOrEmpty(profile.PresetConfig.CustomName) ? profile.PresetConfig.CustomName : "战斗女仆";
-                SodaCraft.Localizations.LocalizationManager.SetOverrideText(finalMaidKey, displayName);
-
-                // 2. 注入身份白名单：让 DCM 能够识别并列出这个 AI
-                // 注意：这里调用的是 OnlyRegisterWhitelist，它不涉及磁盘 IO，非常安全
-                CustomModelBridge.OnlyRegisterWhitelist(finalMaidKey);
-            }
-    
-            CMDebug.Log("[MaidSpawner] 女仆身份白名单与本地化注入完成，DCM 管理器现在已可见。");
-        }
-        
         #endregion
 
         #region 生成女仆api
@@ -504,7 +457,7 @@ namespace CombatMaid.Core
             {
                 return cachedPreset;
             }
-            
+
             CharacterRandomPreset preset = Instantiate(source);
             preset.name = source.name + uniqueSuffix;
             preset.nameKey = finalKey;

@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using Newtonsoft.Json.Linq;
 
 namespace CombatMaid.Core.CustomModel
 {
@@ -13,9 +14,6 @@ namespace CombatMaid.Core.CustomModel
 
         private static MethodInfo _setAiModelMethod;
         private static MethodInfo _addWhitelistMethod;
-        private static PropertyInfo _usingModelProp;
-        private static PropertyInfo _targetDictProp;
-        private static PropertyInfo _aiCharsListProp;
         private static bool _initialized;
 
         public static bool IsAvailable()
@@ -35,90 +33,92 @@ namespace CombatMaid.Core.CustomModel
                 var modulesAsm = allAsms.FirstOrDefault(a => a.GetName().Name == GameModulesAsm);
                 if (modulesAsm != null)
                 {
-                    var managerType = modulesAsm.GetType("DuckovCustomModel.Managers.ModelListManager");
-                    _setAiModelMethod = managerType?.GetMethod("SetModelInConfigForAICharacter", BindingFlags.Public | BindingFlags.Static);
-
-                    var entryType = modulesAsm.GetType("DuckovCustomModel.ModEntry");
-                    _usingModelProp = entryType?.GetProperty("UsingModel", BindingFlags.Public | BindingFlags.Static);
-                    
-                    if (_usingModelProp != null)
-                    {
-                        var configType = _usingModelProp.PropertyType;
-                        _targetDictProp = configType.GetProperty("TargetTypeModelIDs", BindingFlags.Public | BindingFlags.Instance);
-                    }
+                    var type = modulesAsm.GetType("DuckovCustomModel.Managers.ModelListManager");
+                    // 仅获取设置模型的方法
+                    _setAiModelMethod = type?.GetMethod("SetModelInConfigForAICharacter", BindingFlags.Public | BindingFlags.Static);
                 }
 
                 var coreAsm = allAsms.FirstOrDefault(a => a.GetName().Name == CoreAsm);
                 if (coreAsm != null)
                 {
-                    var aiCharsType = coreAsm.GetType("DuckovCustomModel.Core.Data.AICharacters");
-                    _addWhitelistMethod = aiCharsType?.GetMethod("AddAICharacters", BindingFlags.Public | BindingFlags.Static);
-                    _aiCharsListProp = aiCharsType?.GetProperty("characterNameKeys", BindingFlags.Public | BindingFlags.Static);
+                    var type = coreAsm.GetType("DuckovCustomModel.Core.Data.AICharacters");
+                    _addWhitelistMethod = type?.GetMethod("AddAICharacters", BindingFlags.Public | BindingFlags.Static);
+                }
+                
+                if (IsAvailable()) CMDebug.Log("[CustomModelBridge] DCM 接口反射绑定成功。");
+            }
+            catch (Exception ex) { CMDebug.LogError($"[CustomModelBridge] 初始化异常: {ex.Message}"); }
+        }
+
+        /// <summary>
+        /// 智能注册：检查磁盘，若无配置则应用默认模型。盔甲显示逻辑已移除，交给玩家自行管理。
+        /// </summary>
+        public static void RegisterMaid(string nameKey, string modelID)
+        {
+            if (!IsAvailable()) return;
+
+            // 1. 注入白名单（使 AI 在 DCM 中合法可见）
+            _addWhitelistMethod.Invoke(null, new object[] { new List<string> { nameKey } });
+
+            // 2. 磁盘检测：如果已经配置过，则跳过默认设置以保护玩家自定义
+            if (IsMaidConfiguredInFile(nameKey)) return;
+
+            // 3. 应用默认模型
+            try
+            {
+                if (!string.IsNullOrEmpty(modelID))
+                {
+                    // 参数: (string nameKey, string modelID, bool saveConfig)
+                    // 直接设置为 true 触发保存
+                    _setAiModelMethod.Invoke(null, new object[] { nameKey, modelID, true });
+                    CMDebug.Log($"[CustomModelBridge] 检测到 [{nameKey}] 为新角色，已应用默认预设: {modelID}");
                 }
             }
-            catch (Exception ex) { CMDebug.LogError($"[CustomModelBridge] 初始化失败: {ex.Message}"); }
-        }
-
-        /// <summary>
-        /// 仅注入白名单和本地化。不涉及磁盘操作，可立即调用。
-        /// </summary>
-        public static void OnlyRegisterWhitelist(string nameKey)
-        {
-            if (!IsAvailable()) return;
-            try
+            catch (Exception ex)
             {
-                _addWhitelistMethod.Invoke(null, new object[] { new List<string> { nameKey } });
-                // CMDebug.Log($"[CustomModelBridge] 身份白名单注入成功: {nameKey}");
+                CMDebug.LogError($"[CustomModelBridge] 应用配置失败: {ex.Message}");
             }
-            catch (Exception ex) { CMDebug.LogError($"[CustomModelBridge] 白名单注入异常: {ex.Message}"); }
         }
 
-        /// <summary>
-        /// 仅尝试写入默认模型（带保护逻辑）。必须在 IsDcmConfigReady 为 true 时调用。
-        /// </summary>
-        public static void OnlyTrySetDefaultModel(string nameKey, string defaultModelID)
-        {
-            if (!IsAvailable()) return;
-            try
-            {
-                if (IsConfigExists(nameKey)) return;
-
-                // 写入并保存配置
-                _setAiModelMethod.Invoke(null, new object[] { nameKey, defaultModelID, true });
-                CMDebug.Log($"[CustomModelBridge] 首次运行：已为 [{nameKey}] 设置默认模型 [{defaultModelID}]");
-            }
-            catch (Exception ex) { CMDebug.LogError($"[CustomModelBridge] 默认模型设置异常: {ex.Message}"); }
-        }
-
-        public static bool IsDcmConfigReady()
-        {
-            if (!IsAvailable()) return false;
-            try
-            {
-                var usingModel = _usingModelProp.GetValue(null);
-                if (usingModel == null) return false;
-
-                var keys = _aiCharsListProp?.GetValue(null) as ICollection;
-                if (keys == null || keys.Count == 0) return false;
-
-                var dict = _targetDictProp.GetValue(usingModel) as IDictionary;
-                return dict != null;
-            }
-            catch { return false; }
-        }
-
-        private static bool IsConfigExists(string nameKey)
+        private static bool IsMaidConfiguredInFile(string nameKey)
         {
             try
             {
-                var usingModel = _usingModelProp.GetValue(null);
-                var dict = _targetDictProp.GetValue(usingModel) as IDictionary;
-                if (dict == null) return true;
+                string baseDir = Directory.GetCurrentDirectory();
+                
+                // 使用修正后的路径
+                string path = Path.Combine(baseDir, "ModConfigs", "DuckovCustomModel", "UsingModel.json");
+                
+                // 兼容性路径修正
+                if (!File.Exists(path))
+                {
+                    path = Path.Combine(baseDir, "..", "ModConfigs", "DuckovCustomModel", "UsingModel.json");
+                }
 
+                if (!File.Exists(path))
+                {
+                    // CMDebug.Log($"[DCM-Check] 未找到配置文件: {path}");
+                    return false;
+                }
+
+                string jsonContent = File.ReadAllText(path);
+                if (string.IsNullOrEmpty(jsonContent)) return false;
+
+                JObject root = JObject.Parse(jsonContent);
+                JObject targetDict = root["TargetTypeModelIDs"] as JObject;
+                
+                if (targetDict == null) return false;
+                
                 string targetId = "built-in:AICharacter_" + nameKey;
-                return dict.Contains(targetId);
+                if (targetDict.ContainsKey(targetId))
+                {
+                    CMDebug.Log($"[DCM-Check] 命中配置: [{targetId}] 已存在，跳过初始化。");
+                    return true;
+                }
+                
+                return false;
             }
-            catch { return true; }
+            catch { return true; } // 报错时默认保护，不进行覆盖
         }
     }
 }
