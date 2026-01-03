@@ -127,17 +127,20 @@ namespace CombatMaid
         #endregion
         
         #region MaidSystem
-
         private void InitializeMaidSystem()
         {
             if (MaidManager.Instance == null)
             {
                 var go = new GameObject("MaidManager");
                 go.AddComponent<MaidManager>();
-                go.AddComponent<MaidSpawner>(); 
-                
+                var spawner = go.AddComponent<MaidSpawner>(); 
                 DontDestroyOnLoad(go);
-                CMDebug.Log("女仆系统初始化完成。");
+                spawner.EarlyInitialize();
+
+                // 4. (可选) 初始化 DCM 音量补丁，确保音频拦截生效
+                CustomModelAudioPatcher.Initialize();
+
+                CMDebug.Log("女仆核心系统初始化完成，已同步 DCM 预注册数据。");
             }
         }
 
