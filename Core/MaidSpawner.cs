@@ -105,50 +105,74 @@ namespace CombatMaid.Core
         {
             _maidProfiles.Clear();
 
+            // 路径准备
             string modAssemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             string sourceDir = Path.Combine(modAssemblyDir, "MaidPreset");
-
             string gameRootDir = Directory.GetCurrentDirectory();
             string saveRootDir = Path.Combine(gameRootDir, "CombatMaidSaves");
-            string vialSaveDir = Path.Combine(saveRootDir, "VialMaid");
 
-            // 2. 确保文件夹结构存在
+            // 确保存档根目录存在
             if (!Directory.Exists(saveRootDir)) Directory.CreateDirectory(saveRootDir);
-            if (!Directory.Exists(vialSaveDir)) Directory.CreateDirectory(vialSaveDir);
 
-            // 3. 遍历源文件进行分流处理
             try
             {
                 string[] sourceFiles = Directory.GetFiles(sourceDir, "*.json");
                 foreach (string sourcePath in sourceFiles)
                 {
                     string fileName = Path.GetFileName(sourcePath);
+                    MaidProfileData dataToCache = null;
 
-                    // 只处理 Vial 系列文件
-                    if (fileName.StartsWith("Vial", StringComparison.OrdinalIgnoreCase))
+                    // --- 1. 处理酒狐 (RoyalMaid_WineFox) ---
+                    if (fileName.Contains("WineFox"))
                     {
-                        string userPath = Path.Combine(vialSaveDir, fileName);
-
-                        // 如果玩家存档里没有这个文件，才从源复制
-                        if (!File.Exists(userPath))
-                        {
-                            File.Copy(sourcePath, userPath);
-                            CMDebug.Log($"[初始化] 创建用户数据副本: {fileName} -> CombatMaidSaves/VialMaid");
-                        }
-
-                        // 优先加载玩家存档中的版本
-                        LoadSinglePreset(userPath);
+                        // 重点：直接使用 WineFoxDataManager 加载！
+                        // 因为它内部已经处理了“优先读取根目录存档，没有则初始化”的逻辑
+                        dataToCache = WineFoxDataManager.LoadOrInit();
                     }
+                    // --- 2. 处理瓶中女仆 (Vial 系列) ---
+                    else if (fileName.StartsWith("Vial", StringComparison.OrdinalIgnoreCase))
+                    {
+                        string vialSaveDir = Path.Combine(saveRootDir, "VialMaid");
+                        if (!Directory.Exists(vialSaveDir)) Directory.CreateDirectory(vialSaveDir);
+
+                        string userPath = Path.Combine(vialSaveDir, fileName);
+                        // 首次运行，复制模组预设到存档区
+                        if (!File.Exists(userPath)) File.Copy(sourcePath, userPath);
+
+                        // 从存档区读取
+                        dataToCache = LoadProfileFromPath(userPath);
+                    }
+                    // --- 3. 处理其他通用预设 ---
                     else
                     {
-                        // 其他非 Vial 预设：直接加载源文件 (保持随模组更新)
-                        LoadSinglePreset(sourcePath);
+                        dataToCache = LoadProfileFromPath(sourcePath);
+                    }
+
+                    // 写入内存缓存，供 EarlyInitialize 中的 DCM 注册使用
+                    if (dataToCache != null && !string.IsNullOrEmpty(dataToCache.ProfileName))
+                    {
+                        _maidProfiles[dataToCache.ProfileName] = dataToCache;
+                        CMDebug.Log($"[初始化] 已同步配置缓存: {dataToCache.ProfileName}");
                     }
                 }
             }
             catch (Exception ex)
             {
                 CMDebug.LogError($"[初始化] 加载预设失败: {ex.Message}");
+            }
+        }
+
+        private MaidProfileData LoadProfileFromPath(string path)
+        {
+            try
+            {
+                string jsonContent = File.ReadAllText(path);
+                return JsonConvert.DeserializeObject<MaidProfileData>(jsonContent);
+            }
+            catch (Exception ex)
+            {
+                CMDebug.LogError($"解析 JSON 失败 {Path.GetFileName(path)}: {ex.Message}");
+                return null;
             }
         }
 
@@ -465,7 +489,7 @@ namespace CombatMaid.Core
 
             // 在这里再次注册覆盖本地化名称，这里用的是玩家修改后的名称
             string displayName = !string.IsNullOrEmpty(config.CustomName) ? config.CustomName : "战斗女仆";
-            LocalizationManager.SetOverrideText(finalKey, displayName);     
+            LocalizationManager.SetOverrideText(finalKey, displayName);
 
             ApplyConfigToPreset(preset, config);
             // 给瓶中女仆默认强制加一个医疗箱
