@@ -18,7 +18,7 @@ Settings_CombatMaid_Stats,Stat Multipliers,1.0,Groups
 Settings_CombatMaid_Keys,Key Bindings,1.0,Groups
 Settings_CombatMaid_Customize,"Customize Maid (Generate Wine Fox at least once first!)",1.0,Groups
 Settings_CustomMaidName,Custom Maid Name,1.0,CustomMaid
-Settings_CustomMaidModelID,Custom Model ID,1.0,CustomMaid
+Settings_CustomMaidModelID,"Custom Model ID(In DCM v1.10.0 and later, please set this directly within DCM!)",1.0,CustomMaid
 Settings_OpenSaveFolder,"Maid Save Directory (Game Root)",1.0,CustomMaid
 Settings_OpenSaveFolderButton,Open Maid Config Folder,1.0,CustomMaid
 Setting_Key_Scavenge,Command: Scavenge Mode,1.0,KeyBindings
