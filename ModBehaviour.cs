@@ -97,7 +97,6 @@ namespace CombatMaid
             CleanupMaidBuffSystem();
             CleanupMaidSystem();
             CleanupSkillTreeSystem();
-            CustomModelAudioPatcher.Unpatch();
         }
         
         private bool IsFmlLoaded()
@@ -136,9 +135,6 @@ namespace CombatMaid
                 var spawner = go.AddComponent<MaidSpawner>(); 
                 DontDestroyOnLoad(go);
                 spawner.EarlyInitialize();
-
-                // 4. (可选) 初始化 DCM 音量补丁，确保音频拦截生效
-                CustomModelAudioPatcher.Initialize();
 
                 CMDebug.Log("女仆核心系统初始化完成，已同步 DCM 预注册数据。");
             }

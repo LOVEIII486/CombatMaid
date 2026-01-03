@@ -60,7 +60,7 @@ namespace CombatMaid.Settings
         public const string Key_BuffBlockList = "BuffBlockList";
         public const string Key_OpenSaveFolder = "OpenSaveFolder";
         public const string Key_MaidAlertVolume = "MaidAlertVolume";
-        public const string Key_MaidVoiceVolume = "MaidVoiceVolume";
+        //public const string Key_MaidVoiceVolume = "MaidVoiceVolume";
         public const string Key_Button_RebuildWineFox = "Button_RebuildWineFoxStats";
         
         public const string LocalKey_CustomMaidName = "Settings_CustomMaidName";
@@ -82,7 +82,7 @@ namespace CombatMaid.Settings
         public static string CustomMaidName { get; set; } = Default_CustomMaidName;
         public static string CustomMaidModelID { get; set; } = Default_CustomMaidModelID;
         public static float MaidAlertVolume { get; set; } = Default_MaidAlertVolume;
-        public static float MaidVoiceVolume { get; set; } = Default_MaidVoiceVolume;
+        //public static float MaidVoiceVolume { get; set; } = Default_MaidVoiceVolume;
         public static string BuffBlockListString { get; set; } = Default_BuffBlockList;
         public static HashSet<int> BlockedBuffIDs { get; private set; } = new HashSet<int>();
 
@@ -333,15 +333,15 @@ namespace CombatMaid.Settings
             {
                 MaidAlertVolume = savedAlertVol;
             }
-            if (ModSettingAPI.GetSavedValue(Key_MaidVoiceVolume, out float savedVol))
-            {
-                MaidVoiceVolume = Mathf.Clamp01(savedVol);
-            }
-            else
-            {
-                MaidVoiceVolume = Default_MaidVoiceVolume;
-            }
-            CustomModelAudioPatcher.GlobalMaidVolume = MaidVoiceVolume;
+            // if (ModSettingAPI.GetSavedValue(Key_MaidVoiceVolume, out float savedVol))
+            // {
+            //     MaidVoiceVolume = Mathf.Clamp01(savedVol);
+            // }
+            // else
+            // {
+            //     MaidVoiceVolume = Default_MaidVoiceVolume;
+            // }
+            
             if (ModSettingAPI.GetSavedValue(Key_BuffBlockList, out string savedBlockList))
             {
                 ParseBuffBlockList(savedBlockList);
