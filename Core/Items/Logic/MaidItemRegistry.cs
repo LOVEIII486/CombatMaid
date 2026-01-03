@@ -100,7 +100,7 @@ namespace CombatMaid.Core.Items.Logic
             });
 
             string statusLog = finalUnlockState ? "默认解锁" : $"初始锁定 (等待技能 {requiredNodeID} 解锁)";
-            CMDebug.LogInfo($"战斗女仆商人物品注册 {info.itemId} -> {statusLog}");
+            CMDebug.Log($"战斗女仆商人物品注册 {info.itemId} -> {statusLog}");
         }
         
         #endregion
