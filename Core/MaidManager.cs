@@ -69,7 +69,7 @@ namespace CombatMaid.Core
             {
                 _activeMaids.Add(maid);
                 MaidEventManager.OnMaidJoinTeam(maid);
-                CMDebug.Log($"女仆归队: {maid.MaidCharacter.characterPreset.DisplayName} (当前队伍: {_activeMaids.Count})");
+                CMDebug.Log($"女仆归队: {maid.MaidCharacter.characterPreset.nameKey} (当前队伍: {_activeMaids.Count})");
             }
         }
 

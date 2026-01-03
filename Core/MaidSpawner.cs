@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using CombatMaid.Core.AttributeModifiers;
+using CombatMaid.Core.CustomModel;
 using UnityEngine;
 using Duckov.Utilities;
 using SodaCraft.Localizations;
@@ -85,7 +86,7 @@ namespace CombatMaid.Core
 
             // 获取游戏原生预设数据
             while (GameplayDataSettings.CharacterRandomPresetData == null) yield return null;
-            
+
             CMDebug.LogInfo("正在预热 Buff 系统缓存...");
             CombatMaid.Core.BuffsSystem.MaidBuffUtils.Initialize();
 
@@ -100,8 +101,9 @@ namespace CombatMaid.Core
                 }
             }
 
-            // 自定义 JSON 配置
             LoadAllCustomPresets();
+            
+            PreRegisterAllMaidsToDcm();
 
             _isInitialized = true;
             CMDebug.LogInfo("MaidSpawner初始化完成。");
@@ -113,8 +115,8 @@ namespace CombatMaid.Core
 
             string modAssemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             string sourceDir = Path.Combine(modAssemblyDir, "MaidPreset");
-            
-            string gameRootDir = Directory.GetCurrentDirectory(); 
+
+            string gameRootDir = Directory.GetCurrentDirectory();
             string saveRootDir = Path.Combine(gameRootDir, "CombatMaidSaves");
             string vialSaveDir = Path.Combine(saveRootDir, "VialMaid");
 
@@ -157,7 +159,31 @@ namespace CombatMaid.Core
                 CMDebug.LogError($"[初始化] 加载预设失败: {ex.Message}");
             }
         }
+        
+        private void PreRegisterAllMaidsToDcm()
+        {
+            if (!CustomModelBridge.IsAvailable()) return;
 
+            foreach (var profile in _maidProfiles.Values)
+            {
+                var config = profile.PresetConfig;
+                var extraData = profile.ExtraData;
+        
+                if (extraData != null && !string.IsNullOrEmpty(extraData.CustomModelID))
+                {
+                    string baseKey = extraData.BasePresetKey ?? "Cname_Usec";
+                    string uniqueSuffix = $"_CM_{profile.ProfileName}";
+                    string finalMaidKey = baseKey + uniqueSuffix;
+
+                    string displayName = !string.IsNullOrEmpty(config.CustomName) ? config.CustomName : "战斗女仆";
+                    SodaCraft.Localizations.LocalizationManager.SetOverrideText(finalMaidKey, displayName);
+
+                    CustomModelBridge.SmartRegisterMaid(finalMaidKey, extraData.CustomModelID);
+                    CMDebug.Log($"[MaidSpawner] 已完成 [{profile.ProfileName}] 的预注册：名称={displayName}, 模型={extraData.CustomModelID}");
+                }
+            }
+        }
+        
         #endregion
 
         #region 生成女仆api
@@ -327,14 +353,17 @@ namespace CombatMaid.Core
             var controller = charCtrl.gameObject.AddComponent<MaidController>();
             controller.Initialize(profileData, LevelManager.Instance.MainCharacter, ai);
 
-            // 2. 异步换肤
-            if (profileData.ExtraData != null && !string.IsNullOrEmpty(profileData.ExtraData.CustomModelID))
-            {
-                StartCoroutine(CombatMaid.Core.CustomModel.CustomModelBridge.ApplyModelByIDAsync(
-                    charCtrl,
-                    profileData.ExtraData.CustomModelID
-                ));
-            }
+            // //2. 皮肤替换
+            // if (profileData.ExtraData != null && !string.IsNullOrEmpty(profileData.ExtraData.CustomModelID))
+            // {
+            //     // 获取正确的 nameKey
+            //     string nameKey = charCtrl.characterPreset?.nameKey;
+            //     if (!string.IsNullOrEmpty(nameKey))
+            //     {
+            //         // 建议：延迟一帧或微小时间再设置配置，确保 DCM 的 Handler 已经完全 Ready
+            //         StartCoroutine(DelaySetMaidModel(nameKey, profileData.ExtraData.CustomModelID,true));
+            //     }
+            // }
 
             // 3.背包扩容
             if (profileData.PresetConfig.InventoryCapacity != 0)
@@ -361,17 +390,21 @@ namespace CombatMaid.Core
                     CMDebug.LogWarning($"[Spawn] 背包扩容失败: {charCtrl.name} 的 Inventory 为空");
                 }
             }
-            
+
             if (profileData.PresetConfig.HeadArmor > 0)
             {
-                AttributeModifier.Modify(charCtrl, AttributeModifier.StandardAttributes.HeadArmor, profileData.PresetConfig.HeadArmor, false);
+                AttributeModifier.Modify(charCtrl, AttributeModifier.StandardAttributes.HeadArmor,
+                    profileData.PresetConfig.HeadArmor, false);
                 CMDebug.Log($"[Spawn] 应用头部护甲: {profileData.PresetConfig.HeadArmor}");
             }
+
             if (profileData.PresetConfig.BodyArmor > 0)
             {
-                AttributeModifier.Modify(charCtrl, AttributeModifier.StandardAttributes.BodyArmor, profileData.PresetConfig.BodyArmor, false);
+                AttributeModifier.Modify(charCtrl, AttributeModifier.StandardAttributes.BodyArmor,
+                    profileData.PresetConfig.BodyArmor, false);
                 CMDebug.Log($"[Spawn] 应用身体护甲: {profileData.PresetConfig.BodyArmor}");
             }
+
             return controller;
         }
 
@@ -418,15 +451,15 @@ namespace CombatMaid.Core
             {
                 return cachedPreset;
             }
-
+            
             CharacterRandomPreset preset = Instantiate(source);
             preset.name = source.name + uniqueSuffix;
             preset.nameKey = finalKey;
             preset.team = Teams.player;
 
             // 注册本地化名称
-            string displayName = !string.IsNullOrEmpty(config.CustomName) ? config.CustomName : "战斗女仆";
-            LocalizationManager.SetOverrideText(finalKey,displayName);
+            // string displayName = !string.IsNullOrEmpty(config.CustomName) ? config.CustomName : "战斗女仆";
+            // LocalizationManager.SetOverrideText(finalKey, displayName);     
 
             ApplyConfigToPreset(preset, config);
             // 给瓶中女仆默认强制加一个医疗箱
@@ -434,11 +467,12 @@ namespace CombatMaid.Core
             {
                 AppendItemToPreset(preset, 15);
             }
+
             _generatedPresetsCache.Add(finalKey, preset);
 
             return preset;
         }
-        
+
         private void AppendItemToPreset(CharacterRandomPreset preset, int itemId)
         {
             var list = ReflectionHelper.GetPrivateField<IList>(preset, "itemsToGenerate");
@@ -451,14 +485,14 @@ namespace CombatMaid.Core
                 randomCount = new Vector2Int(1, 1),
                 randomFromPool = true,
                 itemPool = new RandomContainer<RandomItemGenerateDescription.Entry>(),
-                tags = new RandomContainer<Tag>(), 
+                tags = new RandomContainer<Tag>(),
                 addtionalRequireTags = new List<Tag>(),
                 excludeTags = new List<Tag>(),
                 qualities = new RandomContainer<int>(),
             };
             desc.itemPool.AddEntry(new RandomItemGenerateDescription.Entry { itemTypeID = itemId }, 100f);
             list.Add(desc);
-            
+
             CMDebug.Log($"[MaidSpawner] 已强制为 {preset.name} 追加物品 ID: {itemId}");
         }
 
@@ -576,7 +610,7 @@ namespace CombatMaid.Core
                 }
             }
         }
-        
+
         private void LoadSinglePreset(string path)
         {
             try
@@ -598,6 +632,7 @@ namespace CombatMaid.Core
                 CMDebug.LogError($"解析失败 {Path.GetFileName(path)}: {ex.Message}");
             }
         }
+
         #endregion
 
         #region Debug函数

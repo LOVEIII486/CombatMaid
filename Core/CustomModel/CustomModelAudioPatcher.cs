@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UnityEngine;
@@ -7,16 +8,22 @@ using FMOD.Studio;
 namespace CombatMaid.Core.CustomModel
 {
     /// <summary>
-    /// 用于接管并控制 DCM 模组声音的补丁
+    /// 专门负责接管 DCM (DuckovCustomModel) 声音系统并应用自定义音量的补丁。
+    /// 遵循安全反射规范，缺失前置时静默不报错。
     /// </summary>
     public static class CustomModelAudioPatcher
     {
-        private static Harmony _harmony;
-        private static bool _isPatched = false;
+        private const string TargetAssemblyName = "DuckovCustomModel";
+        private const string TargetTypeName = "DuckovCustomModel.MonoBehaviours.ModelHandler";
+        private const string TargetMethodName = "PlaySound";
 
+        private static Harmony _harmony;
+        private static bool _isPatched;
         private static PropertyInfo _characterMainControlProp;
 
-        // 全局音量控制 
+        /// <summary>
+        /// 全局女仆音量倍率 (0.0 ~ 1.0)
+        /// </summary>
         public static float GlobalMaidVolume { get; set; } = 1.0f;
 
         public static void Initialize()
@@ -25,35 +32,101 @@ namespace CombatMaid.Core.CustomModel
 
             try
             {
-                Type modelHandlerType = Type.GetType("DuckovCustomModel.MonoBehaviours.ModelHandler, DuckovCustomModel.GameModules");
-                if (modelHandlerType == null)
-                {
-                    CMDebug.LogWarning("未找到 ModelHandler，音量控制模块跳过初始化。");
-                    return;
-                }
-
-                _characterMainControlProp = modelHandlerType.GetProperty("CharacterMainControl", BindingFlags.Public | BindingFlags.Instance);
-
-                // 获取 PlaySound 方法
-                MethodInfo playSoundMethod = modelHandlerType.GetMethod("PlaySound", BindingFlags.Public | BindingFlags.Instance);
+                // 1. 动态定位程序集和类型
+                var assembly = AppDomain.CurrentDomain.GetAssemblies()
+                    .FirstOrDefault(a => a.GetName().Name == TargetAssemblyName);
                 
-                if (playSoundMethod == null || _characterMainControlProp == null)
+                if (assembly == null) return; // 缺失前置，安全退出
+
+                var modelHandlerType = assembly.GetType(TargetTypeName);
+                if (modelHandlerType == null) return;
+
+                // 2. 获取关键成员
+                _characterMainControlProp = modelHandlerType.GetProperty("CharacterMainControl", 
+                    BindingFlags.Public | BindingFlags.Instance);
+                
+                var playSoundMethod = modelHandlerType.GetMethod(TargetMethodName, 
+                    BindingFlags.Public | BindingFlags.Instance);
+
+                if (_characterMainControlProp == null || playSoundMethod == null)
                 {
-                    CMDebug.LogError("无法获取 ModelHandler 的关键成员，音量补丁初始化失败。");
+                    CMDebug.LogWarning("[AudioPatch] 无法定位 DCM 关键接口，音量控制失效。");
                     return;
                 }
 
+                // 3. 应用 Harmony 补丁
                 _harmony = new Harmony("com.combatmaid.audiopatch");
-                var postfix = typeof(CustomModelAudioPatcher).GetMethod(nameof(PlaySoundPostfix), BindingFlags.Static | BindingFlags.NonPublic);
+                var postfix = typeof(CustomModelAudioPatcher).GetMethod(nameof(PlaySoundPostfix), 
+                    BindingFlags.Static | BindingFlags.NonPublic);
                 
                 _harmony.Patch(playSoundMethod, postfix: new HarmonyMethod(postfix));
-                _isPatched = true;
                 
-                CMDebug.Log("战斗女仆: 音量控制补丁已应用");
+                _isPatched = true;
+                CMDebug.Log("[AudioPatch] 成功挂载女仆音量拦截器。");
             }
             catch (Exception ex)
             {
-                CMDebug.LogError($"应用音量补丁时发生异常: {ex}");
+                CMDebug.LogError($"[AudioPatch] 初始化异常: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 拦截 DCM 的 PlaySound 返回值，应用音量
+        /// </summary>
+        private static void PlaySoundPostfix(object __result, MonoBehaviour __instance)
+        {
+            // __result 是 EventInstance? (Nullable<EventInstance>)
+            if (__result == null) return;
+
+            if (!IsMyMaid(__instance)) return;
+
+            try
+            {
+                // 通过反射或直接拆箱获取 FMOD 实例
+                // 由于我们不引用 DLL，这里 __result 表现为 object，需要动态处理
+                var resultType = __result.GetType();
+                var hasValueProp = resultType.GetProperty("HasValue");
+                
+                if (hasValueProp != null && (bool)hasValueProp.GetValue(__result))
+                {
+                    var valueProp = resultType.GetProperty("Value");
+                    var instance = (EventInstance)valueProp.GetValue(__result);
+
+                    if (instance.isValid())
+                    {
+                        instance.setVolume(GlobalMaidVolume);
+                        // 仅在高调试模式下开启此日志，避免刷屏
+                        // CMDebug.Log($"[AudioPatch] 调整音频实例音量 -> {GlobalMaidVolume}"); 
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // 静默处理 FMOD 实例可能的失效异常
+                CMDebug.LogWarning($"[AudioPatch] 设置音量失败: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 判断当前的 ModelHandler 是否属于战斗女仆
+        /// </summary>
+        private static bool IsMyMaid(MonoBehaviour handler)
+        {
+            if (handler == null || _characterMainControlProp == null) return false;
+
+            try
+            {
+                // 从 ModelHandler.CharacterMainControl 获取引用
+                var charCtrl = _characterMainControlProp.GetValue(handler) as Component;
+                if (charCtrl == null) return false;
+
+                // 核心逻辑：检查该对象是否挂载了女仆控制组件
+                // GetComponent 是经过 Unity 优化的，在非 Update 的事件驱动中调用开销极低
+                return charCtrl.GetComponent<MaidController>() != null;
+            }
+            catch
+            {
+                return false;
             }
         }
 
@@ -62,47 +135,7 @@ namespace CombatMaid.Core.CustomModel
             if (!_isPatched) return;
             _harmony?.UnpatchAll("com.combatmaid.audiopatch");
             _isPatched = false;
-            _characterMainControlProp = null;
-        }
-
-        /// <summary>
-        /// 后置补丁：拦截声音实例并修改音量
-        /// </summary>
-        private static void PlaySoundPostfix(EventInstance? __result, MonoBehaviour __instance)
-        {
-            if (__result == null || !__result.Value.isValid()) return;
-
-            if (!IsMyMaid(__instance)) return;
-
-            try
-            {
-                __result.Value.setVolume(GlobalMaidVolume);
-                CMDebug.Log($"[AudioPatch] 已调整女仆音量: {GlobalMaidVolume}");
-            }
-            catch { }
-        }
-        
-        private static bool IsMyMaid(MonoBehaviour handler)
-        {
-            if (handler == null || _characterMainControlProp == null) return false;
-
-            try
-            {
-                // 1. 通过反射从 ModelHandler 获取 CharacterMainControl
-                var character = _characterMainControlProp.GetValue(handler) as CharacterMainControl;
-                
-                if (character == null) return false;
-
-                // 2. 检查该角色身上是否有 CombatMaid 的核心组件
-                // 只要角色挂载了 MaidController，就认定为我们的控制对象
-                var maidController = character.GetComponent<MaidController>();
-                return maidController != null;
-            }
-            catch (Exception)
-            {
-                // 反射取值出错时安全返回 false
-                return false;
-            }
+            CMDebug.Log("[AudioPatch] 音量拦截器已卸载。");
         }
     }
 }
