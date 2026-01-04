@@ -7,8 +7,10 @@ namespace CombatMaid.Core.MaidEventSystem.Events
 {
     public class ChristmasGiftEvent : IMaidEvent
     {
+        public string EventName => "圣诞节送礼事件";
+        
         private const int GIFT_BOX_ID = 88107;
-
+        
         public bool IsDateActive()
         {
             DateTime now = DateTime.Now;
@@ -37,7 +39,7 @@ namespace CombatMaid.Core.MaidEventSystem.Events
             {
                 ItemUtilities.SendToPlayer(gift);
                 player.CharacterItem.SetInt(recordKey, 1);
-                player.PopText(CombatMaid.Localization.LocalizationManager.GetText("Item_GiftBox_Received_Msg"));
+                player.PopText(CombatMaid.Localization.LocalizationManager.GetText("Event_GiftBox_Received_Msg"));
             }
         }
     }

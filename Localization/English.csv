@@ -189,3 +189,4 @@ Settings_RebuildWineFox_Name,Sync Maid Stat Balance,2.2.5,GeneralSettings
 Settings_RebuildWineFox_Desc,Recalculate Wine Fox stats based on the latest skill tree effects. Only combat values influenced by the skill tree will be updated.,2.2.5,GeneralSettings
 Perk_Maid_FoxGuard,Fox Guard Sigil,2.2.5,Perks
 Perk_Maid_FoxGuard_Desc,"Unlocks the [Fox Guard Sigil] skill.\nWhen Wine Fox's HP is about to reach zero, the engraved protective magic will automatically activate, instantly restoring her to half HP and granting invincibility for <color=#7FE8D8>5 seconds.\nThis effect can only trigger once per deployment.",2.2.5,Perks
+Event_SpringFestival_Received_Msg,Happy New Year! You received 10 red envelopes from Wine Fox!,2.2.5,MaidEvents

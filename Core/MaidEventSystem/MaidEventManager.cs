@@ -5,12 +5,12 @@ namespace CombatMaid.Core.MaidEventSystem
 {
     public static class MaidEventManager
     {
-        private static readonly List<IMaidEvent> AllEvents = new List<IMaidEvent>
+        public static readonly List<IMaidEvent> AllEvents = new List<IMaidEvent>
         {
-            new ChristmasGiftEvent()
+            new ChristmasGiftEvent(),
+            new SpringFestivalEvent()
         };
 
-        // 当前日期生效的事件列表
         private static List<IMaidEvent> _activeEvents = new List<IMaidEvent>();
 
         static MaidEventManager()
@@ -37,8 +37,19 @@ namespace CombatMaid.Core.MaidEventSystem
 
             var player = CharacterMainControl.Main;
             if (maid == null || player == null) return;
-            // 仅遍历当前日期有效的事件
             foreach (var evt in _activeEvents)
+            {
+                evt.OnMaidRegistered(maid, player);
+            }
+        }
+        
+        public static void Debug_ForceTriggerAll(MaidController maid)
+        {
+            var player = CharacterMainControl.Main;
+            if (maid == null || player == null) return;
+
+            CMDebug.Log("[Debug] 正在强制触发所有已注册事件（忽略日期判断）...");
+            foreach (var evt in AllEvents)
             {
                 evt.OnMaidRegistered(maid, player);
             }

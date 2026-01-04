@@ -159,7 +159,7 @@ Buff_MaidBuff_JadeBlessing_Name,衔玉之护,2.2.4,Buffs
 Buff_MaidBuff_JadeInvincible_Name,衔玉无敌,2.2.4,Buffs
 Buff_JadeBlessing_Trigger_Pop,<color=#FFD700>衔玉无敌！</color>,2.2.4,Buffs
 Item_GiftBox_Open_Pop,<color=#FF4D4D>圣诞快乐！狗修金sama~~~</color>,2.2.4,MaidItem
-Item_GiftBox_Received_Msg,<color=#00FF7F>酒狐从行囊里拿出了准备已久的礼物！</color>,2.2.4,MaidEvents
+Event_GiftBox_Received_Msg,<color=#00FF7F>酒狐从行囊里拿出了准备已久的礼物！</color>,2.2.4,MaidEvents
 Msg_Maid_TacticalMove,战术移动！,2.2.5,MaidMsg
 Msg_Maid_ManualHeal,手动治疗！,2.2.5,MaidMsg
 Msg_Maid_NoHealSkill,我还不会这个技能...,2.2.5,MaidMsg
@@ -191,3 +191,4 @@ Settings_RebuildWineFox_Name,同步女仆属性平衡,2.2.5,GeneralSettings
 Settings_RebuildWineFox_Desc,根据最新的技能树效果重新计算酒狐属性。仅更新受技能树影响的战斗数值。,2.2.5,GeneralSettings
 Perk_Maid_FoxGuard,狐护刻印,2.2.5,Perks
 Perk_Maid_FoxGuard_Desc,解锁[狐护刻印]技能。\n当酒狐的生命值即将归零时，刻印的守护魔法将自动触发，立即恢复一半生命值，并获得持续<color=#7FE8D8>5秒</color>的无敌。\n该效果每次出击仅会触发一次。,2.2.5,Perks
+Event_SpringFestival_Received_Msg,新年快乐！收到了来自酒狐的 10 个红包！,2.2.5,MaidEvents
