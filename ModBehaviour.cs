@@ -1,11 +1,11 @@
 using System;
 using CombatMaid.Core;
 using CombatMaid.Core.BuffsSystem;
-using CombatMaid.Core.CustomModel;
 using CombatMaid.Core.Items.Logic;
 using CombatMaid.Core.SkillTreeSystem;
 using HarmonyLib;
 using CombatMaid.Localization;
+using CombatMaid.ModCompatibility;
 using CombatMaid.ModSettingsApi;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -48,6 +48,7 @@ namespace CombatMaid
         protected override void OnAfterSetup()
         {
             base.OnAfterSetup();
+            
             InitializeLocalization(); 
             if (ModSettingAPI.Init(info))
             {
@@ -58,6 +59,8 @@ namespace CombatMaid
             {
                 CMDebug.LogWarning("ModSettingAPI 初始化失败");
             }
+            
+            InitializeCompatibility();
             InitializeMaidItems();
             InitializeMaidBuffSystem();
             
@@ -111,6 +114,15 @@ namespace CombatMaid
             return false;
         }
 
+        #region ModCompatibility
+
+        private void InitializeCompatibility()
+        {
+            VTModifierApplier.Init();
+        }
+
+        #endregion
+        
         #region MaidItem
 
         private void InitializeMaidItems()

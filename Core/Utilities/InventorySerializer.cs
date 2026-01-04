@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using CombatMaid.ModCompatibility;
 using UnityEngine;
 using ItemStatsSystem;
 using ItemStatsSystem.Items;
@@ -249,6 +250,12 @@ namespace CombatMaid.Core.Utilities
                         item.Variables.SetRaw(varData.Key, typeEnum, varData.RawBytes);
                     }
                 }
+            }
+            
+            // 新增应用武器词缀效果
+            if (VTModifierApplier.IsEnabled)
+            {
+                VTModifierApplier.TryApplyModifiers(item);
             }
 
             // 2. 恢复显式属性 (这些会覆盖 Variables 中同名的 Key)
