@@ -193,17 +193,14 @@ namespace CombatMaid.Core
 
             foreach (var profile in _maidProfiles.Values)
             {
-                string finalKey = GetMaidNameKey(profile);
+                // 确保名字使用的是最新的（支持玩家存档中的自定义名字）
+                string displayName = !string.IsNullOrEmpty(profile.PresetConfig.CustomName) 
+                    ? profile.PresetConfig.CustomName : "战斗女仆";
+        
+                string modelId = profile.ExtraData?.CustomModelID ?? "10004";
 
-                // A. 注入本地化文本
-                string displayName = !string.IsNullOrEmpty(profile.PresetConfig.CustomName)
-                    ? profile.PresetConfig.CustomName
-                    : "战斗女仆";
-                SodaCraft.Localizations.LocalizationManager.SetOverrideText(finalKey, displayName);
-
-                // B. 同时注入白名单和模型 ID
-                string modelId = profile.ExtraData?.CustomModelID;
-                CustomModelBridge.RegisterMaid(finalKey, modelId);
+                // 完全按照 API 方式注册为 Extension
+                CustomModelBridge.RegisterMaid(profile.ProfileName, displayName, modelId);
             }
         }
 
@@ -379,21 +376,24 @@ namespace CombatMaid.Core
 
             var charCtrl = ai.CharacterMainControl;
 
-            // 1. 挂载控制器
+            // 1.挂载控制器
             var controller = charCtrl.gameObject.AddComponent<MaidController>();
             controller.Initialize(profileData, LevelManager.Instance.MainCharacter, ai);
+            
+            // 2.自定义模型处理
+            if (CustomModelBridge.IsAvailable())
+            {
+                Type handlerType = CustomModelBridge.GetModelHandlerType();
+                if (handlerType != null)
+                {
+                    // 在根节点挂载 ModelHandler
+                    Component handler = charCtrl.GetComponent(handlerType);
+                    if (handler == null) handler = charCtrl.gameObject.AddComponent(handlerType);
 
-            // //2. 皮肤替换
-            // if (profileData.ExtraData != null && !string.IsNullOrEmpty(profileData.ExtraData.CustomModelID))
-            // {
-            //     // 获取正确的 nameKey
-            //     string nameKey = charCtrl.characterPreset?.nameKey;
-            //     if (!string.IsNullOrEmpty(nameKey))
-            //     {
-            //         // 建议：延迟一帧或微小时间再设置配置，确保 DCM 的 Handler 已经完全 Ready
-            //         StartCoroutine(DelaySetMaidModel(nameKey, profileData.ExtraData.CustomModelID,true));
-            //     }
-            // }
+                    // 调用官方初始化和刷新流程，使模型生效
+                    CustomModelBridge.ActivateModel(handler, charCtrl, profileData.ProfileName);
+                }
+            }
 
             // 3.背包扩容
             if (profileData.PresetConfig.InventoryCapacity != 0)

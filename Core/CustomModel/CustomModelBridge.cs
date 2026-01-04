@@ -1,25 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.IO;
 using Newtonsoft.Json.Linq;
+using UnityEngine;
 
 namespace CombatMaid.Core.CustomModel
 {
     public static class CustomModelBridge
     {
-        private const string GameModulesAsm = "DuckovCustomModel.GameModules";
-        private const string CoreAsm = "DuckovCustomModel.Core";
-
-        private static MethodInfo _setAiModelMethod;
-        private static MethodInfo _addWhitelistMethod;
+        private static MethodInfo _registerMethod;
+        private static MethodInfo _setConfigMethod;
+        private static MethodInfo _initHandlerMethod;
+        private static MethodInfo _updatePriorityMethod;
+        private static Type _handlerType;
         private static bool _initialized;
 
         public static bool IsAvailable()
         {
             if (!_initialized) Initialize();
-            return _setAiModelMethod != null && _addWhitelistMethod != null;
+            return _registerMethod != null && _setConfigMethod != null;
         }
 
         private static void Initialize()
@@ -30,91 +30,81 @@ namespace CombatMaid.Core.CustomModel
             try
             {
                 var allAsms = AppDomain.CurrentDomain.GetAssemblies();
-                var modulesAsm = allAsms.FirstOrDefault(a => a.GetName().Name == GameModulesAsm);
-                if (modulesAsm != null)
+                foreach (var asm in allAsms)
                 {
-                    var type = modulesAsm.GetType("DuckovCustomModel.Managers.ModelListManager");
-                    // 新版设置模型接口
-                    _setAiModelMethod = type?.GetMethod("SetModelInConfigForAICharacter", BindingFlags.Public | BindingFlags.Static);
+                    // 1. 注册表方法
+                    if (_registerMethod == null) {
+                        var t = asm.GetType("DuckovCustomModel.Core.Managers.ModelTargetTypeRegistry");
+                        if (t != null) _registerMethod = t.GetMethod("RegisterTargetType", new[] { typeof(string), typeof(string[]), typeof(Func<SystemLanguage, string>) });
+                    }
+                    // 2. 设置方法
+                    if (_setConfigMethod == null) {
+                        var t = asm.GetType("DuckovCustomModel.Managers.ModelListManager");
+                        if (t != null) _setConfigMethod = t.GetMethod("SetModelInConfig", new[] { typeof(string), typeof(string), typeof(bool) });
+                    }
+                    // 3. Handler 类及其方法
+                    if (_handlerType == null) {
+                        var t = asm.GetType("DuckovCustomModel.MonoBehaviours.ModelHandler");
+                        if (t != null) {
+                            _handlerType = t;
+                            _initHandlerMethod = t.GetMethod("Initialize", new[] { typeof(CharacterMainControl), typeof(string) });
+                            _updatePriorityMethod = t.GetMethod("UpdateModelPriorityList");
+                        }
+                    }
                 }
-
-                var coreAsm = allAsms.FirstOrDefault(a => a.GetName().Name == CoreAsm);
-                if (coreAsm != null)
-                {
-                    var type = coreAsm.GetType("DuckovCustomModel.Core.Data.AICharacters");
-                    // 必须添加到白名单以便 DCM 识别 自定义预设的 AI 角色
-                    _addWhitelistMethod = type?.GetMethod("AddAICharacters", BindingFlags.Public | BindingFlags.Static);
-                }
-                
-                if (IsAvailable()) CMDebug.Log("DCM 接口反射绑定成功。");
+                CMDebug.Log($"[DCM-Bridge] 接口绑定: Register={_registerMethod!=null}, SetConfig={_setConfigMethod!=null}, Handler={_handlerType!=null}");
             }
-            catch (Exception ex) { CMDebug.LogError($"桥接器初始化异常: {ex.Message}"); }
+            catch (Exception ex) { CMDebug.LogError($"[DCM-Bridge] 初始化异常: {ex.Message}"); }
         }
 
-        /// <summary>
-        /// 为指定角色注册默认模型
-        /// </summary>
-        public static void RegisterMaid(string nameKey, string modelID)
+        public static void RegisterMaid(string profileName, string displayName, string defaultModelID)
         {
             if (!IsAvailable()) return;
 
-            // 注入白名单
-            _addWhitelistMethod.Invoke(null, new object[] { new List<string> { nameKey } });
-
-            // 检测是否已有配置，避免覆盖
-            if (IsMaidConfiguredInFile(nameKey)) return;
-
-            // 应用默认模型
             try
             {
-                if (!string.IsNullOrEmpty(modelID))
+                string rawId = "CombatMaid_" + profileName;
+                // 兼容类型设置为 built-in:Character (开发者建议)
+                string[] compatibles = new[] { "built-in:Character" };
+                Func<SystemLanguage, string> nameGetter = (lang) => displayName;
+
+                _registerMethod.Invoke(null, new object[] { rawId, compatibles, nameGetter });
+
+                string fullTargetId = "extension:" + rawId;
+                if (!IsTargetIdConfigured(fullTargetId))
                 {
-                    _setAiModelMethod.Invoke(null, new object[] { nameKey, modelID, true });
-                    CMDebug.Log($"检测到 [{nameKey}] 为新角色，已应用默认预设: {modelID}");
+                    _setConfigMethod.Invoke(null, new object[] { fullTargetId, defaultModelID, true });
+                    CMDebug.Log($"[DCM-Bridge] 注册并绑定模型: {fullTargetId} -> {defaultModelID}");
                 }
             }
-            catch (Exception ex)
-            {
-                CMDebug.LogError($"应用配置失败: {ex.Message}");
-            }
+            catch (Exception ex) { CMDebug.LogError($"[DCM-Bridge] 注册失败: {ex.Message}"); }
         }
 
-        private static bool IsMaidConfiguredInFile(string nameKey)
+        public static void ActivateModel(Component handler, CharacterMainControl charCtrl, string profileName)
         {
+            if (handler == null || charCtrl == null || _initHandlerMethod == null) return;
             try
             {
-                string baseDir = Directory.GetCurrentDirectory();
-                string path = Path.Combine(baseDir, "ModConfigs", "DuckovCustomModel", "UsingModel.json");
-                
-                // if (!File.Exists(path))
-                // {
-                //     path = Path.Combine(baseDir, "..", "ModConfigs", "DuckovCustomModel", "UsingModel.json");
-                // }
-
-                if (!File.Exists(path))
-                {
-                    CMDebug.LogWarning($"未找到DCM配置文件: {path}");
-                    return false;
-                }
-
-                string jsonContent = File.ReadAllText(path);
-                if (string.IsNullOrEmpty(jsonContent)) return false;
-
-                JObject root = JObject.Parse(jsonContent);
-                JObject targetDict = root["TargetTypeModelIDs"] as JObject;
-                
-                if (targetDict == null) return false;
-                
-                string targetId = "built-in:AICharacter_" + nameKey;
-                if (targetDict.ContainsKey(targetId))
-                {
-                    CMDebug.Log($"DCM配置: [{targetId}] 已存在，跳过初始化。");
-                    return true;
-                }
-                
-                return false;
+                string extensionId = "extension:CombatMaid_" + profileName;
+                // 1. 调用官方 Initialize 建立连接
+                _initHandlerMethod.Invoke(handler, new object[] { charCtrl, extensionId });
+                // 2. 调用官方 UpdateModelPriorityList 触发模型替换，经测试这一步是必须的，否则模型不会生效！！！
+                _updatePriorityMethod.Invoke(handler, null);
+                CMDebug.Log($"[DCM-Bridge] 激活成功: {extensionId}");
             }
-            catch { return true; }
+            catch (Exception ex) { CMDebug.LogWarning($"[DCM-Bridge] 激活 Handler 异常: {ex.Message}"); }
+        }
+
+        public static Type GetModelHandlerType() => _handlerType;
+
+        private static bool IsTargetIdConfigured(string fullTargetId)
+        {
+            try {
+                string path = Path.Combine(Directory.GetCurrentDirectory(), "ModConfigs", "DuckovCustomModel", "UsingModel.json");
+                if (!File.Exists(path)) return false;
+                JObject root = JObject.Parse(File.ReadAllText(path));
+                return root["TargetTypeModelIDs"] is JObject dict && dict.ContainsKey(fullTargetId);
+            } catch { return true; }
         }
     }
 }
