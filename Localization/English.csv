@@ -118,11 +118,11 @@ Item_MaidRecallBell_OnUse,"All units, retreat!",2.2.3,MaidItem
 Item_MaidVial_OnUse,Maid in a bottle [{0}] is ready!,2.2.3,MaidItem
 Skill_GrenadeThrow_Execute,Throwing grenade!,2.2.3,Skill
 Skill_SelfHeal_UseItem,Using: {0},2.2.3,Skill
-Skill_SelfHeal_NoDrug,"Master, I’m out of medicine!",2.2.3,Skill
+Skill_SelfHeal_NoDrug,"Master, I'm out of medicine!",2.2.3,Skill
 Skill_SquadCoordination_Execute,Focus fire on the target!,2.2.3,Skill
 Skill_EmergencyHeal_Execute,Emergency heal!,2.2.3,Skill
 Skill_VanillaBuff_Happy,"Cheer up, Master~",2.2.3,Skill
-Skill_VanillaBuff_ExtraBuff,"\nI’ve buffed you, Master! ({0})",2.2.3,Skill
+Skill_VanillaBuff_ExtraBuff,"\nI've buffed you, Master! ({0})",2.2.3,Skill
 Perk_WineFox_Armor_1,Rock Shield I,2.2.3,Perks
 Perk_WineFox_Armor_1_Desc,"Summons earth elements to surround the maid,  forming a rough yet tough rock layer that provides basic physical protection.\n\nHead Armor <color=#7FE8D8>+0.7</color>\nBody Armor <color=#7FE8D8>+0.7</color>",2.2.3,Perks
 Perk_WineFox_Armor_2,Rock Shield II,2.2.3,Perks
@@ -145,14 +145,14 @@ Perk_Combat_Pro_1,Spirit Fox Arts I,2.2.3,Perks
 Perk_Combat_Pro_1_Desc,"With her keen Spirit Fox intuition, Wine Fox can catch an enemy's slightest movement in the blink of an eye, making her combat steps even more graceful and nimble.\n\nReaction Delay <color=#7FE8D8>-50%</color>\nShoot Delay <color=#7FE8D8>-60%</color>\nNight Adaptation <color=#7FE8D8>+50%</color>",2.2.3,Perks
 Perk_Combat_Pro_2,Spirit Fox Arts II,2.2.3,Perks
 Perk_Combat_Pro_2_Desc,"The deep bond with her Master has blossomed into wondrous magic, making Wine Fox's offensive rhythm as continuous as a dream, never giving the bad guys a chance to catch their breath!\n\nMagic Burst Duration <color=#7FE8D8>1.0 - 2.0s</color>\nSpell Interval <color=#7FE8D8>0.5 - 1.0s</color>\nNimble Leap Cooldown <color=#7FE8D8>1.5 - 3.0s</color>",2.2.3,Perks
-Item_GiftBox,Wine Fox’s Christmas Gift,2.2.4,MaidItem
-Item_GiftBox_Desc,"A Christmas present carefully prepared by the Wine Fox for her master. The heavy wrapping seals mysterious magic within — no one knows what kind of surprise awaits until it is opened.\n<color=#FFD700>Effect:</color> Open to receive several unique gifts.\n<i>“Merry Christmas, Master~~~”</i>",2.2.4,MaidItem
-Item_WineFoxCookie,Wine Fox’s Heartfelt Cookie,2.2.4,MaidItem
-Item_WineFoxCookie_Desc,"A sweet treat personally baked by the Wine Fox. The cookies are shaped like fox faces and hexagonal snowflakes, carrying a creamy aroma and warm magic.\n<color=#FFD700>Effect:</color> Consume to restore <color=#00FFFF>30</color> Satiety, gain <color=#00FFFF>50</color> temporary HP, and instantly recover to <b>full HP</b>.\n<i>“This is my first time trying human-style cooking… I hope it can protect Master’s soul during the cold winter.”</i>",2.2.4,MaidItem
-Item_JadeFlask,Wine Fox’s Jade-Flask Sake Bottle,2.2.4,MaidItem
-Item_JadeFlask_Desc,"A magnificent enchanted jade sake bottle. At the mouth of the flask, a miniature golden-carved spirit fox holds a crimson gem in its jaws, silently guarding the one who drinks from it.\n<color=#FFD700>Effect:</color> Gain a blessing lasting <color=#00FFFF>180 seconds</color>. If lethal damage is taken during this time, the blessing is consumed to heal <b>50% HP</b> and gain <color=#00FFFF>5 seconds</color> of invincibility.\n<i>“Don’t be afraid, Master… At the truly dangerous moment, I will block it for you.”</i>",2.2.4,MaidItem
+Item_GiftBox,Wine Fox's Christmas Gift,2.2.4,MaidItem
+Item_GiftBox_Desc,"A Christmas present carefully prepared by the Wine Fox for her master. The heavy wrapping seals mysterious magic within — no one knows what kind of surprise awaits until it is opened.\n<color=#FFD700>Effect:</color> Open to receive several unique gifts.\n<i>""Merry Christmas, Master~~~""</i>",2.2.4,MaidItem
+Item_WineFoxCookie,Wine Fox's Heartfelt Cookie,2.2.4,MaidItem
+Item_WineFoxCookie_Desc,"A sweet treat personally baked by the Wine Fox. The cookies are shaped like fox faces and hexagonal snowflakes, carrying a creamy aroma and warm magic.\n<color=#FFD700>Effect:</color> Consume to restore <color=#00FFFF>30</color> Satiety, gain <color=#00FFFF>50</color> temporary HP, and instantly recover to <b>full HP</b>.\n<i>""This is my first time trying human-style cooking... I hope it can protect Master's soul during the cold winter.""</i>",2.2.4,MaidItem
+Item_JadeFlask,Wine Fox's Jade-Flask Sake Bottle,2.2.4,MaidItem
+Item_JadeFlask_Desc,"A magnificent enchanted jade sake bottle. At the mouth of the flask, a miniature golden-carved spirit fox holds a crimson gem in its jaws, silently guarding the one who drinks from it.\n<color=#FFD700>Effect:</color> Gain a blessing lasting <color=#00FFFF>180 seconds</color>. If lethal damage is taken during this time, the blessing is consumed to heal <b>50% HP</b> and gain <color=#00FFFF>5 seconds</color> of invincibility.\n<i>""Don't be afraid, Master... At the truly dangerous moment, I will block it for you.""</i>",2.2.4,MaidItem
 Buff_MaidBuff_WineFoxCookie_Name,Heartfelt Cookie,2.2.4,Buffs
-Buff_WineFoxCookie_Pop,<color=#FFD700>Wine Fox’s Protection: Max HP +{0}</color>,2.2.4,Buffs
+Buff_WineFoxCookie_Pop,<color=#FFD700>Wine Fox's Protection: Max HP +{0}</color>,2.2.4,Buffs
 Buff_MaidBuff_JadeBlessing_Name,Jadebound Protection,2.2.4,Buffs
 Buff_MaidBuff_JadeInvincible_Name,Jadebound Invincibility,2.2.4,Buffs
 Buff_JadeBlessing_Trigger_Pop,<color=#FFD700>Jadebound Invincibility!</color>,2.2.4,Buffs
@@ -188,4 +188,4 @@ Settings_TransferKillToOwner,Transfer Maid Kills to Player (Enabling allows norm
 Settings_RebuildWineFox_Name,Sync Maid Stat Balance,2.2.5,GeneralSettings
 Settings_RebuildWineFox_Desc,Recalculate Wine Fox stats based on the latest skill tree effects. Only combat values influenced by the skill tree will be updated.,2.2.5,GeneralSettings
 Perk_Maid_FoxGuard,Fox Guard Sigil,2.2.5,Perks
-Perk_Maid_FoxGuard_Desc,"Unlocks the [Fox Guard Sigil] skill.\nWhen Wine Fox’s HP is about to reach zero, the engraved protective magic will automatically activate, instantly restoring her to half HP and granting invincibility for <color=#7FE8D8>5 seconds.\nThis effect can only trigger once per deployment.",2.2.5,Perks
+Perk_Maid_FoxGuard_Desc,"Unlocks the [Fox Guard Sigil] skill.\nWhen Wine Fox's HP is about to reach zero, the engraved protective magic will automatically activate, instantly restoring her to half HP and granting invincibility for <color=#7FE8D8>5 seconds.\nThis effect can only trigger once per deployment.",2.2.5,Perks
