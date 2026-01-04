@@ -316,9 +316,10 @@ namespace CombatMaid.Core
                 return;
             }
 
-            if (StateMachine.CurrentState is State_InventoryManage)
+            if (StateMachine.CurrentState is State_InventoryManage manageState)
             {
-                StateMachine.ChangeState<State_Autonomous>();
+                // [修改] 如果当前在背包界面按B，执行智能回退
+                manageState.ExitToPreviousState();
             }
             else
             {
@@ -328,8 +329,12 @@ namespace CombatMaid.Core
                     MaidCharacter?.PopText(_txtInvTooFar.Value);
                     return;
                 }
-
-                StateMachine.ChangeState<State_InventoryManage>();
+                // [修改] 获取当前状态类型并传给下一个状态
+                var currentType = StateMachine.CurrentState.GetType();
+                StateMachine.ChangeState<State_InventoryManage>(s => 
+                {
+                    s.PreviousState = currentType;
+                });
             }
         }
 
