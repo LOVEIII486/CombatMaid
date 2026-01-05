@@ -5,6 +5,8 @@ using CombatMaid.Core.SkillTreeSystem;
 using UnityEngine;
 using CombatMaid.Core.WineFox;
 using CombatMaid.Localization;
+using Duckov.UI;
+using UnityEngine.EventSystems;
 using Random = UnityEngine.Random;
 
 namespace CombatMaid.Core
@@ -188,23 +190,30 @@ namespace CombatMaid.Core
 
         private void UpdateFocusTarget()
         {
+            // 1. 检查是否存在打开的 UI 视图
+            if (GameplayUIManager.Instance != null && GameplayUIManager.Instance.ActiveView != null)
+            {
+                FocusTarget = null;
+                _focusExpireTimer = 0;
+                return;
+            }
+
+            // 2. 检查鼠标是否正悬停在任何 UI 元素上
+            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            {
+                return;
+            }
+
+            // 3. 倒计时
             if (_focusExpireTimer > 0)
             {
                 _focusExpireTimer -= Time.deltaTime;
-                if (_focusExpireTimer <= 0)
-                {
-                    FocusTarget = null;
-                }
+                if (_focusExpireTimer <= 0) FocusTarget = null;
             }
 
-            if (Input.GetMouseButton(0)) // 按住或点击均可
+            if (Input.GetMouseButton(0))
             {
                 DetectPlayerTarget();
-            }
-
-            if (FocusTarget != null && (FocusTarget.Health == null || FocusTarget.Health.IsDead))
-            {
-                FocusTarget = null;
             }
         }
 

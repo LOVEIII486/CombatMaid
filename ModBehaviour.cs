@@ -72,10 +72,10 @@ namespace CombatMaid
             //     gameObject.AddComponent<CombatMaid.DebugTools.InventoryDebugger>();
             // }
             
-            if (gameObject.GetComponent<CombatMaid.DebugTools.EventSystemDebugger>() == null)
-            {
-                gameObject.AddComponent<CombatMaid.DebugTools.EventSystemDebugger>();
-            }
+            // if (gameObject.GetComponent<CombatMaid.DebugTools.EventSystemDebugger>() == null)
+            // {
+            //     gameObject.AddComponent<CombatMaid.DebugTools.EventSystemDebugger>();
+            // }
         }
 
         private void OnDisable()
