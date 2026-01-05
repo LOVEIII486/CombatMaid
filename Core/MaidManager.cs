@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using CombatMaid.Core.MaidEventSystem;
 using CombatMaid.Core.SkillTreeSystem;
 using UnityEngine;
 using CombatMaid.Core.WineFox;
 using CombatMaid.Localization;
 using Duckov.UI;
+using UnityEngine.AI;
 using UnityEngine.EventSystems;
 using Random = UnityEngine.Random;
 
@@ -145,11 +147,16 @@ namespace CombatMaid.Core
         private const float FocusDuration = 5.0f;
         private const float RaycastDistance = 150f;
         private int _enemyLayerMask;
-        private static readonly int CommandMask = LayerMask.GetMask("Default", "Wall", "Ground", "Interactable", "Door", "HalfObsticle", "Wall_FowBlock");
-        
-        private readonly Lazy<string> _txtTacticalMove = new Lazy<string>(() => LocalizationManager.GetText("Msg_Maid_TacticalMove"));
-        private readonly Lazy<string> _txtManualHeal = new Lazy<string>(() => LocalizationManager.GetText("Msg_Maid_ManualHeal"));
-        
+
+        private static readonly int CommandMask = LayerMask.GetMask("Default", "Wall", "Ground", "Interactable", "Door",
+            "HalfObsticle", "Wall_FowBlock");
+
+        private readonly Lazy<string> _txtTacticalMove =
+            new Lazy<string>(() => LocalizationManager.GetText("Msg_Maid_TacticalMove"));
+
+        private readonly Lazy<string> _txtManualHeal =
+            new Lazy<string>(() => LocalizationManager.GetText("Msg_Maid_ManualHeal"));
+
         private void HandleCommandInput()
         {
             if (Input.GetKeyDown(Settings.CombatMaidConfig.KeyMove))
@@ -336,31 +343,30 @@ namespace CombatMaid.Core
             if (Camera.main == null) return Vector3.zero;
 
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            var hits = Physics.RaycastAll(ray, 150f, CommandMask).OrderBy(h => h.distance).ToArray();
     
-            if (!Physics.Raycast(ray, out RaycastHit eyeHit, 100f, CommandMask)) 
-                return Vector3.zero;
-
-            Vector3 targetPos = eyeHit.point;
-            Vector3 playerPos = CharacterMainControl.Main.transform.position;
-
-            // 2. 距离钳制：使用平面距离判断
-            Vector3 diff = targetPos - playerPos;
-            float flatDistSqr = diff.x * diff.x + diff.z * diff.z; // 使用平方根比较性能更好
-            if (flatDistSqr > 900f) // 30.0f * 30.0f
+            foreach (var hit in hits)
             {
-                float ratio = 30.0f / Mathf.Sqrt(flatDistSqr);
-                targetPos = playerPos + new Vector3(diff.x * ratio, diff.y, diff.z * ratio);
+                GameObject go = hit.collider.gameObject;
+                string n = go.name.ToLower(), p = go.transform.parent?.name.ToLower() ?? "";
+
+                // 过滤：跳过房顶、毒气区触发器、遮挡渐变体
+                if (n.Contains("roof") || p.Contains("roof") || n.Contains("fade") || n.Contains("zone")) continue;
+                if (hit.normal.y < 0.7f) continue;
+
+                Vector3 targetPos = hit.point;
+
+                // 限制在 30m 内
+                Vector3 offset = targetPos - CharacterMainControl.Main.transform.position;
+                if (offset.sqrMagnitude > 900f) targetPos = CharacterMainControl.Main.transform.position + offset.normalized * 30f;
+
+                if (Physics.Raycast(targetPos + Vector3.up * 0.1f, Vector3.down, out var snap, 0.5f, CommandMask)) targetPos = snap.point;
+
+                // CMDebug.Log($"[路径追踪] 锁定地面: {go.name} H: {targetPos.y:F2}");
+                return targetPos;
             }
 
-            // 3. 穿透逻辑：从目标点下方 0.2米 开始向下探测（直接跳过当前的屋顶/表面）
-            // 这种方法性能最高，完全不需要 RaycastAll 和 排序
-            if (Physics.Raycast(targetPos + Vector3.down * 0.2f, Vector3.down, out RaycastHit floorHit, 20f, CommandMask))
-            {
-                return floorHit.point;
-            }
-
-            // 如果下方没东西（比如点了地图边缘或纯空地），返回第一射的点
-            return targetPos;
+            return Vector3.zero;
         }
 
         #endregion
@@ -391,7 +397,7 @@ namespace CombatMaid.Core
                     if (player != null) player.PopText("正在重载技能树...");
                 }
             }
-            
+
             // F8 重载本地化
             if (Input.GetKeyDown(KeyCode.F8))
             {
@@ -413,7 +419,7 @@ namespace CombatMaid.Core
                 {
                     MaidSpawner.Instance.DebugListAllKeys();
                     MaidSpawner.Instance.DebugExportReferenceStats();
-                    
+
                     var player = CharacterMainControl.Main;
                     if (player != null) player.PopText("参考预设key和preset已输出...");
                 }
