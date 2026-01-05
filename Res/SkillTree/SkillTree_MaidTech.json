@@ -253,7 +253,7 @@
       "CostMoney": 3000,
       "CostItems": {
         "137": 2,
-        "69": 2
+        "69": 1
       },
       "RequiredLevel": 5,
       "Position": {
@@ -397,7 +397,7 @@
       "CostMoney": 2000,
       "CostItems": {
         "85": 1,
-        "425": 1,
+        "662": 3,
         "79": 1
       },
       "RequiredLevel": 5,
@@ -576,7 +576,7 @@
       "CostItems": {
         "509": 1,
         "515": 1,
-        "85": 2
+        "85": 1
       },
       "RequiredLevel": 8,
       "Position": {
@@ -1086,7 +1086,7 @@
       "CostItems": {
         "137": 4,
         "398": 2,
-        "798": 2
+        "798": 1
       },
       "RequiredLevel": 8,
       "Position": {
