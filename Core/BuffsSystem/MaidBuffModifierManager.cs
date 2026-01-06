@@ -5,18 +5,42 @@ using ItemStatsSystem.Stats;
 namespace CombatMaid.Core.BuffsSystem
 {
     /// <summary>
-    /// 管理由 Buff 产生的属性修改器
+    /// Buff 修改器管理器
     /// </summary>
     public class MaidBuffModifierManager
     {
         private static MaidBuffModifierManager _instance;
         public static MaidBuffModifierManager Instance => _instance ??= new MaidBuffModifierManager();
 
-        private Dictionary<int, List<(Stat stat, Modifier modifier)>> _buffModifiers 
+        private readonly Dictionary<int, List<(Stat stat, Modifier modifier)>> _buffModifiers 
             = new Dictionary<int, List<(Stat, Modifier)>>();
 
         /// <summary>
-        /// 记录一个修改器，以便后续自动清理
+        /// 记录一个修改器
+        /// 内部自动处理 Stat 查找逻辑
+        /// </summary>
+        public void Track(int buffInstanceId, CharacterMainControl target, string statKey, Modifier modifier)
+        {
+            if (target == null || modifier == null) return;
+
+            Stat targetStat = target.CharacterItem?.Stats.GetStat(statKey);
+            if (targetStat == null)
+            {
+                targetStat = target.GetComponent<StatCollection>()?.GetStat(statKey);
+            }
+
+            if (targetStat != null)
+            {
+                TrackModifier(buffInstanceId, targetStat, modifier);
+            }
+            else
+            {
+                CMDebug.LogWarning($"[BuffManager] 追踪失败：角色 {target.name} 缺失属性 {statKey}");
+            }
+        }
+
+        /// <summary>
+        /// 核心记录方法：直接记录实例
         /// </summary>
         public void TrackModifier(int buffInstanceId, Stat stat, Modifier modifier)
         {
@@ -37,20 +61,29 @@ namespace CombatMaid.Core.BuffsSystem
         {
             if (_buffModifiers.TryGetValue(buffInstanceId, out var modifiers))
             {
+                int count = 0;
                 foreach (var (stat, modifier) in modifiers)
                 {
+                    // 增加健壮性检查：Stat 可能随角色销毁
                     if (stat != null && modifier != null)
                     {
                         stat.RemoveModifier(modifier);
+                        count++;
                     }
                 }
                 _buffModifiers.Remove(buffInstanceId);
+                
+                if (count > 0)
+                {
+                    CMDebug.Log($"[BuffManager] 已清理 Buff({buffInstanceId}) 的 {count} 个属性修改器。");
+                }
             }
         }
 
         public void Clear()
         {
             _buffModifiers.Clear();
+            CMDebug.Log("[BuffManager] 全局清理完毕。");
         }
     }
 }

@@ -19,23 +19,13 @@ namespace CombatMaid.Core.BuffsSystem.Effects
         {
             if (target == null || target.CharacterItem == null) return;
 
-            var modifier = StatModifier.AddModifier(
-                target, 
-                StatModifier.Attributes.MaxHealth, 
-                ExtraHP, 
-                ModifierType.Add
-            );
+            var modifier = StatModifier.AddModifier(target, StatModifier.Attributes.MaxHealth, ExtraHP, ModifierType.Add, buff);
 
-            if (modifier != null)
+            if (modifier != null && target?.CharacterItem != null)
             {
                 var stat = target.CharacterItem.GetStat(StatModifier.Attributes.MaxHealth);
-                if (stat != null)
-                {
-                    // 追踪修改器，以便 Buff 结束时由管理器自动清理
-                    MaidBuffModifierManager.Instance.TrackModifier(buff.GetInstanceID(), stat, modifier);
-                }
+                MaidBuffModifierManager.Instance.TrackModifier(buff.GetInstanceID(), stat, modifier);
             }
-            target.Health.AddHealth(ExtraHP);
 
             string popTemplate = LocalizationManager.GetText("Buff_WineFoxCookie_Pop");
             string finalMsg = string.Format(popTemplate, ExtraHP);
@@ -44,6 +34,7 @@ namespace CombatMaid.Core.BuffsSystem.Effects
 
         public void OnBuffDestroy(Buff buff, CharacterMainControl target)
         {
+            //MaidBuffPatches.cs 逻辑会在执行此回调后自动调用 CleanupModifiers
             //CMDebug.Log($"[{BuffName}] 效果结束：生命上限已还原");
         }
     }

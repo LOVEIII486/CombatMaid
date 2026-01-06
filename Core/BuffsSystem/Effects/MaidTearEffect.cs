@@ -4,75 +4,55 @@ using Duckov.Buffs;
 using ItemStatsSystem.Stats;
 using CombatMaid.Core.AttributeModifiers;
 using CombatMaid.Localization;
+using ItemStatsSystem;
 
 namespace CombatMaid.Core.BuffsSystem.Effects
 {
     /// <summary>
-    /// 撕裂效果：削弱护甲
+    /// 撕裂效果：削弱护甲。
     /// </summary>
     public class MaidTearEffect : IMaidBuffEffect
     {
-        // Buff 配置的名称，必须以 MaidBuff_ 开头
         public string BuffName => "MaidBuff_Tear";
-        
         public int BuffID => 888001;
 
         public void OnBuffSetup(Buff buff, CharacterMainControl target)
         {
-            if (target == null || target.CharacterItem == null) return;
+            if (target == null) return;
 
             try
             {
-                // 1. 随机生成削弱幅度 (-10% ~ -40%)
                 float reduction = UnityEngine.Random.Range(-0.4f, -0.1f);
 
-                // 2. 应用并追踪修改器 (身体护甲 + 头部护甲)
-                ApplyAndTrackModifier(buff, target, StatModifier.Attributes.BodyArmor, reduction);
-                ApplyAndTrackModifier(buff, target, StatModifier.Attributes.HeadArmor, reduction);
+                ApplyAndTrack(buff, target, StatModifier.Attributes.BodyArmor, reduction);
+                ApplyAndTrack(buff, target, StatModifier.Attributes.HeadArmor, reduction);
 
-                // 3. 飘字提示
-                // 格式化数值 (例如 0.25 -> "25")
-                string pctStr = Mathf.RoundToInt(Mathf.Abs(reduction) * 100f).ToString();
-                
-                // 尝试获取本地化文本 (Key: "Buff_Tear_Pop")，如果没有则使用默认文本
-                // 建议在 CSV 中添加: Buff_Tear_Pop,护甲撕裂 -{0}%,...
+                int pct = Mathf.RoundToInt(Mathf.Abs(reduction) * 100f);
                 string fmt = LocalizationManager.GetText("Buff_Tear_Pop", "护甲撕裂 -{0}%");
-                string finalMsg = string.Format(fmt, pctStr);
+                target.PopText(string.Format(fmt, pct));
                 
-                target.PopText(finalMsg);
-                
-                CMDebug.Log($"[MaidTearEffect] 生效: {target.characterPreset.DisplayName} 护甲削弱 {reduction:P0}");
+                CMDebug.Log($"[{BuffName}] 生效: {target.name} 护甲削弱 {pct}% (InstanceID: {buff.GetInstanceID()})");
             }
             catch (Exception ex)
             {
-                CMDebug.LogError($"[MaidTearEffect] Setup 异常: {ex.Message}");
+                CMDebug.LogError($"[{BuffName}] Setup 异常: {ex}");
             }
         }
-
-        /// <summary>
-        /// 当 Buff 销毁时触发
-        /// </summary>
+        
         public void OnBuffDestroy(Buff buff, CharacterMainControl target)
         {
-            // Core.BuffsSystem.MaidBuffDestroyPatch 会在 OnBuffDestroy 执行后，
-            // 自动调用 MaidBuffModifierManager.Instance.CleanupModifiers(buff.GetInstanceID())。
+            MaidBuffModifierManager.Instance.CleanupModifiers(buff.GetInstanceID());
         }
 
-        /// <summary>
-        /// 辅助方法：给属性施加 Buff 并注册到管理器以便自动清理
-        /// </summary>
-        private void ApplyAndTrackModifier(Buff buff, CharacterMainControl target, string statName, float value)
+        private void ApplyAndTrack(Buff buff, CharacterMainControl target, string statKey, float value)
         {
-            var modifier = StatModifier.AddModifier(
-                target, 
-                statName, 
-                value, 
-                ModifierType.PercentageMultiply
-            );
+            var modifier = StatModifier.AddModifier(target, statKey, value, ModifierType.PercentageMultiply, buff);
 
             if (modifier != null)
             {
-                var stat = target.CharacterItem.GetStat(statName);
+                Stat stat = target.CharacterItem?.Stats.GetStat(statKey);
+                if (stat == null) stat = target.GetComponent<StatCollection>()?.GetStat(statKey);
+
                 if (stat != null)
                 {
                     MaidBuffModifierManager.Instance.TrackModifier(buff.GetInstanceID(), stat, modifier);
