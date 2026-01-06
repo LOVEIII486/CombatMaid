@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using ItemStatsSystem.Stats;
-using UnityEngine;
-using CombatMaid;
+﻿using ItemStatsSystem.Stats;
+using ItemStatsSystem;
 
 namespace CombatMaid.Core.AttributeModifiers
 {
@@ -10,141 +8,157 @@ namespace CombatMaid.Core.AttributeModifiers
     /// </summary>
     public static class StatModifier
     {
-        // ========== Stat 属性白名单 ==========
-        private static readonly HashSet<string> StatAttributes = new HashSet<string>
+        /// <summary>
+        /// 为角色添加属性修改器并返回实例
+        /// </summary>
+        /// <param name="character">目标角色</param>
+        /// <param name="statKey">属性名称 (Stat Key)</param>
+        /// <param name="value">修改数值 (例如 0.5f 代表 +50%)</param>
+        /// <param name="type">修改类型 (默认百分比叠加)</param>
+        /// <param name="source">来源标识 (用于后续批量移除，默认使用属性名)</param>
+        /// <returns>创建的 Modifier 实例，用于精准移除</returns>
+        public static Modifier AddModifier(CharacterMainControl character, string statKey, float value, ModifierType type = ModifierType.PercentageMultiply, object source = null)
         {
-            // === 生存基础 ===
-            "MaxHealth", 
-            "Stamina", "StaminaDrainRate", "StaminaRecoverRate", "StaminaRecoverTime",
-            "MaxEnergy", "EnergyCost",
-            "MaxWater", "WaterCost",
-            "FoodGain", "HealGain",
-            "MaxWeight",
-            
-            // === 移动能力 ===
-            "WalkSpeed", "WalkAcc",
-            "RunSpeed", "RunAcc",
-            "TurnSpeed", "AimTurnSpeed",
-            "DashSpeed", "DashCanControl",
-            "Moveability", 
-            
-            // === 枪械战斗 ===
-            "GunDamageMultiplier", 
-            "GunCritRateGain", "GunCritDamageGain",
-            "GunDistanceMultiplier", "BulletSpeedMultiplier",
-            "GunScatterMultiplier", "RecoilControl", "ReloadSpeedGain",
-            
-            // === 近战战斗 ===
-            "MeleeDamageMultiplier", 
-            "MeleeCritRateGain", "MeleeCritDamageGain",
-            
-            // === 防御与抗性 ===
-            "HeadArmor", "BodyArmor", "GasMask", "StormProtection",
-            "ElementFactor_Physics", "ElementFactor_Fire", "ElementFactor_Poison",
-            "ElementFactor_Electricity", "ElementFactor_Space", "ElementFactor_Ghost",
-            
-            // === 感知与潜行 ===
-            "ViewDistance", "ViewAngle", 
-            "NightVisionAbility", "NightVisionType",
-            "HearingAbility", "SenseRange", "SoundVisable",
-            "VisableDistanceFactor",
-            "WalkSoundRange", "RunSoundRange",
-            
-            // === 其他 ===
-            "InventoryCapacity", "PetCapcity", "FlashLight"
-        };
+            if (character == null) return null;
 
-        // ========== 基础接口 ==========
+            Stat targetStat = null;
 
-        public static bool CanModify(string attributeName)
-        {
-            return StatAttributes.Contains(attributeName);
+            if (character.CharacterItem != null)
+            {
+                targetStat = character.CharacterItem.Stats.GetStat(statKey);
+            }
+
+            if (targetStat == null)
+            {
+                targetStat = character.GetComponent<StatCollection>()?.GetStat(statKey);
+            }
+
+            if (targetStat != null)
+            {
+                Modifier modifier = new Modifier(type, value, source ?? ("CM_Stat_" + statKey));
+                targetStat.AddModifier(modifier);
+
+                // 如果是修改血量上限，自动补正当前血量
+                if (statKey == Attributes.MaxHealth && character.Health != null)
+                {
+                    character.Health.SetHealth(character.Health.MaxHealth);
+                }
+
+                return modifier;
+            }
+
+            CMDebug.LogWarning($"[StatModifier] 未能在角色 {character.name} 上找到属性: {statKey}.");
+            return null;
         }
 
         /// <summary>
-        /// 添加属性修改器
+        /// 移除特定的 Modifier 实例
         /// </summary>
-        public static Modifier AddModifier(CharacterMainControl character, string attributeName, float value, ModifierType type)
+        public static void RemoveModifier(CharacterMainControl enemy, string statKey, Modifier modifier)
         {
-            if (character == null || character.CharacterItem == null) return null;
-            if (!CanModify(attributeName))
+            if (enemy == null || modifier == null) return;
+
+            Stat targetStat = enemy.CharacterItem?.Stats.GetStat(statKey);
+            if (targetStat == null)
             {
-                CMDebug.LogWarning($"属性 {attributeName} 不在支持列表中");
-                return null;
+                targetStat = enemy.GetComponent<StatCollection>()?.GetStat(statKey);
             }
 
-            var stat = character.CharacterItem.GetStat(attributeName);
-            if (stat == null)
-            {
-                CMDebug.LogWarning($"无法获取 Stat: {attributeName}");
-                return null;
-            }
-
-            // Source 传入 ModBehaviour.Instance，表明这是 CombatMaid 施加的修改
-            var modifier = new Modifier(type, value, ModBehaviour.Instance); 
-            stat.AddModifier(modifier);
-            
-            return modifier; 
+            targetStat?.RemoveModifier(modifier);
         }
 
-        public static void RemoveModifier(CharacterMainControl character, string attributeName, Modifier modifier)
+        /// <summary>
+        /// 批量移除指定来源的所有 Stat 修改器
+        /// </summary>
+        /// <param name="source">来源标识，需与 AddModifier 时传入的 source 一致</param>
+        public static void RemoveAllModifiersFromSource(CharacterMainControl enemy, object source)
         {
-            if (character == null || character.CharacterItem == null || modifier == null) return;
-            
-            var stat = character.CharacterItem.GetStat(attributeName);
-            if (stat != null)
-            {
-                stat.RemoveModifier(modifier);
-            }
+            if (enemy == null || enemy.CharacterItem == null || source == null) return;
+            enemy.CharacterItem.RemoveAllModifiersFrom(source);
         }
 
-        // ========== 常用常量定义  ==========
+        /// <summary>
+        /// 检查角色是否拥有该 Stat
+        /// </summary>
+        public static bool CanModify(CharacterMainControl character, string statKey)
+        {
+            if (character == null) return false;
+            return (character.CharacterItem?.Stats.GetStat(statKey) != null) || 
+                   (character.GetComponent<StatCollection>()?.GetStat(statKey) != null);
+        }
+
+        /// <summary>
+        /// 常用属性常量定义
+        /// </summary>
         public static class Attributes
         {
-            // 生存
-            public const string MaxHealth = "MaxHealth";
+            public const string MaxHealth = "MaxHealth"; 
             public const string Stamina = "Stamina";
+            public const string StaminaDrainRate = "StaminaDrainRate";
+            public const string StaminaRecoverRate = "StaminaRecoverRate";
+            public const string StaminaRecoverTime = "StaminaRecoverTime";
+            public const string MaxEnergy = "MaxEnergy";
+            public const string EnergyCost = "EnergyCost";
+            public const string MaxWater = "MaxWater";
+            public const string WaterCost = "WaterCost";
             public const string MaxWeight = "MaxWeight";
-            
-            // 伤害
-            public const string GunDamageMultiplier = "GunDamageMultiplier";
-            public const string MeleeDamageMultiplier = "MeleeDamageMultiplier";
-            public const string GunCritRateGain = "GunCritRateGain";
-            
-            // 移动
+            public const string FoodGain = "FoodGain";
+            public const string HealGain = "HealGain";
+
+            public const string MoveSpeed = "MoveSpeed"; // 不存在，自动分发到 WalkSpeed 和 RunSpeed
             public const string WalkSpeed = "WalkSpeed";
-            public const string RunSpeed = "RunSpeed";
             public const string WalkAcc = "WalkAcc";
+            public const string RunSpeed = "RunSpeed";
             public const string RunAcc = "RunAcc";
-            public const string Moveability = "Moveability";
             public const string TurnSpeed = "TurnSpeed";
             public const string AimTurnSpeed = "AimTurnSpeed";
-            
-            // 射击
-            public const string GunScatterMultiplier = "GunScatterMultiplier";
-            public const string BulletSpeedMultiplier = "BulletSpeedMultiplier";
-            public const string GunDistanceMultiplier = "GunDistanceMultiplier";
-            public const string RecoilControl = "RecoilControl";
+            public const string DashSpeed = "DashSpeed";
+            public const string Moveability = "Moveability";
+
+            public const string GunDamageMultiplier = "GunDamageMultiplier";
+            public const string GunShootSpeedMultiplier = "GunShootSpeedMultiplier";
             public const string ReloadSpeedGain = "ReloadSpeedGain";
+            public const string GunCritRateGain = "GunCritRateGain";
+            public const string GunCritDamageGain = "GunCritDamageGain";
+            public const string BulletSpeedMultiplier = "BulletSpeedMultiplier";
+            public const string RecoilControl = "RecoilControl";
+            public const string GunScatterMultiplier = "GunScatterMultiplier";
+            public const string GunDistanceMultiplier = "GunDistanceMultiplier";
             
-            // 感知
-            public const string ViewDistance = "ViewDistance";
-            public const string ViewAngle = "ViewAngle";
-            public const string HearingAbility = "HearingAbility";
-            public const string SenseRange = "SenseRange";
-            public const string VisableDistanceFactor = "VisableDistanceFactor";
-            
-            // 防御
+            public const string MeleeDamageMultiplier = "MeleeDamageMultiplier";
+            public const string MeleeCritRateGain = "MeleeCritRateGain";
+            public const string MeleeCritDamageGain = "MeleeCritDamageGain";
+
             public const string HeadArmor = "HeadArmor";
             public const string BodyArmor = "BodyArmor";
-            
-            // 元素
             public const string ElementFactor_Physics = "ElementFactor_Physics";
             public const string ElementFactor_Fire = "ElementFactor_Fire";
             public const string ElementFactor_Poison = "ElementFactor_Poison";
             public const string ElementFactor_Electricity = "ElementFactor_Electricity";
             public const string ElementFactor_Space = "ElementFactor_Space";
             public const string ElementFactor_Ghost = "ElementFactor_Ghost";
+            public const string ElementFactor_Ice = "ElementFactor_Ice";
+
+            public const string ViewDistance = "ViewDistance";
+            public const string ViewAngle = "ViewAngle";
+            public const string HearingAbility = "HearingAbility";
+            public const string SenseRange = "SenseRange";
+            public const string WalkSoundRange = "WalkSoundRange";
+            public const string RunSoundRange = "RunSoundRange";
+            public const string VisableDistanceFactor = "VisableDistanceFactor";
+
+            public const string GasMask = "GasMask";
+            public const string InventoryCapacity = "InventoryCapacity";
+            public const string PetCapcity = "PetCapcity";
+            public const string FlashLight = "FlashLight";
+            
+            public const string StormProtection = "StormProtection";
+            public const string ColdProtection = "ColdProtection";
+            public const string HeatProtection = "HeatProtection";
+    
+            public const string WaterEnergyRecoverMultiplier = "WaterEnergyRecoverMultiplier";
+            public const string NightVisionAbility = "NightVisionAbility";
+            public const string DashCanControl = "DashCanControl";
         }
     }
 }

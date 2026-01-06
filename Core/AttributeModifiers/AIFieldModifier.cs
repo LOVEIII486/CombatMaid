@@ -10,7 +10,10 @@ namespace CombatMaid.Core.AttributeModifiers
     /// AI 字段修改器
     /// </summary>
     public static class AIFieldModifier
-    {   
+    {
+        // 反射字段缓存，提升性能
+        private static readonly Dictionary<string, FieldInfo> _fieldCache = new Dictionary<string, FieldInfo>();
+
         private class ModificationApplier : MonoBehaviour
         {
             private void Start()
@@ -27,52 +30,69 @@ namespace CombatMaid.Core.AttributeModifiers
         internal static AICharacterController GetAI(CharacterMainControl character)
         {
             if (character == null) return null;
-            var ai = character.GetComponentInChildren<AICharacterController>(true);
-            if (ai != null) return ai;
-            return character.GetComponentInParent<AICharacterController>();
+            if (character.aiCharacterController != null) return character.aiCharacterController;
+            return character.GetComponentInChildren<AICharacterController>(true);
         }
 
         private struct PendingModification
         {
-            public string FieldName;
+            public string FieldPath;
             public float Value;
             public bool Multiply;
         }
 
-        private static readonly Dictionary<CharacterMainControl, List<PendingModification>> _pendingModifications 
+        private static readonly Dictionary<CharacterMainControl, List<PendingModification>> _pendingModifications
             = new Dictionary<CharacterMainControl, List<PendingModification>>();
 
-        private static readonly HashSet<CharacterMainControl> _processingCharacters = new HashSet<CharacterMainControl>();
+        private static readonly HashSet<CharacterMainControl> _processingCharacters = 
+            new HashSet<CharacterMainControl>();
 
-        // ========== AI 字段定义 ==========
+        /// <summary>
+        /// AI 核心字段常量定义
+        /// </summary>
         public static class Fields
         {
             public const string ReactionTime = "reactionTime";
+            public const string BaseReactionTime = "baseReactionTime";
+            public const string UpdateValueTimer = "updateValueTimer";
+
+            public const string PatrolTurnSpeed = "patrolTurnSpeed";
+            public const string CombatTurnSpeed = "combatTurnSpeed";
+
             public const string ShootDelay = "shootDelay";
             public const string ShootCanMove = "shootCanMove";
+
+            public const string ShootTimeRange = "shootTimeRange";
+            public const string ShootTimeMin = "shootTimeRange.x";
+            public const string ShootTimeMax = "shootTimeRange.y";
+            public const string ShootSpaceRange = "shootTimeSpaceRange";
+            public const string ShootSpaceMin = "shootTimeSpaceRange.x";
+            public const string ShootSpaceMax = "shootTimeSpaceRange.y";
+
             public const string CanDash = "canDash";
-            public const string DefaultWeaponOut = "defaultWeaponOut";
-            
+            public const string DashCDRange = "dashCoolTimeRange";
+            public const string DashCDMin = "dashCoolTimeRange.x";
+            public const string DashCDMax = "dashCoolTimeRange.y";
+
+            public const string SightDistance = "sightDistance";
+            public const string SightAngle = "sightAngle";
+            public const string HearingAbility = "hearingAbility";
+
             public const string PatrolRange = "patrolRange";
             public const string CombatMoveRange = "combatMoveRange";
             public const string ForgetTime = "forgetTime";
-            
-            public const string ItemSkillChance = "itemSkillChance";
-            public const string ItemSkillCoolTime = "itemSkillCoolTime";
+
+            public const string HasSkill = "hasSkill";
+            public const string SkillChance = "skillSuccessChance";
+            public const string SkillCoolTimeRange = "skillCoolTimeRange";
+            public const string SkillCoolTimeMin = "skillCoolTimeRange.x";
+            public const string SkillCoolTimeMax = "skillCoolTimeRange.y";
+
+            public const string DefaultWeaponOut = "defaultWeaponOut";
         }
 
-        // 白名单
-        private static readonly HashSet<string> ValidFields = new HashSet<string>
-        {
-            Fields.ReactionTime, Fields.ShootDelay, Fields.ShootCanMove, Fields.CanDash, Fields.DefaultWeaponOut,
-            Fields.PatrolRange, Fields.CombatMoveRange, Fields.ForgetTime,
-            Fields.ItemSkillChance, Fields.ItemSkillCoolTime
-        };
 
-        public static bool CanModify(string fieldName) => ValidFields.Contains(fieldName);
-
-        // ========== 延迟修改接口 ==========
-        public static void ModifyDelayed(CharacterMainControl character, string fieldName, float value, bool multiply = false)
+        public static void ModifyDelayed(CharacterMainControl character, string fieldPath, float value, bool multiply = false)
         {
             if (character == null) return;
 
@@ -82,71 +102,31 @@ namespace CombatMaid.Core.AttributeModifiers
             }
 
             _pendingModifications[character].Add(new PendingModification
-            {
-                FieldName = fieldName,
-                Value = value,
-                Multiply = multiply
-            });
+                { FieldPath = fieldPath, Value = value, Multiply = multiply });
 
             if (!_processingCharacters.Contains(character))
             {
                 _processingCharacters.Add(character);
-
                 if (character.gameObject.activeInHierarchy)
-                {
                     character.StartCoroutine(ApplyPendingModifications(character));
-                }
-                else
-                {
-                    if (character.GetComponent<ModificationApplier>() == null)
-                    {
-                        character.gameObject.AddComponent<ModificationApplier>();
-                    }
-                }
+                else if (character.GetComponent<ModificationApplier>() == null)
+                    character.gameObject.AddComponent<ModificationApplier>();
             }
         }
-
-        // ========== 立即修改接口 ==========
-        public static void ModifyImmediate(CharacterMainControl character, string fieldName, float value, bool multiply = false)
-        {
-            var ai = GetAI(character);
-            if (ai != null)
-            {
-                ApplyModification(ai, fieldName, value, multiply);
-            }
-        }
-
-        // ========== 核心协程 ==========
 
         private static IEnumerator ApplyPendingModifications(CharacterMainControl character)
         {
             yield return new WaitForEndOfFrame();
-
-            if (character != null && GetAI(character) == null)
-            {
-                yield return new WaitForEndOfFrame();
-            }
-
-            if (character == null)
-            {
-                CleanUp(character);
-                yield break;
-            }
 
             var ai = GetAI(character);
             if (ai != null && _pendingModifications.TryGetValue(character, out var list))
             {
                 foreach (var mod in list)
                 {
-                    ApplyModification(ai, mod.FieldName, mod.Value, mod.Multiply);
+                    ApplyInternal(ai, mod.FieldPath, mod.Value, mod.Multiply);
                 }
             }
 
-            CleanUp(character);
-        }
-
-        private static void CleanUp(CharacterMainControl character)
-        {
             if (character != null)
             {
                 _pendingModifications.Remove(character);
@@ -154,54 +134,60 @@ namespace CombatMaid.Core.AttributeModifiers
             }
         }
 
-        // ========== 反射逻辑 ==========
-
-        private static void ApplyModification(object target, string fieldName, float value, bool multiply)
+        private static void ApplyInternal(AICharacterController ai, string fieldPath, float value, bool multiply)
         {
             try
             {
-                Type type = target.GetType();
-                
-                FieldInfo field = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.IgnoreCase);
+                string fieldName = fieldPath;
+                int vectorComponent = -1;
 
-                if (field == null)
+                if (fieldPath.Contains("."))
                 {
-                    CMDebug.LogWarning($"字段 '{fieldName}' 未在 {type.Name} 中找到");
+                    string[] parts = fieldPath.Split('.');
+                    fieldName = parts[0];
+                    string suffix = parts[1].ToLower();
+                    vectorComponent = (suffix == "x") ? 0 : 1;
+                }
+
+                if (!_fieldCache.TryGetValue(fieldName, out FieldInfo fInfo))
+                {
+                    fInfo = typeof(AICharacterController).GetField(fieldName,
+                        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                    _fieldCache[fieldName] = fInfo;
+                }
+
+                if (fInfo == null)
+                {
+                    CMDebug.LogWarning($"[AIFieldModifier] AI 字段 '{fieldName}' 不存在于 AICharacterController 中");
                     return;
                 }
 
-                if (field.FieldType == typeof(bool))
+                if (fInfo.FieldType == typeof(Vector2))
                 {
-                    field.SetValue(target, value > 0.5f);
+                    Vector2 v = (Vector2)fInfo.GetValue(ai);
+                    if (vectorComponent == 0) v.x = multiply ? v.x * value : value;
+                    else if (vectorComponent == 1) v.y = multiply ? v.y * value : value;
+                    else v = multiply ? v * value : new Vector2(value, value);
+                    fInfo.SetValue(ai, v);
                 }
-                else if (field.FieldType == typeof(float))
+                else if (fInfo.FieldType == typeof(float))
                 {
-                    if (multiply)
-                    {
-                        float current = (float)field.GetValue(target);
-                        field.SetValue(target, current * value);
-                    }
-                    else
-                    {
-                        field.SetValue(target, value);
-                    }
+                    float current = (float)fInfo.GetValue(ai);
+                    fInfo.SetValue(ai, multiply ? current * value : value);
                 }
-                else if (field.FieldType == typeof(int))
+                else if (fInfo.FieldType == typeof(bool))
                 {
-                    if (multiply)
-                    {
-                        int current = (int)field.GetValue(target);
-                        field.SetValue(target, Mathf.RoundToInt(current * value));
-                    }
-                    else
-                    {
-                        field.SetValue(target, Mathf.RoundToInt(value));
-                    }
+                    fInfo.SetValue(ai, value > 0.5f);
+                }
+                else if (fInfo.FieldType == typeof(int))
+                {
+                    int current = (int)fInfo.GetValue(ai);
+                    fInfo.SetValue(ai, multiply ? Mathf.RoundToInt(current * value) : Mathf.RoundToInt(value));
                 }
             }
             catch (Exception ex)
             {
-                CMDebug.LogWarning($"修改 {fieldName} 异常: {ex.Message}");
+                CMDebug.LogWarning($"[AIFieldModifier] 反射修改字段 '{fieldPath}' 异常: {ex.Message}");
             }
         }
     }
