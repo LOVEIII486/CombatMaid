@@ -1,19 +1,22 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
 using CombatMaid.Core.AttributeModifiers;
-using ItemStatsSystem.Stats;
 
 namespace CombatMaid.Core.MaidFSM.States
 {
+    /// <summary>
+    /// 强制跟随状态
+    /// </summary>
     public class State_ForceFollow : MaidStateBase
     {
         private float _stuckTimer;
         
-        // 缓存临时的速度修改器
-        private List<Modifier> _speedBuffs = new List<Modifier>();
-        private const float SpeedMultiplier = 2.5f;
+        // --- 赶路参数配置 ---
+        private const float SpeedMultiplier = 2.5f;   // 250% 移速
+        private const float AccMultiplier = 8.0f;     // 800% 加速度
 
-        // 【新增】存储“归队后该切回哪个状态”的逻辑
+        /// <summary>
+        /// 归队后该切回哪个状态的逻辑回调
+        /// </summary>
         public System.Action NextStateAction; 
 
         public override void Enter()
@@ -24,21 +27,32 @@ namespace CombatMaid.Core.MaidFSM.States
             if (Controller.AI != null)
             {
                 Controller.AI.leader = Controller.MainOwner;
-                Controller.AI.PutBackWeapon();
             }
             
-            // 【新增】保险逻辑：如果没有指定返回状态，默认回自主模式
-            // 这样旧的代码调用这个状态也不会报错
+            // 如果没有指定返回状态，默认回自主模式
             if (NextStateAction == null)
             {
                 NextStateAction = () => Machine.ChangeState<State_Autonomous>();
             }
             
-            AttributeModifier.Quick.RevertSpeedModifiers(Controller.MaidCharacter, _speedBuffs);
-            _speedBuffs = AttributeModifier.Quick.ModifySpeed(Controller.MaidCharacter, SpeedMultiplier);
+            ApplySpeedBuffs();
             
-            Controller.MaidCharacter?.PopText("主人等等我！！！");
+            Controller.MaidCharacter?.PopText("<color=#FFD700>主人等等我！！！</color>");
             _stuckTimer = 0f;
+            
+            CMDebug.Log("[ForceFollow] 进入状态，开启爆发赶路。");
+        }
+
+        private void ApplySpeedBuffs()
+        {
+            var character = Controller.MaidCharacter;
+            if (character == null) return;
+
+            AttributeModifier.Modify(character, StatModifier.Attributes.WalkSpeed, SpeedMultiplier, true, this);
+            AttributeModifier.Modify(character, StatModifier.Attributes.RunSpeed, SpeedMultiplier, true, this);
+            
+            AttributeModifier.Modify(character, StatModifier.Attributes.WalkAcc, AccMultiplier, true, this);
+            AttributeModifier.Modify(character, StatModifier.Attributes.RunAcc, AccMultiplier, true, this);
         }
 
         public override void Update()
@@ -47,6 +61,7 @@ namespace CombatMaid.Core.MaidFSM.States
 
             float dist = Vector3.Distance(Controller.transform.position, Controller.MainOwner.transform.position);
             
+            // 赶路期间忽略一切威胁，强制清理 AI 的敌对目标
             if (Controller.AI.searchedEnemy != null || Controller.AI.noticed)
             {
                 Controller.ClearImmediateThreats();
@@ -59,18 +74,18 @@ namespace CombatMaid.Core.MaidFSM.States
 
             _stuckTimer += Time.deltaTime;
             
+            // 超远距离或长时间卡死则强制传送
             if (dist > Controller.TeleportDistance || _stuckTimer > Controller.TeleportTimeout)
             {
                 Teleport();
-                // 【修改】调用存储的下一步逻辑，而不是写死 Autonomous
                 NextStateAction?.Invoke();
                 return;
             }
 
+            // 到达安全范围内，任务完成
             if (dist < Controller.SafeDistanceToResumeCombat)
             {
                 Controller.MaidCharacter?.PopText("回来啦~");
-                // 【修改】同上
                 NextStateAction?.Invoke();
                 return;
             }
@@ -80,26 +95,31 @@ namespace CombatMaid.Core.MaidFSM.States
         {
             Controller.SetSensorySuppression(false);
 
-            AttributeModifier.Quick.RevertSpeedModifiers(Controller.MaidCharacter, _speedBuffs);
-            _speedBuffs.Clear();
+            if (Controller.MaidCharacter != null)
+            {
+                AttributeModifier.ClearAll(Controller.MaidCharacter, this);
+            }
             
             if (Controller.AI != null)
             {
-                Controller.AI.StopMove();
+                Controller.AI.StopMove(); // 状态切换时先停下，防止位移惯性
             }
             
-            // 【新增】清理回调，防止状态复用时污染下一次调用
             NextStateAction = null;
+            CMDebug.Log("[ForceFollow] 退出状态，速度已恢复。");
         }
 
         private void Teleport()
         {
             Controller.transform.position = Controller.MainOwner.transform.position;
+            
+            // 同步 AI 控制器的位置
             if (Controller.AI != null && Controller.AI.transform.parent != Controller.transform)
             {
                 Controller.AI.transform.position = Controller.MainOwner.transform.position;
             }
-            Controller.MaidCharacter?.PopText("强制传送");
+            
+            Controller.MaidCharacter?.PopText("<color=red>强制传送</color>");
             if (Controller.AI != null) Controller.AI.StopMove();
         }
     }

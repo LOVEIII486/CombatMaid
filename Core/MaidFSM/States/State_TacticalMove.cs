@@ -1,12 +1,10 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
 using CombatMaid.Core.AttributeModifiers;
-using ItemStatsSystem.Stats;
 
 namespace CombatMaid.Core.MaidFSM.States
 {
     /// <summary>
-    /// 战术移动模式：响应 G 键指令
+    /// 战术移动状态：利用加速度和反应速度提升实现“瞬移”感
     /// </summary>
     public class State_TacticalMove : MaidStateBase
     {
@@ -15,9 +13,8 @@ namespace CombatMaid.Core.MaidFSM.States
         private float _timeoutTimer;
         private const float MaxDuration = 5.0f;
         
-        // 战术移动的移速倍率
-        private const float TacticalSpeedMultiplier = 1.3f;
-        private List<Modifier> _speedBuffs = new List<Modifier>();
+        private const float SpeedMultiplier = 1.35f;  // 移速提升 35%
+        private const float AccMultiplier = 6.0f;    // 加速度提升 500%
 
         public override void Enter()
         {
@@ -25,42 +22,46 @@ namespace CombatMaid.Core.MaidFSM.States
 
             if (Controller.AI != null)
             {
-                //Controller.AI.searchedEnemy = null;
-                //Controller.AI.aimTarget = null;
-                //Controller.AI.SetTarget(null); // 这是一个显式清除目标的方法
-
                 Controller.AI.StopMove();
                 Controller.AI.MoveToPos(TargetPosition);
-                
-                Controller.MaidCharacter?.PopText("战术机动...");
+                Controller.MaidCharacter?.PopText("<color=#00FFFF>执行战术机动</color>");
             }
             
-            if (Controller.MaidCharacter != null)
-            {
-                AttributeModifier.Quick.RevertSpeedModifiers(Controller.MaidCharacter, _speedBuffs);
-                _speedBuffs = AttributeModifier.Quick.ModifySpeed(Controller.MaidCharacter, TacticalSpeedMultiplier);
-            }
-
+            ApplyTacticalBuffs();
             _timeoutTimer = MaxDuration;
+        }
+
+        private void ApplyTacticalBuffs()
+        {
+            var character = Controller.MaidCharacter;
+            if (character == null) return;
+            
+            StatModifier.RemoveAllModifiersFromSource(Controller.MaidCharacter, this);
+            
+            AttributeModifier.Modify(character, StatModifier.Attributes.WalkSpeed, SpeedMultiplier, true, this);
+            AttributeModifier.Modify(character, StatModifier.Attributes.RunSpeed, SpeedMultiplier, true, this);
+            
+            AttributeModifier.Modify(character, StatModifier.Attributes.WalkAcc, AccMultiplier, true, this);
+            AttributeModifier.Modify(character, StatModifier.Attributes.RunAcc, AccMultiplier, true, this);
         }
 
         public override void Update()
         {
             _timeoutTimer -= Time.deltaTime;
 
+            // 集火检查逻辑：检测玩家通过 MaidManager 标记的目标
             var focusTarget = MaidManager.Instance.FocusTarget;
             if (focusTarget != null && !focusTarget.Health.IsDead)
             {
-                CMDebug.Log($"检测到集火目标: {focusTarget.name}，打断战术移动。");
-                Controller.MaidCharacter?.PopText("<color=red>中止机动，集火目标！</color>");
+                CMDebug.Log("[TacticalMove] 检测到集火指令，中止机动。");
                 Machine.ChangeState<State_Autonomous>();
                 return;
             }
 
+            // 移动中注视目标点上方
             if (Controller.MaidCharacter != null)
             {
-                Vector3 lookAtPos = TargetPosition + Vector3.up * 1.5f;
-                Controller.MaidCharacter.SetAimPoint(lookAtPos);
+                Controller.MaidCharacter.SetAimPoint(TargetPosition + Vector3.up * 1.5f); //
             }
 
             if (HasArrived() || _timeoutTimer <= 0)
@@ -70,16 +71,13 @@ namespace CombatMaid.Core.MaidFSM.States
             }
         }
 
-        /// <summary>
-        /// 退出状态清理 Buff
-        /// </summary>
         public override void Exit()
         {
             SetNativeBrainActive(true); 
 
             if (Controller.MaidCharacter != null)
             {
-                AttributeModifier.Quick.RevertSpeedModifiers(Controller.MaidCharacter, _speedBuffs);
+                AttributeModifier.ClearAll(Controller.MaidCharacter, this);
             }
     
             if (Controller.AI != null)
@@ -93,13 +91,13 @@ namespace CombatMaid.Core.MaidFSM.States
             var ai = Controller.AI;
             if (ai != null && ai.searchedEnemy != null)
             {
+                // 如果机动结束离敌人较远，则清除仇恨，实现“脱战”效果
                 float dist = Vector3.Distance(ai.transform.position, ai.searchedEnemy.transform.position);
-                if (dist > 18.0f)
+                if (dist > 20.0f)
                 {
                     ai.searchedEnemy = null;
-                    ai.aimTarget = null;
                     ai.noticed = false;
-                    Controller.MaidCharacter?.PopText("脱离接触");
+                    Controller.MaidCharacter?.PopText("目标已摆脱");
                 }
             }
         }
@@ -107,21 +105,15 @@ namespace CombatMaid.Core.MaidFSM.States
         private bool HasArrived()
         {
             var ai = Controller.AI;
-            if (ai == null) return true;
-    
-            if (ai.WaitingForPathResult()) return false;
+            if (ai == null || ai.WaitingForPathResult()) return false;
+            
+            // 平面距离检查
+            float distToTarget = Vector2.Distance(
+                new Vector2(ai.transform.position.x, ai.transform.position.z), 
+                new Vector2(TargetPosition.x, TargetPosition.z)
+            );
 
-            Vector3 flatPos = new Vector3(ai.transform.position.x, 0, ai.transform.position.z);
-            Vector3 flatTarget = new Vector3(TargetPosition.x, 0, TargetPosition.z);
-            float distToTarget = Vector3.Distance(flatPos, flatTarget);
-
-            if (distToTarget < 1.8f)
-            {
-                return true;
-            }
-            if ((!ai.IsMoving() && ai.HasPath()) || ai.ReachedEndOfPath()) return true;
-    
-            return false;
+            return distToTarget < 1.5f || ai.ReachedEndOfPath();
         }
     }
 }
