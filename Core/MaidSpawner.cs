@@ -398,11 +398,9 @@ namespace CombatMaid.Core
             // 3.背包扩容
             if (profileData.PresetConfig.InventoryCapacity != 0)
             {
-                // (1) 修改数值统计 (Stat)，这确保了数据的正确性（例如UI显示上限）
                 AttributeModifier.Modify(charCtrl, "InventoryCapacity", profileData.PresetConfig.InventoryCapacity,
                     false);
 
-                // (2) 手动应用到 Inventory 对象
                 // 原生 CharacterMainControl.UpdateInventoryCapacity 会跳过 NPC，所以必须手动设置
                 if (charCtrl.CharacterItem != null && charCtrl.CharacterItem.Inventory != null)
                 {

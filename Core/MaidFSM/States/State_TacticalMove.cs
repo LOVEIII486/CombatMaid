@@ -4,7 +4,7 @@ using CombatMaid.Core.AttributeModifiers;
 namespace CombatMaid.Core.MaidFSM.States
 {
     /// <summary>
-    /// 战术移动状态：利用加速度和反应速度提升实现“瞬移”感
+    /// 战术移动
     /// </summary>
     public class State_TacticalMove : MaidStateBase
     {
@@ -24,7 +24,7 @@ namespace CombatMaid.Core.MaidFSM.States
             {
                 Controller.AI.StopMove();
                 Controller.AI.MoveToPos(TargetPosition);
-                Controller.MaidCharacter?.PopText("<color=#00FFFF>执行战术机动</color>");
+                Controller.MaidCharacter?.PopText("<color=#00FFFF>战术移动</color>");
             }
             
             ApplyTacticalBuffs();
@@ -53,7 +53,6 @@ namespace CombatMaid.Core.MaidFSM.States
             var focusTarget = MaidManager.Instance.FocusTarget;
             if (focusTarget != null && !focusTarget.Health.IsDead)
             {
-                CMDebug.Log("[TacticalMove] 检测到集火指令，中止机动。");
                 Machine.ChangeState<State_Autonomous>();
                 return;
             }
@@ -97,7 +96,7 @@ namespace CombatMaid.Core.MaidFSM.States
                 {
                     ai.searchedEnemy = null;
                     ai.noticed = false;
-                    Controller.MaidCharacter?.PopText("目标已摆脱");
+                    Controller.MaidCharacter?.PopText("脱离接触");
                 }
             }
         }
@@ -107,7 +106,6 @@ namespace CombatMaid.Core.MaidFSM.States
             var ai = Controller.AI;
             if (ai == null || ai.WaitingForPathResult()) return false;
             
-            // 平面距离检查
             float distToTarget = Vector2.Distance(
                 new Vector2(ai.transform.position.x, ai.transform.position.z), 
                 new Vector2(TargetPosition.x, TargetPosition.z)

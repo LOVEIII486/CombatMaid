@@ -39,8 +39,6 @@ namespace CombatMaid.Core.MaidFSM.States
             
             Controller.MaidCharacter?.PopText("<color=#FFD700>主人等等我！！！</color>");
             _stuckTimer = 0f;
-            
-            CMDebug.Log("[ForceFollow] 进入状态，开启爆发赶路。");
         }
 
         private void ApplySpeedBuffs()
@@ -106,7 +104,6 @@ namespace CombatMaid.Core.MaidFSM.States
             }
             
             NextStateAction = null;
-            CMDebug.Log("[ForceFollow] 退出状态，速度已恢复。");
         }
 
         private void Teleport()
