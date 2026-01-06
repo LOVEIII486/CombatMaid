@@ -192,3 +192,8 @@ Settings_RebuildWineFox_Desc,根据最新的技能树效果重新计算酒狐属
 Perk_Maid_FoxGuard,狐护刻印,2.2.5,Perks
 Perk_Maid_FoxGuard_Desc,解锁[狐护刻印]技能。\n当酒狐的生命值即将归零时，刻印的守护魔法将自动触发，立即恢复一半生命值，并获得持续<color=#7FE8D8>5秒</color>的无敌。\n该效果每次出击仅会触发一次。,2.2.5,Perks
 Event_SpringFestival_Received_Msg,新年快乐！收到了来自酒狐的 10 个红包！,2.2.5,MaidEvents
+Buff_MaidBuff_WineFoxCookie_Desc,获得临时生命上限,2.2.4,Buffs
+Buff_MaidBuff_JadeBlessing_Desc,濒死时会获得衔玉无敌,2.2.4,Buffs
+Buff_MaidBuff_JadeInvincible_Desc,短暂无敌,2.2.4,Buffs
+Buff_MaidBuff_SuperRegen_Desc,快速回复血量,2.2.3,Buffs
+Buff_MaidBuff_Tear_Desc,随机降低护甲,1.0,Buffs

@@ -190,3 +190,8 @@ Settings_RebuildWineFox_Desc,Recalculate Wine Fox stats based on the latest skil
 Perk_Maid_FoxGuard,Fox Guard Sigil,2.2.5,Perks
 Perk_Maid_FoxGuard_Desc,"Unlocks the [Fox Guard Sigil] skill.\nWhen Wine Fox's HP is about to reach zero, the engraved protective magic will automatically activate, instantly restoring her to half HP and granting invincibility for <color=#7FE8D8>5 seconds.\nThis effect can only trigger once per deployment.",2.2.5,Perks
 Event_SpringFestival_Received_Msg,Happy New Year! You received 10 red envelopes from Wine Fox!,2.2.5,MaidEvents
+Buff_MaidBuff_WineFoxCookie_Desc,Gain a temporary increase to maximum health,2.2.4,Buffs
+Buff_MaidBuff_JadeBlessing_Desc,Gain Jade Invincibility when near death,2.2.4,Buffs
+Buff_MaidBuff_JadeInvincible_Desc,Brief invincibility,2.2.4,Buffs
+Buff_MaidBuff_SuperRegen_Desc,Rapid health regeneration,2.2.3,Buffs
+Buff_MaidBuff_Tear_Desc,Randomly reduce armor,1.0,Buffs
