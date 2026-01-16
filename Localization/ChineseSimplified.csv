@@ -46,9 +46,9 @@ Perk_Bottle_Lv2_Desc,解锁中阶强化版瓶中女仆，具备更高战斗能�
 Perk_Bottle_Lv3,瓶中女仆 III 型,2.2.2,Perks
 Perk_Bottle_Lv3_Desc,解锁最高阶封存战偶级瓶中女仆，拥有接近皇家近卫级的作战能力。\n独立个体，不继承酒狐女仆的成长属性。\n解锁物品：<color=#F3D38A>瓶中女仆 III 型</color>（泥巴商店出售）。,2.2.2,Perks
 Perk_WineFox_Health_4,强化契约躯体 IV,2.2.2,Perks
-Perk_WineFox_Health_4_Desc,扩展契约护甲的保护范围，使生命力与抗性同步提升。\n最大生命值 <color=#FF8A8A>+50</color>，物理伤害减免 <color=#FF8A8A>-10%</color>。,2.2.2,Perks
+Perk_WineFox_Health_4_Desc,扩展契约护甲的保护范围，使生命力与抗性同步提升。\n最大生命值 <color=#FF8A8A>+50</color>，物理伤害减免 <color=#FF8A8A>+10%</color>。,2.2.2,Perks
 Perk_WineFox_Health_5,强化契约躯体 V,2.2.2,Perks
-Perk_WineFox_Health_5_Desc,将契约之躯锻造成高阶守护形态，使酒狐在极端环境下仍能稳固作战。\n最大生命值 <color=#FF8A8A>+70</color>，物理伤害减免 <color=#FF8A8A>-20%</color>。,2.2.2,Perks
+Perk_WineFox_Health_5_Desc,将契约之躯锻造成高阶守护形态，使酒狐在极端环境下仍能稳固作战。\n最大生命值 <color=#FF8A8A>+70</color>，物理伤害减免 <color=#FF8A8A>+20%</color>。,2.2.2,Perks
 Perk_Flexibility_1,灵活战姿 I,2.2.2,Perks
 Perk_Flexibility_1_Desc,提升基础移动节奏。\n主人~ 我开始做机动训练啦！这样就能在战场上灵活地跟紧你，不会掉队的喔！\n移动速度：<color=#7FE8D8>+15%</color>，并解锁冲刺能力。,2.2.2,Perks
 Perk_Flexibility_2,灵活战姿 II,2.2.2,Perks

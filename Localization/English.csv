@@ -46,9 +46,9 @@ Perk_Bottle_Lv2_Desc,"Unlocks the mid-tier reinforced Vial Maid with higher comb
 Perk_Bottle_Lv3,Vial Maid Type III,2.2.2,Perks
 Perk_Bottle_Lv3_Desc,"Unlocks the highest-tier Puppet-class Vial Maid, possessing combat capabilities near the Royal Guard level.\nIndependent entity, does not inherit Wine Fox's growth stats.\nUnlock Item: <color=#F3D38A>Vial Maid Type III</color> (Sold at Mud Shop).",2.2.2,Perks
 Perk_WineFox_Health_4,Reinforced Contract Body IV,2.2.2,Perks
-Perk_WineFox_Health_4_Desc,"Expands the contract armor's protection range, synchronizing vitality and resistance improvements.\nMax Health <color=#FF8A8A>+50</color>, Physical Damage Reduction <color=#FF8A8A>-10%</color>.",2.2.2,Perks
+Perk_WineFox_Health_4_Desc,"Expands the contract armor's protection range, synchronizing vitality and resistance improvements.\nMax Health <color=#FF8A8A>+50</color>, Physical Damage Reduction <color=#FF8A8A>+10%</color>.",2.2.2,Perks
 Perk_WineFox_Health_5,Reinforced Contract Body V,2.2.2,Perks
-Perk_WineFox_Health_5_Desc,"Forges the contract body into a high-tier Guardian form, allowing Wine Fox to fight steadily even in extreme environments.\nMax Health <color=#FF8A8A>+70</color>, Physical Damage Reduction <color=#FF8A8A>-20%</color>.",2.2.2,Perks
+Perk_WineFox_Health_5_Desc,"Forges the contract body into a high-tier Guardian form, allowing Wine Fox to fight steadily even in extreme environments.\nMax Health <color=#FF8A8A>+70</color>, Physical Damage Reduction <color=#FF8A8A>+20%</color>.",2.2.2,Perks
 Perk_Flexibility_1,Flexible Stance I,2.2.2,Perks
 Perk_Flexibility_1_Desc,"Improves basic movement rhythm.\nMaster~ I've started mobility training! This way I can follow you nimbly on the battlefield without getting left behind!\nMove Speed: <color=#7FE8D8>+15%</color>, unlocks Dash ability.",2.2.2,Perks
 Perk_Flexibility_2,Flexible Stance II,2.2.2,Perks
