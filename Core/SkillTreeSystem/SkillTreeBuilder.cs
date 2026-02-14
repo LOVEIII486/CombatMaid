@@ -324,13 +324,10 @@ namespace CombatMaid.Core.SkillTreeSystem
             string targetName = $"Interact_{treeId}";
             Transform parentTransform = existingInvoker.transform.parent;
 
-            // ================= [修复核心] 清理旧交互点 =================
-            // 1. 在同级目录下查找是否已存在同名物体
             Transform oldObj = parentTransform.Find(targetName);
 
             if (oldObj != null)
             {
-                // 2. 从主交互器的分组列表中移除对旧物体的引用 (防止空引用报错)
                 var groupList = Traverse.Create(existingInvoker).Field("otherInterablesInGroup")
                     .GetValue<List<InteractableBase>>();
                 var oldInvoker = oldObj.GetComponent<PerkTreeUIInvoker>();
@@ -339,12 +336,9 @@ namespace CombatMaid.Core.SkillTreeSystem
                 {
                     groupList.Remove(oldInvoker);
                 }
-
-                // 3. 销毁旧物体
                 Object.DestroyImmediate(oldObj.gameObject);
                 CMDebug.Log($"[SkillTreeBuilder] 检测到重载，已清理旧交互点: {targetName}");
             }
-            // ==========================================================
 
             string finalInteractText = CombatMaid.Localization.LocalizationManager.GetText(interactionKey, defaultText);
             if (SodaCraft.Localizations.LocalizationManager.overrideTexts != null)
@@ -353,7 +347,7 @@ namespace CombatMaid.Core.SkillTreeSystem
             }
 
             GameObject interactObj = Object.Instantiate(existingInvoker.gameObject, existingInvoker.transform.parent);
-            interactObj.name = targetName; // 使用我们刚才定义的变量
+            interactObj.name = targetName;
 
             interactObj.transform.localPosition = existingInvoker.transform.localPosition;
             interactObj.transform.localRotation = existingInvoker.transform.localRotation;

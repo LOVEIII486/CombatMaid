@@ -39,10 +39,10 @@ namespace CombatMaid.Core.AttributeModifiers
                 targetStat.AddModifier(modifier);
 
                 // 如果是修改血量上限，自动补正当前血量
-                if (statKey == Attributes.MaxHealth && character.Health != null)
-                {
-                    character.Health.SetHealth(character.Health.MaxHealth);
-                }
+                // if (statKey == Attributes.MaxHealth && character.Health != null)
+                // {
+                //     character.Health.SetHealth(character.Health.MaxHealth);
+                // }
 
                 return modifier;
             }
