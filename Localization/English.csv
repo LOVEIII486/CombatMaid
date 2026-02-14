@@ -195,3 +195,4 @@ Buff_MaidBuff_JadeBlessing_Desc,Gain Jade Invincibility when near death,2.2.4,Bu
 Buff_MaidBuff_JadeInvincible_Desc,Brief invincibility,2.2.4,Buffs
 Buff_MaidBuff_SuperRegen_Desc,Rapid health regeneration,2.2.3,Buffs
 Buff_MaidBuff_Tear_Desc,Randomly reduce armor,1.0,Buffs
+Settings_EnableBuffPlayer,Allow maid buffs player,2.2.6,GeneralSettings

@@ -197,3 +197,4 @@ Buff_MaidBuff_JadeBlessing_Desc,濒死时会获得衔玉无敌,2.2.4,Buffs
 Buff_MaidBuff_JadeInvincible_Desc,短暂无敌,2.2.4,Buffs
 Buff_MaidBuff_SuperRegen_Desc,快速回复血量,2.2.3,Buffs
 Buff_MaidBuff_Tear_Desc,随机降低护甲,1.0,Buffs
+Settings_EnableBuffPlayer,允许女仆buff玩家,2.2.6,GeneralSettings

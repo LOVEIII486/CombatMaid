@@ -415,12 +415,12 @@ namespace CombatMaid.Core.Items.Data
                     localizationKey = "Item_MaidRecycleBottle",
                     localizationDesc = "Item_MaidRecycleBottle_Desc",
                     spritePath = "MaidRecycleBottle.png",
-                    value = 10000,
+                    value = 5000,
                     weight = 0.3f,
                     maxStackCount = 1,
                     maxDurability = 3f,
-                    quality = 5,
-                    displayQuality = DisplayQuality.Orange,
+                    quality = 6,
+                    displayQuality = DisplayQuality.Red,
                     tags = new List<string> { "Tool" },
                     usages = new UsageData
                     {
@@ -437,7 +437,7 @@ namespace CombatMaid.Core.Items.Data
                     },
                     ShopMerchantId = MerchantIds.Mud,
                     ShopMaxStock = 1,
-                    ShopPriceFactor = 0.7f,
+                    ShopPriceFactor = 2.0f,
                     ShopPossibility = 1.0f,
                     ShopForceUnlock = false
                 },

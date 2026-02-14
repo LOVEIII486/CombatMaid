@@ -34,6 +34,7 @@ namespace CombatMaid.Core.MaidSkillSystem.Skills
 
         protected override bool CheckTriggerCondition()
         {
+            if (!CombatMaidConfig.EnableBuffPlayer) return false;
             return Controller.MainOwner != null && !Controller.MainOwner.Health.IsDead;
         }
 

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using CombatMaid.Core.BuffsSystem;
+using CombatMaid.Settings;
 
 namespace CombatMaid.Core.MaidSkillSystem.Skills
 {

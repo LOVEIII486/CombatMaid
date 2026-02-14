@@ -95,16 +95,23 @@ namespace CombatMaid.Settings
         public const string Key_IgnoreSearched = "IgnoreSearched";
         public const string Key_EnableElementalGrenades = "EnableElementalGrenades";
         public const string Key_TransferKillToOwner = "TransferKillToOwner";
+        public const string Key_EnableBuffPlayer = "EnableBuffPlayer";
+
+        
+
+        
         
         private const int Default_LootMinVal = 0;
         private const bool Default_IgnoreSearched = true;
         private const bool Default_EnableElementalGrenades = true;
         private const bool Default_TransferKillToOwner = true;
+        private const bool Default_EnableBuffPlayer = true;
         
         public static int LootMinVal { get; set; } = Default_LootMinVal;
         public static bool IgnoreSearched { get; set; } = Default_IgnoreSearched;
         public static bool EnableElementalGrenades { get; set; } = Default_EnableElementalGrenades;
         public static bool TransferKillToOwner { get; set; } = Default_TransferKillToOwner;
+        public static bool EnableBuffPlayer { get; set; } = Default_EnableBuffPlayer;
 
         #endregion
 
@@ -379,6 +386,11 @@ namespace CombatMaid.Settings
             if (ModSettingAPI.GetSavedValue(Key_TransferKillToOwner, out bool savedTransfer))
             {
                 TransferKillToOwner = savedTransfer;
+            }
+            
+            if (ModSettingAPI.GetSavedValue(Key_EnableBuffPlayer, out bool savedEnableBuff))
+            {
+                EnableBuffPlayer = savedEnableBuff;
             }
 
             #endregion

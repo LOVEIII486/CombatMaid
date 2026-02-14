@@ -131,6 +131,12 @@ namespace CombatMaid.Settings
                     CombatMaidConfig.TransferKillToOwner = value;
                 }
             );
+            ModSettingAPI.AddToggle(
+                CombatMaidConfig.Key_EnableBuffPlayer, 
+                LocalizationManager.GetText("Settings_EnableBuffPlayer"), 
+                CombatMaidConfig.EnableBuffPlayer, 
+                (val) => CombatMaidConfig.EnableBuffPlayer = val
+            );
 
             #endregion
             
@@ -239,7 +245,8 @@ namespace CombatMaid.Settings
                     CombatMaidConfig.Key_LootMinVal,
                     CombatMaidConfig.Key_IgnoreSearched,
                     CombatMaidConfig.Key_EnableElementalGrenades,
-                    CombatMaidConfig.Key_TransferKillToOwner
+                    CombatMaidConfig.Key_TransferKillToOwner,
+                    CombatMaidConfig.Key_EnableBuffPlayer
                 },
                 0.7f, false, false
             );
