@@ -30,6 +30,9 @@ namespace CombatMaid.Core.BuffsSystem.Effects
             string popTemplate = LocalizationManager.GetText("Buff_WineFoxCookie_Pop");
             string finalMsg = string.Format(popTemplate, ExtraHP);
             target.PopText(finalMsg);
+            
+            // 仅回复提升的生命，而不是直接回满血
+            target.AddHealth(ExtraHP);
         }
 
         public void OnBuffDestroy(Buff buff, CharacterMainControl target)
