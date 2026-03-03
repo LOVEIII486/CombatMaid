@@ -88,7 +88,6 @@ namespace CombatMaid.Settings
 
         #endregion
 
-
         #region 高级AI设置
 
         public const string Key_LootMinVal = "LootMinValue";
@@ -96,9 +95,7 @@ namespace CombatMaid.Settings
         public const string Key_EnableElementalGrenades = "EnableElementalGrenades";
         public const string Key_TransferKillToOwner = "TransferKillToOwner";
         public const string Key_EnableBuffPlayer = "EnableBuffPlayer";
-
-        
-
+        public const string Key_AutoSummonAtStart = "AutoSummonAtStart";
         
         
         private const int Default_LootMinVal = 0;
@@ -106,12 +103,14 @@ namespace CombatMaid.Settings
         private const bool Default_EnableElementalGrenades = true;
         private const bool Default_TransferKillToOwner = true;
         private const bool Default_EnableBuffPlayer = true;
+        private static bool Default_AutoSummonAtStart = false;
         
         public static int LootMinVal { get; set; } = Default_LootMinVal;
         public static bool IgnoreSearched { get; set; } = Default_IgnoreSearched;
         public static bool EnableElementalGrenades { get; set; } = Default_EnableElementalGrenades;
         public static bool TransferKillToOwner { get; set; } = Default_TransferKillToOwner;
         public static bool EnableBuffPlayer { get; set; } = Default_EnableBuffPlayer;
+        public static bool AutoSummonAtStart { get; set; } = Default_AutoSummonAtStart;
 
         #endregion
 
@@ -391,6 +390,11 @@ namespace CombatMaid.Settings
             if (ModSettingAPI.GetSavedValue(Key_EnableBuffPlayer, out bool savedEnableBuff))
             {
                 EnableBuffPlayer = savedEnableBuff;
+            }
+            
+            if (ModSettingAPI.GetSavedValue(Key_AutoSummonAtStart, out bool savedAutoSummon))
+            {
+                AutoSummonAtStart = savedAutoSummon;
             }
 
             #endregion

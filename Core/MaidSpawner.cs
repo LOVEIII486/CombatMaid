@@ -14,6 +14,7 @@ using CombatMaid.Settings;
 using Cysharp.Threading.Tasks;
 using Duckov.Scenes;
 using Newtonsoft.Json;
+using UnityEngine.SceneManagement;
 
 namespace CombatMaid.Core
 {
@@ -41,6 +42,30 @@ namespace CombatMaid.Core
 
             _tempPresets.Clear();
         }
+        
+        private void OnEnable()
+        {
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        private void OnDisable()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            int currentSceneIndex = scene.buildIndex;
+            if (currentSceneIndex != _lastAutoSummonSceneIndex)
+            {
+                _lastAutoSummonSceneIndex = currentSceneIndex;
+        
+                if (CombatMaidConfig.AutoSummonAtStart)
+                {
+                    StartCoroutine(AutoSummonRoutine());
+                }
+            }
+        }
 
         #region 数据
 
@@ -63,9 +88,61 @@ namespace CombatMaid.Core
 
         // 缓存的倍率快照
         private Vector3 _cachedMultipliers = Vector3.one;
+        
+        private int _lastAutoSummonSceneIndex = -1;
+        private bool _isSummoning = false;
 
         #endregion
+        
+        private IEnumerator AutoSummonRoutine()
+        {
+            if (_isSummoning) yield break;
 
+            while (!_isInitialized) yield return null;
+            while (CharacterMainControl.Main == null) yield return null;
+
+            yield return new WaitForSeconds(0.5f);
+
+            if (!CombatMaidConfig.AutoSummonAtStart) yield break;
+
+            var level = LevelManager.Instance;
+            if (level == null || (!level.IsBaseLevel && !level.IsRaidMap)) yield break;
+
+            var player = CharacterMainControl.Main;
+
+            if (!CheckPlayerHasContract(player, 88000)) yield break;
+
+            if (MaidManager.Instance != null && MaidManager.Instance.GetActiveWineFox() == null && !_isSummoning)
+            {
+                _isSummoning = true;
+        
+                CMDebug.LogInfo($"[AutoSummon] 场景检测完成，正在部署酒狐。");
+                Vector3 spawnPos = player.transform.position + player.transform.forward * 1.5f;
+
+                SpawnWineFox(spawnPos, (maid) => {
+                    _isSummoning = false;
+                });
+            }
+        }
+        
+        private bool CheckPlayerHasContract(CharacterMainControl player, int contractId)
+        {
+            if (player.CharacterItem == null) return false;
+
+            var inv = player.CharacterItem.Inventory;
+            if (inv != null)
+            {
+                for (int i = 0; i < inv.Capacity; i++)
+                {
+                    var item = inv.GetItemAt(i);
+                    if (item != null && item.TypeID == contractId) return true;
+                }
+            }
+
+            return false;
+        }
+        
+        
         #region 初始化
 
         private IEnumerator InitializeRoutine()

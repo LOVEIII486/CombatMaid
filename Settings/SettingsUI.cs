@@ -137,6 +137,12 @@ namespace CombatMaid.Settings
                 CombatMaidConfig.EnableBuffPlayer, 
                 (val) => CombatMaidConfig.EnableBuffPlayer = val
             );
+            ModSettingAPI.AddToggle(
+                CombatMaidConfig.Key_AutoSummonAtStart,                       // 绑定键
+                LocalizationManager.GetText("Setting_AutoSummonAtStart"),      // 本地化标签
+                CombatMaidConfig.AutoSummonAtStart,                            // 当前值
+                (value) => CombatMaidConfig.AutoSummonAtStart = value          // 修改后的回调逻辑
+            );
 
             #endregion
             
@@ -246,7 +252,8 @@ namespace CombatMaid.Settings
                     CombatMaidConfig.Key_IgnoreSearched,
                     CombatMaidConfig.Key_EnableElementalGrenades,
                     CombatMaidConfig.Key_TransferKillToOwner,
-                    CombatMaidConfig.Key_EnableBuffPlayer
+                    CombatMaidConfig.Key_EnableBuffPlayer,
+                    CombatMaidConfig.Key_AutoSummonAtStart
                 },
                 0.7f, false, false
             );
