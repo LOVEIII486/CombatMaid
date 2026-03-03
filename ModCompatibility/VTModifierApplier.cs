@@ -33,8 +33,8 @@ namespace CombatMaid.ModCompatibility
                         _modifierVarKey = (string)field.GetValue(null);
                     }
 
-                    MethodInfo initDataMethod = coreType.GetMethod("InitData", BindingFlags.Public | BindingFlags.Static);
-                    initDataMethod?.Invoke(null, null);
+                    // MethodInfo initDataMethod = coreType.GetMethod("InitData", BindingFlags.Public | BindingFlags.Static);
+                    // initDataMethod?.Invoke(null, null);
 
                     if (_calcMethod != null)
                     {
