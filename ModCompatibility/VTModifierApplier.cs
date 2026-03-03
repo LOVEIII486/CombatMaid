@@ -1,79 +1,76 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using ItemStatsSystem;
 
 namespace CombatMaid.ModCompatibility
 {
-    /// <summary>
-    /// 词缀模组兼容性助手 - 负责处理与 VTModifiers 模组的可选依赖逻辑
-    /// </summary>
     public static class VTModifierApplier
     {
         private static bool _isModInstalled = false;
         private static MethodInfo _calcMethod;
-        private static string _modifierVarKey;
+        private static string _modifierVarKey = "VT_MODIFIER"; // 默认 Key
 
-        /// <summary>
-        /// 外部接口：判断词缀模组是否已启用且兼容
-        /// </summary>
         public static bool IsEnabled => _isModInstalled;
 
-        /// <summary>
-        /// 初始化反射逻辑。应在 Mod 启动时（如 Awake/Start）调用一次。
-        /// </summary>
         public static void Init()
         {
             try
             {
-                // 尝试定位目标程序集中的核心类
-                Type coreType = Type.GetType("VTModifiers.VTLib.VTModifiersCoreV2, VTModifiers");
-                
+                Type coreType = AppDomain.CurrentDomain.GetAssemblies()
+                    .Select(a => a.GetType("VTModifiers.VTLib.VTModifiersCoreV2"))
+                    .FirstOrDefault(t => t != null);
+
                 if (coreType != null)
                 {
-                    // 获取初始化数据和计算词缀的方法
-                    MethodInfo initDataMethod = coreType.GetMethod("InitData", BindingFlags.Public | BindingFlags.Static);
+                    // 获取计算方法：CalcItemModifiers(Item item)
                     _calcMethod = coreType.GetMethod("CalcItemModifiers", new[] { typeof(Item) });
                     
-                    // 获取标记变量 Key: VT_MODIFIER
+                    // 动态获取词缀标记变量名 (VT_MODIFIER)
                     var field = coreType.GetField("VariableVtModifierHashCode", BindingFlags.Public | BindingFlags.Static);
-                    _modifierVarKey = field?.GetValue(null) as string ?? "VT_MODIFIER";
-
-                    if (initDataMethod != null && _calcMethod != null)
+                    if (field != null)
                     {
-                        // 预热词缀模组的数据加载
-                        initDataMethod.Invoke(null, null);
-                        _isModInstalled = true;
-                        CMDebug.LogInfo("[Compatibility] 检测到 VTModifiers，已激活词缀自动恢复支持。");
+                        _modifierVarKey = (string)field.GetValue(null);
                     }
+
+                    MethodInfo initDataMethod = coreType.GetMethod("InitData", BindingFlags.Public | BindingFlags.Static);
+                    initDataMethod?.Invoke(null, null);
+
+                    if (_calcMethod != null)
+                    {
+                        _isModInstalled = true;
+                        CMDebug.Log($"[Compatibility] VTModifiers 核心类匹配成功，标识 Key: {_modifierVarKey}");
+                    }
+                }
+                else
+                {
+                    CMDebug.Log("[Compatibility] 未检测到 VTModifiers 模组。");
                 }
             }
             catch (Exception ex)
             {
                 _isModInstalled = false;
-                CMDebug.LogWarning($"[Compatibility] 词缀模组反射初始化失败: {ex.Message}");
+                CMDebug.LogWarning($"[Compatibility] 反射过程异常: {ex.Message}");
             }
         }
 
-        /// <summary>
-        /// 尝试为物品应用词缀效果。调用前应先检查 IsEnabled。
-        /// </summary>
         public static void TryApplyModifiers(Item item)
         {
-            // 基础安全检查
             if (!_isModInstalled || item == null) return;
 
             try
             {
-                // 检查物品是否有词缀标记变量
+                // 检查物品是否有词缀 ID
                 string modifierId = item.GetString(_modifierVarKey, null);
                 if (!string.IsNullOrEmpty(modifierId))
                 {
+                    // 执行词缀效果注入逻辑
                     _calcMethod.Invoke(null, new object[] { item });
                 }
             }
             catch (Exception ex)
             {
-                CMDebug.LogWarning($"[Compatibility] 应用词缀效果失败 ({item.DisplayName}): {ex.Message}");
+                CMDebug.LogWarning($"[Compatibility] 应用词缀失败: {item.DisplayName} - {ex.Message}");
             }
         }
     }

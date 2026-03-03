@@ -122,6 +122,7 @@ namespace CombatMaid
 
         private void InitializeCompatibility()
         {
+            CMDebug.Log("正在检查兼容性模组...");
             VTModifierApplier.Init();
         }
 
